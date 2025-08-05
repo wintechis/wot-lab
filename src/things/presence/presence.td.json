@@ -1,0 +1,63 @@
+{
+  "@context": "https://www.w3.org/2019/wot/td/v1",
+  "@type": "Thing",
+  "title": "Presence Sensor",
+  "description": "Motion/presence detection sensor with HTTP trigger endpoints",
+  "properties": {
+    "isPresent": {
+      "type": "boolean",
+      "description": "Current presence status",
+      "observable": true,
+      "readOnly": true
+    },
+    "lastDetection": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp of last presence change",
+      "observable": true,
+      "readOnly": true
+    },
+    "detectionCount": {
+      "type": "integer",
+      "description": "Total number of presence events detected",
+      "minimum": 0,
+      "observable": true,
+      "readOnly": true
+    }
+  },
+  "events": {
+    "presence": {
+      "title": "Presence Detected",
+      "description": "Emitted when presence is detected",
+      "data": {
+        "type": "object",
+        "properties": {
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "count": {
+            "type": "integer"
+          }
+        }
+      }
+    },
+    "absence": {
+      "title": "Absence Detected", 
+      "description": "Emitted when absence is detected",
+      "data": {
+        "type": "object",
+        "properties": {
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "duration": {
+            "type": "number",
+            "description": "Duration of presence in seconds"
+          }
+        }
+      }
+    }
+  }
+}

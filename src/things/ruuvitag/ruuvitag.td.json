@@ -1,0 +1,168 @@
+{
+  "@context": [
+    "https://www.w3.org/2019/wot/td/v1",
+    "https://www.w3.org/2022/wot/td/v1.1",
+    {
+      "sbo": "https://freumi.inrupt.net/SimpleBluetoothOntology.ttl#",
+      "bdo": "https://freumi.inrupt.net/BinaryDataOntology.ttl#",
+      "qudt": "https://qudt.org/schema/qudt/",
+      "qudtUnit": "https://qudt.org/vocab/unit/"
+    },
+    {
+      "@language": "en"
+    }
+  ],
+  "@type": "Thing",
+  "title": "Ruuvi Tag",
+  "description": "RuuviTag is a wireless Bluetooth sensor node that measures temperature, air humidity, and movement.",
+  "securityDefinitions": {
+    "nosec_sc": {
+      "scheme": "nosec"
+    }
+  },
+  "security": "nosec_sc",
+  "properties": {
+    "temperature": {
+      "type": "number",
+      "title": "Temperature",
+      "description": "Current temperature reading",
+      "unit": "qudtUnit:DEG_C",
+      "readOnly": true,
+      "observable": true
+    },
+    "humidity": {
+      "type": "number",
+      "title": "Humidity",
+      "description": "Current humidity reading",
+      "unit": "qudtUnit:PERCENT",
+      "readOnly": true,
+      "observable": true,
+      "minimum": 0,
+      "maximum": 100
+    },
+    "pressure": {
+      "type": "number",
+      "title": "Pressure",
+      "description": "Current atmospheric pressure",
+      "unit": "qudt:PA",
+      "readOnly": true,
+      "observable": true
+    },
+    "acceleration": {
+      "type": "object",
+      "title": "Acceleration",
+      "description": "3-axis acceleration data",
+      "readOnly": true,
+      "observable": true,
+      "properties": {
+        "x": {
+          "type": "integer",
+          "unit": "qudtUnit:mG"
+        },
+        "y": {
+          "type": "integer", 
+          "unit": "qudtUnit:mG"
+        },
+        "z": {
+          "type": "integer",
+          "unit": "qudtUnit:mG"
+        }
+      }
+    },
+    "batteryInfo": {
+      "type": "object",
+      "title": "Battery Information",
+      "description": "Battery and power information",
+      "readOnly": true,
+      "observable": true,
+      "properties": {
+        "powerInfo": {
+          "type": "integer",
+          "description": "Power information bits"
+        },
+        "txPower": {
+          "type": "integer",
+          "description": "Transmission power"
+        }
+      }
+    },
+    "movementCounter": {
+      "type": "integer",
+      "title": "Movement Counter",
+      "description": "Number of movement detections",
+      "readOnly": true,
+      "observable": true
+    },
+    "sequenceNumber": {
+      "type": "integer",
+      "title": "Sequence Number", 
+      "description": "Measurement sequence number",
+      "readOnly": true,
+      "observable": true
+    },
+    "lastUpdated": {
+      "type": "string",
+      "title": "Last Updated",
+      "description": "Timestamp of last sensor reading",
+      "readOnly": true,
+      "observable": true
+    }
+  },
+  "events": {
+    "sensorData": {
+      "title": "Sensor Data Update",
+      "description": "Emitted when new sensor data is received",
+      "data": {
+        "type": "object",
+        "properties": {
+          "temperature": { "type": "number" },
+          "humidity": { "type": "number" },
+          "pressure": { "type": "number" },
+          "acceleration": {
+            "type": "object",
+            "properties": {
+              "x": { "type": "integer" },
+              "y": { "type": "integer" },
+              "z": { "type": "integer" }
+            }
+          },
+          "timestamp": { "type": "string" }
+        }
+      }
+    },
+    "movementDetected": {
+      "title": "Movement Detected",
+      "description": "Emitted when movement is detected",
+      "data": {
+        "type": "object",
+        "properties": {
+          "movementCounter": { "type": "integer" },
+          "timestamp": { "type": "string" }
+        }
+      }
+    }
+  },
+  "actions": {
+    "simulateReading": {
+      "title": "Simulate Reading",
+      "description": "Generate simulated sensor data",
+      "input": {
+        "type": "object",
+        "properties": {
+          "temperature": {
+            "type": "number",
+            "description": "Temperature in Celsius (optional)"
+          },
+          "humidity": {
+            "type": "number", 
+            "description": "Humidity percentage (optional)"
+          },
+          "movement": {
+            "type": "boolean",
+            "description": "Trigger movement detection (optional)"
+          }
+        }
+      }
+    }
+  }
+}

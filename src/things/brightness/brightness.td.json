@@ -1,0 +1,24 @@
+{
+  "@context": "https://www.w3.org/2019/wot/td/v1",
+  "@type": "Thing",
+  "title": "Brightness Sensor",
+  "description": "Environmental brightness/light level sensor",
+  "properties": {
+    "brightness": {
+      "type": "number",
+      "description": "Current brightness level in lux",
+      "unit": "lux",
+      "minimum": 0,
+      "maximum": 100000,
+      "observable": true,
+      "readOnly": true
+    },
+    "lastUpdated": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp of last brightness update",
+      "observable": true,
+      "readOnly": true
+    }
+  }
+}

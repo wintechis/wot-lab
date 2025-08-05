@@ -1,0 +1,44 @@
+{
+    "title": "Lamp",
+    "description": "Lamp Thing",
+    "@context": [
+        "https://www.w3.org/2019/wot/td/v1",
+        "https://www.w3.org/2022/wot/td/v1.1"
+    ],
+    "properties": {
+        "on": {
+            "title": "On",
+            "type": "boolean",
+            "description": "Lamp is on or off",
+            "observable": true,
+            "readOnly": true
+        },
+        "brightness": {
+            "title": "Brightness",
+            "type": "number",
+            "description": "Brightness level of the lamp",
+            "minimum": 0,
+            "maximum": 100,
+            "unit": "percent",
+            "observable": true,
+            "readOnly": true
+        }
+    },
+    "actions": {
+        "toggle": {
+            "title": "Toggle",
+            "description": "Toggle the lamp state"
+        },
+        "setBrightness": {
+            "title": "Set Brightness",
+            "description": "Set the brightness of the lamp",
+            "input": {
+                "type": "number",
+                "description": "Brightness level to set",
+                "minimum": 0,
+                "maximum": 100,
+                "default": 100
+            }
+        }
+    }
+}

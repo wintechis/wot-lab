@@ -1,0 +1,196 @@
+{
+  "@context": [
+    "https://www.w3.org/2019/wot/td/v1",
+    "https://www.w3.org/2022/wot/td/v1.1",
+    {
+      "sbo": "https://freumi.inrupt.net/SimpleBluetoothOntology.ttl#",
+      "bdo": "https://freumi.inrupt.net/BinaryDataOntology.ttl#",
+      "qudt": "https://qudt.org/schema/qudt/",
+      "qudtUnit": "https://qudt.org/vocab/unit/"
+    },
+    {"@language": "en"}
+  ],
+  "@type": "Thing",
+  "title": "BLE RGB Controller",
+  "description": "A Bluetooth Low Energy (BLE) controller that can be used to control RGB LED lights.",
+  "securityDefinitions": {
+    "nosec_sc": {
+      "scheme": "nosec"
+    }
+  },
+  "security": ["nosec_sc"],
+  "properties": {
+    "currentColor": {
+      "title": "Current Color",
+      "description": "The current RGB color values of the LED light",
+      "type": "object",
+      "readOnly": true,
+      "observable": true,
+      "properties": {
+        "R": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255,
+          "description": "Red value"
+        },
+        "G": {
+          "type": "integer", 
+          "minimum": 0,
+          "maximum": 255,
+          "description": "Green value"
+        },
+        "B": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255,
+          "description": "Blue value"
+        }
+      }
+    },
+    "power": {
+      "title": "Power State",
+      "type": "boolean",
+      "description": "The power state of the RGB controller",
+      "readOnly": true,
+      "observable": true
+    },
+    "currentEffect": {
+      "title": "Current Effect",
+      "type": "integer",
+      "description": "The current effect mode (128-156)",
+      "minimum": 128,
+      "maximum": 156,
+      "readOnly": true,
+      "observable": true
+    },
+    "brightness": {
+      "title": "Brightness",
+      "type": "integer",
+      "description": "Overall brightness level (0-100%)",
+      "minimum": 0,
+      "maximum": 100,
+      "readOnly": true,
+      "observable": true
+    },
+    "lastUpdated": {
+      "title": "Last Updated",
+      "type": "string",
+      "description": "Timestamp of last command",
+      "readOnly": true,
+      "observable": true
+    }
+  },
+  "actions": {
+    "setColor": {
+      "title": "Set Color",
+      "description": "Set the RGB color of the LED light",
+      "input": {
+        "type": "object",
+        "properties": {
+          "R": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255,
+            "description": "Red value"
+          },
+          "G": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255,
+            "description": "Green value"
+          },
+          "B": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255,
+            "description": "Blue value"
+          }
+        },
+        "required": ["R", "G", "B"]
+      }
+    },
+    "setPower": {
+      "title": "Set Power",
+      "description": "Turn the RGB controller on or off",
+      "input": {
+        "type": "object",
+        "properties": {
+          "state": {
+            "type": "boolean",
+            "description": "Power state (true=on, false=off)"
+          }
+        },
+        "required": ["state"]
+      }
+    },
+    "setEffect": {
+      "title": "Set Effect",
+      "description": "Set the LED light effect mode",
+      "input": {
+        "type": "object",
+        "properties": {
+          "effect": {
+            "type": "integer",
+            "minimum": 128,
+            "maximum": 156,
+            "description": "Effect mode number"
+          }
+        },
+        "required": ["effect"]
+      }
+    },
+    "setBrightness": {
+      "title": "Set Brightness", 
+      "description": "Set the overall brightness level",
+      "input": {
+        "type": "object",
+        "properties": {
+          "brightness": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100,
+            "description": "Brightness percentage"
+          }
+        },
+        "required": ["brightness"]
+      }
+    }
+  },
+  "events": {
+    "colorChanged": {
+      "title": "Color Changed",
+      "description": "Emitted when the RGB color changes",
+      "data": {
+        "type": "object",
+        "properties": {
+          "R": { "type": "integer" },
+          "G": { "type": "integer" },
+          "B": { "type": "integer" },
+          "timestamp": { "type": "string" }
+        }
+      }
+    },
+    "powerChanged": {
+      "title": "Power Changed",
+      "description": "Emitted when power state changes",
+      "data": {
+        "type": "object",
+        "properties": {
+          "power": { "type": "boolean" },
+          "timestamp": { "type": "string" }
+        }
+      }
+    },
+    "effectChanged": {
+      "title": "Effect Changed",
+      "description": "Emitted when effect mode changes",
+      "data": {
+        "type": "object",
+        "properties": {
+          "effect": { "type": "integer" },
+          "timestamp": { "type": "string" }
+        }
+      }
+    }
+  }
+}

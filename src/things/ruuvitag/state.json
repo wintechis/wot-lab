@@ -1,0 +1,17 @@
+{
+  "temperature": 20.5,
+  "humidity": 45.0,
+  "pressure": 101325,
+  "acceleration": {
+    "x": 0,
+    "y": 0,
+    "z": 1000
+  },
+  "batteryInfo": {
+    "powerInfo": 3600,
+    "txPower": 4
+  },
+  "movementCounter": 0,
+  "sequenceNumber": 1,
+  "lastUpdated": "2025-08-05T00:00:00.000Z"
+}

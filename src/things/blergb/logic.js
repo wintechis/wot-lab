@@ -1,0 +1,430 @@
+const { debug } = createLoggers("simulation", "blergb");
+
+// Property read handlers
+thing.setPropertyReadHandler("currentColor", async () => state.currentColor);
+thing.setPropertyReadHandler("power", async () => state.power);
+thing.setPropertyReadHandler("currentEffect", async () => state.currentEffect);
+thing.setPropertyReadHandler("brightness", async () => state.brightness);
+thing.setPropertyReadHandler("lastUpdated", async () => state.lastUpdated);
+
+// Get Thing ID for endpoint registration
+const thingId = thing.getThingDescription().id?.replace('urn:wot:', '') || 'blergb';
+
+// Helper function to validate RGB values
+function validateRGB(r, g, b) {
+  const isValid = (val) => Number.isInteger(val) && val >= 0 && val <= 255;
+  return isValid(r) && isValid(g) && isValid(b);
+}
+
+// Helper function to validate effect value
+function validateEffect(effect) {
+  return Number.isInteger(effect) && effect >= 128 && effect <= 156;
+}
+
+// Helper function to validate brightness
+function validateBrightness(brightness) {
+  return Number.isInteger(brightness) && brightness >= 0 && brightness <= 100;
+}
+
+// Helper function to apply brightness to RGB values
+function applyBrightness(r, g, b, brightness) {
+  const factor = brightness / 100;
+  return {
+    R: Math.round(r * factor),
+    G: Math.round(g * factor),
+    B: Math.round(b * factor)
+  };
+}
+
+// Helper function to generate BLE command bytes (simulated)
+function generateColorCommand(r, g, b) {
+  return [126, 7, 5, 3, r, g, b, 0, 239]; // Command structure from TD
+}
+
+function generatePowerCommand(isOn) {
+  return [126, 4, 4, isOn ? 1 : 0, 0, 0, 0, 0, 239];
+}
+
+function generateEffectCommand(effect) {
+  return [126, 3, 3, effect, 3, 0, 0, 0, 239];
+}
+
+// Action handlers
+thing.setActionHandler("setColor", async (input) => {
+  const { R, G, B } = input;
+  
+  if (!validateRGB(R, G, B)) {
+    throw new Error(`Invalid RGB values: R=${R}, G=${G}, B=${B}. Values must be integers 0-255.`);
+  }
+  
+  const timestamp = new Date().toISOString();
+  const oldColor = { ...state.currentColor };
+  
+  // Update state
+  state.currentColor = { R, G, B };
+  state.lastUpdated = timestamp;
+  
+  // Generate BLE command (simulated)
+  const command = generateColorCommand(R, G, B);
+  debug(`🎨 RGB Command sent: [${command.join(', ')}]`);
+  
+  // Emit property changes and event
+  thing.emitPropertyChange("currentColor");
+  thing.emitPropertyChange("lastUpdated");
+  thing.emitEvent("colorChanged", {
+    R, G, B,
+    timestamp
+  });
+  
+  debug(`🌈 Color changed: RGB(${oldColor.R},${oldColor.G},${oldColor.B}) → RGB(${R},${G},${B})`);
+  
+  return {
+    success: true,
+    message: "Color updated",
+    color: { R, G, B },
+    command: command,
+    timestamp
+  };
+});
+
+thing.setActionHandler("setPower", async (input) => {
+  const { state: powerState } = input;
+  
+  if (typeof powerState !== 'boolean') {
+    throw new Error(`Invalid power state: ${powerState}. Must be boolean.`);
+  }
+  
+  const timestamp = new Date().toISOString();
+  const oldPower = state.power;
+  
+  // Update state
+  state.power = powerState;
+  state.lastUpdated = timestamp;
+  
+  // Generate BLE command (simulated)
+  const command = generatePowerCommand(powerState);
+  debug(`🔌 Power Command sent: [${command.join(', ')}]`);
+  
+  // Emit property changes and event
+  thing.emitPropertyChange("power");
+  thing.emitPropertyChange("lastUpdated");
+  thing.emitEvent("powerChanged", {
+    power: powerState,
+    timestamp
+  });
+  
+  debug(`⚡ Power ${oldPower ? 'ON' : 'OFF'} → ${powerState ? 'ON' : 'OFF'}`);
+  
+  return {
+    success: true,
+    message: `Power ${powerState ? 'enabled' : 'disabled'}`,
+    power: powerState,
+    command: command,
+    timestamp
+  };
+});
+
+thing.setActionHandler("setEffect", async (input) => {
+  const { effect } = input;
+  
+  if (!validateEffect(effect)) {
+    throw new Error(`Invalid effect: ${effect}. Must be integer 128-156.`);
+  }
+  
+  const timestamp = new Date().toISOString();
+  const oldEffect = state.currentEffect;
+  
+  // Update state
+  state.currentEffect = effect;
+  state.lastUpdated = timestamp;
+  
+  // Generate BLE command (simulated)
+  const command = generateEffectCommand(effect);
+  debug(`✨ Effect Command sent: [${command.join(', ')}]`);
+  
+  // Emit property changes and event
+  thing.emitPropertyChange("currentEffect");
+  thing.emitPropertyChange("lastUpdated");
+  thing.emitEvent("effectChanged", {
+    effect,
+    timestamp
+  });
+  
+  debug(`✨ Effect changed: ${oldEffect} → ${effect}`);
+  
+  return {
+    success: true,
+    message: "Effect updated",
+    effect: effect,
+    command: command,
+    timestamp
+  };
+});
+
+thing.setActionHandler("setBrightness", async (input) => {
+  const { brightness } = input;
+  
+  if (!validateBrightness(brightness)) {
+    throw new Error(`Invalid brightness: ${brightness}. Must be integer 0-100.`);
+  }
+  
+  const timestamp = new Date().toISOString();
+  const oldBrightness = state.brightness;
+  
+  // Update state
+  state.brightness = brightness;
+  state.lastUpdated = timestamp;
+  
+  // Apply brightness to current color and send command
+  const adjustedColor = applyBrightness(
+    state.currentColor.R,
+    state.currentColor.G, 
+    state.currentColor.B,
+    brightness
+  );
+  
+  const command = generateColorCommand(adjustedColor.R, adjustedColor.G, adjustedColor.B);
+  debug(`💡 Brightness Command sent: [${command.join(', ')}]`);
+  
+  // Emit property changes
+  thing.emitPropertyChange("brightness");
+  thing.emitPropertyChange("lastUpdated");
+  
+  debug(`💡 Brightness changed: ${oldBrightness}% → ${brightness}%`);
+  
+  return {
+    success: true,
+    message: "Brightness updated",
+    brightness: brightness,
+    adjustedColor: adjustedColor,
+    command: command,
+    timestamp
+  };
+});
+
+// Register HTTP endpoints for simulation
+registerThingEndpoint(thingId, 'GET', '/status', (req, res) => {
+  res.json({
+    success: true,
+    data: {
+      currentColor: state.currentColor,
+      power: state.power,
+      currentEffect: state.currentEffect,
+      brightness: state.brightness,
+      lastUpdated: state.lastUpdated
+    }
+  });
+});
+
+registerThingEndpoint(thingId, 'POST', '/color', (req, res) => {
+  try {
+    const { R, G, B } = req.body || {};
+    
+    if (!validateRGB(R, G, B)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid RGB values. R, G, B must be integers 0-255.'
+      });
+    }
+    
+    const timestamp = new Date().toISOString();
+    state.currentColor = { R, G, B };
+    state.lastUpdated = timestamp;
+    
+    const command = generateColorCommand(R, G, B);
+    
+    // Emit changes
+    thing.emitPropertyChange("currentColor");
+    thing.emitPropertyChange("lastUpdated");
+    thing.emitEvent("colorChanged", { R, G, B, timestamp });
+    
+    debug(`🌈 HTTP Color set: RGB(${R},${G},${B})`);
+    
+    res.json({
+      success: true,
+      message: "Color updated",
+      color: { R, G, B },
+      command: command,
+      timestamp
+    });
+    
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+registerThingEndpoint(thingId, 'POST', '/power', (req, res) => {
+  try {
+    const { state: powerState } = req.body || {};
+    
+    if (typeof powerState !== 'boolean') {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid power state. Must be boolean.'
+      });
+    }
+    
+    const timestamp = new Date().toISOString();
+    state.power = powerState;
+    state.lastUpdated = timestamp;
+    
+    const command = generatePowerCommand(powerState);
+    
+    // Emit changes
+    thing.emitPropertyChange("power");
+    thing.emitPropertyChange("lastUpdated");
+    thing.emitEvent("powerChanged", { power: powerState, timestamp });
+    
+    debug(`⚡ HTTP Power ${powerState ? 'ON' : 'OFF'}`);
+    
+    res.json({
+      success: true,
+      message: `Power ${powerState ? 'enabled' : 'disabled'}`,
+      power: powerState,
+      command: command,
+      timestamp
+    });
+    
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+registerThingEndpoint(thingId, 'POST', '/effect', (req, res) => {
+  try {
+    const { effect } = req.body || {};
+    
+    if (!validateEffect(effect)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid effect. Must be integer 128-156.'
+      });
+    }
+    
+    const timestamp = new Date().toISOString();
+    state.currentEffect = effect;
+    state.lastUpdated = timestamp;
+    
+    const command = generateEffectCommand(effect);
+    
+    // Emit changes
+    thing.emitPropertyChange("currentEffect");
+    thing.emitPropertyChange("lastUpdated");
+    thing.emitEvent("effectChanged", { effect, timestamp });
+    
+    debug(`✨ HTTP Effect set: ${effect}`);
+    
+    res.json({
+      success: true,
+      message: "Effect updated",
+      effect: effect,
+      command: command,
+      timestamp
+    });
+    
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+registerThingEndpoint(thingId, 'POST', '/brightness', (req, res) => {
+  try {
+    const { brightness } = req.body || {};
+    
+    if (!validateBrightness(brightness)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid brightness. Must be integer 0-100.'
+      });
+    }
+    
+    const timestamp = new Date().toISOString();
+    state.brightness = brightness;
+    state.lastUpdated = timestamp;
+    
+    const adjustedColor = applyBrightness(
+      state.currentColor.R,
+      state.currentColor.G,
+      state.currentColor.B,
+      brightness
+    );
+    
+    const command = generateColorCommand(adjustedColor.R, adjustedColor.G, adjustedColor.B);
+    
+    // Emit changes
+    thing.emitPropertyChange("brightness");
+    thing.emitPropertyChange("lastUpdated");
+    
+    debug(`💡 HTTP Brightness set: ${brightness}%`);
+    
+    res.json({
+      success: true,
+      message: "Brightness updated",
+      brightness: brightness,
+      adjustedColor: adjustedColor,
+      command: command,
+      timestamp
+    });
+    
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Convenience endpoint for setting RGB via URL parameters
+registerThingEndpoint(thingId, 'GET', '/color/:r/:g/:b', (req, res) => {
+  try {
+    const R = parseInt(req.params.r);
+    const G = parseInt(req.params.g);
+    const B = parseInt(req.params.b);
+    
+    if (!validateRGB(R, G, B)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid RGB values in URL. Must be integers 0-255.'
+      });
+    }
+    
+    const timestamp = new Date().toISOString();
+    state.currentColor = { R, G, B };
+    state.lastUpdated = timestamp;
+    
+    const command = generateColorCommand(R, G, B);
+    
+    // Emit changes
+    thing.emitPropertyChange("currentColor");
+    thing.emitPropertyChange("lastUpdated");
+    thing.emitEvent("colorChanged", { R, G, B, timestamp });
+    
+    debug(`🌈 HTTP URL Color set: RGB(${R},${G},${B})`);
+    
+    res.json({
+      success: true,
+      message: "Color updated via URL",
+      color: { R, G, B },
+      command: command,
+      timestamp
+    });
+    
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+debug(`🎨 BLE RGB Controller endpoints registered for /${thingId}`);
+debug("🎨 BLE RGB Controller initialized with full color control!");

@@ -1,0 +1,68 @@
+{
+  "name": "wot-lab",
+  "version": "0.0.1",
+  "description": "A Web of Things (WoT) development framework for rapid IoT device prototyping and testing",
+  "main": "dist/main.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/main.js",
+    "dev": "nodemon --exec tsx src/main.ts",
+    "dev:debug": "DEBUG=wot-lab:* nodemon --exec tsx src/main.ts",
+    "dev:debug:core": "DEBUG=wot-lab:system:*,wot-lab:config:*,wot-lab:things:* nodemon --exec tsx src/main.ts",
+    "dev:debug:http": "DEBUG=wot-lab:http:* nodemon --exec tsx src/main.ts",
+    "dev:debug:simulation": "DEBUG=wot-lab:simulation:* nodemon --exec tsx src/main.ts",
+    "dev:config": "nodemon --exec tsx src/main.ts -- --config ./wot-config.json",
+    "dev:cli": "nodemon --exec tsx src/main.ts -- --things counter:2,lamp:1",
+    "api": "nodemon --exec tsx src/StateRestAPI.ts",
+    "lint": "eslint \"src/**/*.ts\"",
+    "lint:fix": "eslint \"src/**/*.ts\" --fix",
+    "security-audit": "npm audit",
+    "security-fix": "npm audit fix",
+    "counterclient": "tsx src/things/counter/exampleClient.ts",
+    "lampclient": "tsx src/things/lamp/exampleClient.ts",
+    "presenceclient": "tsx src/things/presence/exampleClient.ts",
+    "brightnessclient": "tsx src/things/brightness/exampleClient.ts",
+    "ruuviclient": "tsx src/things/ruuvitag/exampleClient.ts",
+    "blergbclient": "tsx src/things/blergb/exampleClient.ts"
+  },
+  "dependencies": {
+    "@node-wot/binding-http": "^0.9.1",
+    "@node-wot/core": "^0.9.1",
+    "debug": "^4.4.1",
+    "express": "^5.1.0",
+    "valtio": "^2.1.5",
+    "wot-typescript-definitions": "^0.8.0-SNAPSHOT.31"
+  },
+  "devDependencies": {
+    "@types/debug": "^4.1.12",
+    "@types/express": "^5.0.3",
+    "@types/node": "^24.0.14",
+    "@typescript-eslint/eslint-plugin": "^8.39.0",
+    "@typescript-eslint/parser": "^8.39.0",
+    "eslint": "^9.32.0",
+    "nodemon": "^3.1.10",
+    "tsx": "^4.20.3",
+    "typescript": "^5.8.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/wintechis/wot-lab.git"
+  },
+  "keywords": [
+    "web-of-things",
+    "wot",
+    "iot",
+    "w3c",
+    "framework",
+    "typescript",
+    "node",
+    "prototyping"
+  ],
+  "author": "Thomas Wehr",
+  "license": "AGPL-3.0",
+  "bugs": {
+    "url": "https://github.com/wintchies/wot-lab/issues"
+  },
+  "homepage": "https://github.com/wintechis/wot-lab#readme"
+}
