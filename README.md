@@ -5,10 +5,8 @@
 WoT Lab uses a **3-file convention** for creating new Things:
 
 - **Thing Description** (`.td.json`) - Defines capabilities in W3C WoT format
-- **State** (`state.json`) - Initial property values and device state  
+- **State** (`state.json`) - Initial property values / device state  
 - **Logic** (`logic.js`) - Behavior implementation and interaction handlers
-
-**Built-in Library Support**: Logic files have access to Node.js built-in modules like `http` and `URL` for creating custom endpoints.
 
 See [Creating Things](#creating-things) for detailed examples.
 
@@ -17,15 +15,15 @@ See [Creating Things](#creating-things) for detailed examples.
 - [Overview](#overview)
 - [Quick Start](#quick-start)
 - [Features](#features)
-- [Creating Things](#creating-things)
 - [Configuration](#configuration)
+- [Creating Things](#creating-things)
 - [API Reference](#api-reference)
 - [Examples](#examples)
 - [Debug Logging](#debug-logging)
 
 ## Overview
 
-WoT Lab provides a simplified development environment for creating **Web of Things** - IoT devices that follow W3C Web of Things standards. Build and test IoT applications using standard web protocols and APIs.
+WoT Lab provides a simplified development environment for creating virtual **Web of Things** - devices that follow W3C Web of Things standards.
 
 ## Quick Start
 
@@ -58,7 +56,7 @@ See [Creating Things](#creating-things) for detailed examples.
 
 WoT Lab provides multiple ways to interact with your IoT Things:
 
-1. **Global State Tracking**: All Thing states tracked in [`globalState`](./src/globalState.ts#L7) using [Valtio proxies](https://valtio.dev/docs/api/basic/proxy) for reactivity
+1. **Global State Tracking**: All Thing states tracked in [`globalState`](./src/globalState.ts#L10) using [Valtio proxies](https://valtio.dev/docs/api/basic/proxy) for reactivity
 
 2. **Simulation API**: Single HTTP endpoint at [`StateRestAPI`](./src/StateRestAPI.ts) for both monitoring and simulation:
    - **State monitoring**: `GET /api/v1/states` - View all current states
@@ -66,10 +64,6 @@ WoT Lab provides multiple ways to interact with your IoT Things:
    - **Environment simulation**: `PUT/POST /api/v1/things/:thingId/*` - Control device behavior
 
 3. **WoT Protocol**: Standard Web of Things interaction patterns via Thing Descriptions
-
-### 📦 Multiple Instance Support
-
-Create multiple instances of the same Thing type with unique IDs:
 
 ## Configuration
 
@@ -116,7 +110,7 @@ If no configuration is provided, WoT Lab automatically discovers and loads one i
 
 ### Overview
 
-Adding a new Thing requires only **3 files** in a dedicated folder:
+Adding a new Thing requires **3 files** in a dedicated folder:
 
 1. **Thing Description** (TD) - JSON file describing capabilities
 2. **State** - JSON object defining properties
@@ -342,7 +336,7 @@ WoT Lab comes with example Things:
 - **Events**: `colorChanged`, `powerChanged`, `effectChanged` (with timestamps and command data)
 - **Actions**: `setColor`, `setPower`, `setEffect`, `setBrightness` (full LED control)
 - **Simulation Endpoints**: GET `/status`, POST `/color`, POST `/power`, POST `/effect`, POST `/brightness`, GET `/color/:r/:g/:b`
-- **Features**: RGB LED control with BLE command simulation, effect modes (128-156), brightness adjustment, URL-based color setting
+- **Features**: RGB LED control with BLE command simulation, brightness adjustment, URL-based color setting
 
 ### Running Examples
 
