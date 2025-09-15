@@ -1,0 +1,122 @@
+{
+  "@context": "https://www.w3.org/2019/wot/td/v1",
+  "@type": "Thing",
+  "title": "Door Lock",
+  "description": "Smart door lock with security features",
+  "properties": {
+    "locked": {
+      "type": "boolean",
+      "description": "Whether the door is currently locked",
+      "observable": true,
+      "readOnly": true
+    },
+    "lockState": {
+      "type": "string",
+      "description": "Detailed state of the lock",
+      "enum": ["locked", "unlocked", "jammed", "locking", "unlocking"],
+      "observable": true,
+      "readOnly": true
+    },
+    "batteryLevel": {
+      "type": "integer",
+      "description": "Battery level percentage",
+      "minimum": 0,
+      "maximum": 100,
+      "unit": "percent",
+      "observable": true,
+      "readOnly": true
+    },
+    "lastAction": {
+      "type": "object",
+      "description": "Details of the last action performed",
+      "properties": {
+        "action": {
+          "type": "string",
+          "enum": ["lock", "unlock", "auto-lock"]
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "method": {
+          "type": "string",
+          "enum": ["app", "manual", "auto", "remote"]
+        }
+      },
+      "observable": true,
+      "readOnly": true
+    }
+  },
+  "actions": {
+    "lock": {
+      "description": "Lock the door",
+      "input": {
+        "type": "object",
+        "properties": {
+          "method": {
+            "type": "string",
+            "enum": ["app", "manual", "auto", "remote"],
+            "default": "app"
+          }
+        },
+        "required": []
+      }
+    },
+    "unlock": {
+      "description": "Unlock the door",
+      "input": {
+        "type": "object",
+        "properties": {
+          "method": {
+            "type": "string",
+            "enum": ["app", "manual", "auto", "remote"],
+            "default": "app"
+          },
+          "pin": {
+            "type": "string",
+            "description": "Security PIN for unlocking (if required)"
+          }
+        },
+        "required": []
+      }
+    }
+  },
+  "events": {
+    "lockStateChanged": {
+      "description": "Emitted when lock state changes",
+      "data": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "type": "string"
+          },
+          "to": {
+            "type": "string"
+          },
+          "method": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    },
+    "unauthorizedAccess": {
+      "description": "Emitted on unauthorized access attempt",
+      "data": {
+        "type": "object",
+        "properties": {
+          "method": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    }
+  }
+}

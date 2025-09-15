@@ -1,0 +1,10 @@
+{
+  "locked": true,
+  "lockState": "locked",
+  "batteryLevel": 85,
+  "lastAction": {
+    "action": "lock",
+    "timestamp": "2025-08-26T10:00:00.000Z",
+    "method": "app"
+  }
+}

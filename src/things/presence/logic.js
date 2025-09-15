@@ -100,4 +100,4 @@ registerThingEndpoint(thingId, 'GET', '/status', (req, res) => {
 });
 
 debug(`📡 Presence sensor endpoints registered for /${thingId}`);
-debug("📡 Presence sensor initialized with HTTP endpoints and WoT actions!");
+debug("📡 Presence sensor initialized.");

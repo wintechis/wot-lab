@@ -1,0 +1,63 @@
+{
+  "@context": "https://www.w3.org/2019/wot/td/v1",
+  "@type": "Thing",
+  "title": "Motion Sensor",
+  "description": "Motion detection sensor with activity triggers",
+  "properties": {
+    "motionDetected": {
+      "type": "boolean",
+      "description": "Current motion detection status",
+      "observable": true,
+      "readOnly": true
+    },
+    "lastMotion": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp of last detected motion",
+      "observable": true,
+      "readOnly": true
+    },
+    "activityLevel": {
+      "type": "number",
+      "description": "Level of activity detected (0-100)",
+      "minimum": 0,
+      "maximum": 100,
+      "unit": "percent",
+      "observable": true,
+      "readOnly": true
+    }
+  },
+  "events": {
+    "motion": {
+      "description": "Emitted when motion is detected",
+      "data": {
+        "type": "object",
+        "properties": {
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "activityLevel": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "noMotion": {
+      "description": "Emitted when motion stops",
+      "data": {
+        "type": "object",
+        "properties": {
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "durationMs": {
+            "type": "number",
+            "description": "Duration of the motion period in milliseconds"
+          }
+        }
+      }
+    }
+  }
+}

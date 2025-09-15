@@ -1,0 +1,24 @@
+{
+  "@context": "https://www.w3.org/2019/wot/td/v1",
+  "@type": "Thing",
+  "title": "Thermostat",
+  "description": "Smart thermostat with temperature control",
+  "properties": {
+    "temperature": {
+      "type": "number",
+      "description": "Current temperature",
+      "unit": "celsius",
+      "minimum": 0,
+      "maximum": 40,
+      "observable": true,
+      "readOnly": true
+    },
+    "lastUpdated": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp of last brightness update",
+      "observable": true,
+      "readOnly": true
+    }
+  }
+}

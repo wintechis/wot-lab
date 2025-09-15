@@ -117,4 +117,5 @@ registerThingEndpoint(thingId, 'GET', '/brightness/:value', (req, res) => {
   }
 });
 
-debug(`💡 Brightness sensor simulation endpoints registered for /api/v1/things/${thingId}`);
+debug(`💡 Brightness sensor simulation endpoints registered for ${thingId}`);
+debug("💡 Brightness sensor initialized.");
