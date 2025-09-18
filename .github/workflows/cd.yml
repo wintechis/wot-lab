@@ -48,6 +48,5 @@ jobs:
           username: ${{ secrets.SSH_USERNAME }}
           password: ${{ secrets.SSH_PASSWORD }}
           rm: true
-          strip_components: 4
           source: "./dist/"
           target: "./wot-lab/"
