@@ -50,4 +50,4 @@ jobs:
           rm: true
           strip_components: 4
           source: "./dist/"
-          target: "./public_html/testing/wot-lab/"
+          target: "./wot-lab/"
