@@ -48,5 +48,5 @@ jobs:
           username: ${{ secrets.SSH_USERNAME }}
           password: ${{ secrets.SSH_PASSWORD }}
           rm: true
-          source: "./dist/"
+          source: "."
           target: "./wot-lab/"
