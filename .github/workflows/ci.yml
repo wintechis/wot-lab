@@ -62,8 +62,8 @@ jobs:
       run: |
         echo "Testing server startup..."
         # Kill any existing processes on our ports
-        pkill -f ":3000" || true
-        pkill -f ":8081" || true
+        pkill -f ":3001" || true
+        pkill -f ":8043" || true
         sleep 2
         
         # Start the server in background
