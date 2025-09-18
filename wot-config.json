@@ -25,7 +25,7 @@
     }
   },
   "global": {
-    "apiPort": 3000,
-    "wotPort": 8081
+    "apiPort": 3001,
+    "wotPort": 8043
   }
 }
