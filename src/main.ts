@@ -4,6 +4,8 @@ import { ThingFactory, ThingCreationResult } from './things/ThingFactory.js';
 import { StateRestAPI, setGlobalStateRestAPI } from './StateRestAPI.js';
 import { ConfigLoader } from './config/ThingConfig.js';
 import { createLoggers } from './utils/debug.js';
+import { Simulation } from './simulation.js';
+import handlers, { time } from './simulations/daylight.js';
 
 const { debug } = createLoggers('system');
 
@@ -32,6 +34,8 @@ if (config) {
   results = await thingFactory.createAllThings();
 }
 
+console.log(results);
+
 await stateRestAPI.start();
 
 // Report results
@@ -53,6 +57,10 @@ if (results.length > 0) {
 debug('\n🌐 Available endpoints:');
 debug('- Simulation API: http://localhost:3000/api/v1/');
 debug('- WoT Thing Descriptions: http://localhost:8081/');
+
+
+const simulation = new Simulation(250, handlers, { time });
+simulation.start();
 
 // Graceful shutdown
 process.on('SIGINT', async () => {
