@@ -60,8 +60,8 @@ debug('- Simulation API: http://localhost:3000/api/v1/');
 debug('- WoT Thing Descriptions: http://localhost:8081/');
 
 
-const simulation = new Simulation(250, handlers, { time, startTime });
-simulation.start();
+// const simulation = new Simulation(250, handlers, { time, startTime });
+// simulation.start();
 
 // Graceful shutdown
 process.on('SIGINT', async () => {
