@@ -5,7 +5,8 @@ import { StateRestAPI, setGlobalStateRestAPI } from './StateRestAPI.js';
 import { ConfigLoader } from './config/ThingConfig.js';
 import { createLoggers } from './utils/debug.js';
 import { Simulation } from './simulation.js';
-import handlers, { time } from './simulations/daylight.js';
+import handlers, { time,startTime } from './simulations/daylight.js';
+import { startTime } from './simulations/daylight';
 
 const { debug } = createLoggers('system');
 
@@ -59,7 +60,7 @@ debug('- Simulation API: http://localhost:3000/api/v1/');
 debug('- WoT Thing Descriptions: http://localhost:8081/');
 
 
-const simulation = new Simulation(250, handlers, { time });
+const simulation = new Simulation(250, handlers, { time, startTime });
 simulation.start();
 
 // Graceful shutdown

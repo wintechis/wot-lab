@@ -3,10 +3,15 @@
     "description": "Lamp Thing",
     "@context": [
         "https://www.w3.org/2019/wot/td/v1",
-        "https://www.w3.org/2022/wot/td/v1.1"
+        "https://www.w3.org/2022/wot/td/v1.1",
+      {
+        "booleanEqual":"https://paul.ti.rw.fau.de/~jo00defe/voc/spa#booleanEqualParameter",
+        "precondition":"https://paul.ti.rw.fau.de/~jo00defe/voc/spa#hasPrecondition"
+      }
     ],
     "properties": {
         "on": {
+            "@id" : "on",
             "title": "On",
             "type": "boolean",
             "description": "Lamp is on or off",
@@ -38,6 +43,9 @@
                 "minimum": 0,
                 "maximum": 100,
                 "default": 100
+            },
+            "precondition": {
+                "boolean-equal": [{"@id": "on"}, true]
             }
         }
     }
