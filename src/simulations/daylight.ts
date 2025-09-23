@@ -1,28 +1,46 @@
 import { Simulation } from '../simulation.js';
 import { globalState } from '../globalState.js';
 
-let on = false;
 
-export const time = 5000;
+const maxLux = 2000
+
+
+let lux = 0;
+
+export const time = 250;
+export const startTime = 18 * 60 * 60 * 1000 - 5*1000 + (24 * 60 * 60 * 1000);
+
 
 function brightnessHandler(simulation: Simulation) {
-  if ((Object.keys(globalState.things).length === 0)) {
-    console.log('No global state');
-    return;
+  if((simulation.iteration * time % (24*60*60*1000) ) <= (6 * 60 * 60 * 1000)){
+    lux = 0
   }
-  console.log(JSON.stringify(globalState.things));
-  globalState.things['light-1'].on = !on;
-  on = !on;
-  console.log(`Brightness toggled to ${on}`);
+
+  
+  if(simulation.iteration * time % (24*60*60*1000) > (6 * 60 * 60 * 1000) && simulation.iteration * time % (24*60*60*1000)<= (10 * 60 * 60 * 1000)){
+    lux =  maxLux * ((simulation.iteration * time % (24*60*60*1000)- 6 * 60 * 60 * 1000)  / (4 * 60 * 60 * 1000 ))
+  }
+
+  if(simulation.iteration * time% (24*60*60*1000) > (10 * 60 * 60 * 1000) && simulation.iteration * time% (24*60*60*1000) <= (14 * 60 * 60 * 1000)){
+    lux = maxLux
+  }
+
+  if(simulation.iteration * time% (24*60*60*1000) > (14 * 60 * 60 * 1000) && simulation.iteration * time % (24*60*60*1000)<= (18 * 60 * 60 * 1000)){
+    lux = maxLux * (1 - ((simulation.iteration * time % (24*60*60*1000)- 14 * 60 * 60 * 1000)  / (4 * 60 * 60 * 1000 )))
+  }
+
+  if((simulation.iteration * time% (24*60*60*1000) ) > (18 * 60 * 60 * 1000)){
+    lux = 0
+  }
+
+
+  console.log(`${simulation.iteration}: Daylight brightness set to ${lux} lux`);
+
+  globalState.things['brightnesssensor'].brightness = lux;
 }
 
-function periodicDemo(simulation: Simulation) {
-  if (simulation.iteration % 10 === 0) {
-    console.log(`Iteration ${simulation.iteration}: Performing periodic demo action.`);
-  }
-}
 
 export default [
   brightnessHandler,
-  periodicDemo
+  //periodicDemo
 ];

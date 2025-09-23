@@ -3,14 +3,16 @@ import { clearInterval, setInterval } from 'node:timers';
 export interface SimulationOptions {
   time?: number; // Interval time in milliseconds
   maxIterations?: number; // Maximum number of iterations before stopping the simulation
+  startTime?: number; // Starting iteration count
 }
 
 export class Simulation {
   time: number = 250;
   iteration: number = 0;
   handlers: Function[] = [];
-  maxIterations: number = 1000;
+  maxIterations: number = 1000000;
   interval: NodeJS.Timeout | undefined = undefined;
+  
 
   constructor(time = 250, handlers?: Function[], options?: SimulationOptions) {
     this.time = time;
@@ -18,8 +20,11 @@ export class Simulation {
     if (options) {
       if (options.time) { this.time = options.time; }
       if (options.maxIterations) { this.maxIterations = options.maxIterations; }
+      if (options.startTime){this.iteration = (options.startTime|| 0) /this.time }
     }
     console.log(`Simulation created with interval ${this.time} ms`);
+
+    console.log(`Starting iteration at ${this.iteration}`);
   }
 
   simulationLoop() {
