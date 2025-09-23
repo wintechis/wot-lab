@@ -6,7 +6,10 @@
         "https://www.w3.org/2022/wot/td/v1.1",
       {
         "boolean-equal":"https://paul.ti.rw.fau.de/~jo00defe/voc/spa#booleanEqualParameter",
-        "precondition":"https://paul.ti.rw.fau.de/~jo00defe/voc/spa#hasPrecondition"
+        "precondition":"https://paul.ti.rw.fau.de/~jo00defe/voc/spa#hasPrecondition",
+        "to": "https://paul.ti.rw.fau.de/~jo00defe/voc/spa#hasTarget",
+        "assign": "https://paul.ti.rw.fau.de/~jo00defe/voc/spa#hasAssignment",
+        "effect": "https://paul.ti.rw.fau.de/~jo00defe/voc/spa#hasEffect"
       }
     ],
     "properties": {
@@ -19,6 +22,7 @@
             "readOnly": true
         },
         "brightness": {
+            "@id" : "_:brightness",
             "title": "Brightness",
             "type": "number",
             "description": "Brightness level of the lamp",
@@ -27,7 +31,7 @@
             "unit": "percent",
             "observable": true,
             "readOnly": true
-        }
+        }            
     },
     "actions": {
         "toggle": {
@@ -46,7 +50,11 @@
             },
             "precondition": {
                 "boolean-equal": [{"@id": "_:on"}, true]
-            }
+            },
+            "effect": [{
+                "assign": 10,
+                "to": { "@id": "_:brightness" }
+            }]
         }
     }
 }
