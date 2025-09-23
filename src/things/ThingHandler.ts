@@ -5,11 +5,20 @@ import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { readdir, readFile } from 'fs/promises';
 import { createLoggers } from '../utils/debug.js';
+import {  Parser, Store, DataFactory, Writer } from 'n3';
+import { log } from 'console';
+
+import { promisifyEventEmitter } from 'event-emitter-promisify';
+
+import {JsonLdParser} from "jsonld-streaming-parser";
 
 const { debug, warn, error } = createLoggers('things');
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+
+const parser = new Parser();
+const { namedNode } = DataFactory
 
 export abstract class ThingHandler {
   private td: WoT.ThingDescription;
@@ -60,8 +69,55 @@ async function loadStateFile(filePath: string): Promise<Record<string, unknown>>
 }
 
 // Helper function to evaluate a logic file (function body)
-async function evaluateLogicFile(filePath: string): Promise<(_thing: WoT.ExposedThing, _state: Record<string, unknown>) => Promise<void>> {
-  const content = await readFile(filePath, 'utf-8');
+async function evaluateLogicFile(tdModule : any, filePath: string): Promise<(_thing: WoT.ExposedThing, _state: Record<string, unknown>) => Promise<void>> {
+  let content = await readFile(filePath, 'utf-8');
+
+  const store = new Store();
+  const parser = new JsonLdParser();
+  parser.write(JSON.stringify(tdModule.default));
+  parser.end();
+  await promisifyEventEmitter(store.import(parser));
+
+
+  const q = store.getQuads(null, namedNode("https://paul.ti.rw.fau.de/~jo00defe/voc/spa#hasPrecondition"), null, null)
+
+  if(q.length > 0){
+    // if yes generate logic from spa
+    for(const e of q){
+      const affordance = e.subject;
+
+      const condition = store.getQuads(e.object, null, null, null)
+
+      if(condition[0].predicate.value == "https://paul.ti.rw.fau.de/~jo00defe/voc/spa#booleanEqualParameter") {
+        const left = condition[0].object;
+        const right = condition[1].object;
+
+
+        const name = store.getObjects(affordance, namedNode("https://www.w3.org/2019/wot/td#name"), null)[0].value
+
+        content += `
+          thing.setActionHandler("${name}", async (inputData) => {
+            
+          if(state.${left.value} != ${right.value}) {
+              throw new Error('Precondition failed:' + '${left.value} != ${right.value} ' + state.${left.value} + ' != ' + ${right.value} );
+            }
+           });
+        `
+        try {
+          const wrappedContent = `(async function(thing, state) { ${content} })`;
+          const logicFunction = eval(wrappedContent) as Function;
+    
+          return (thing: WoT.ExposedThing, state: Record<string, unknown>) => logicFunction(thing, state);
+          
+        } catch (error) {
+          console.error('Error evaluating SPA logic:', error);  
+        }
+        
+      }
+
+    }
+
+  }
   
   // Import Node.js built-in modules that Things might need
   const http = await import('http');
@@ -81,12 +137,14 @@ async function evaluateLogicFile(filePath: string): Promise<(_thing: WoT.Exposed
 // Auto-loader for convention-based Things
 export async function loadThing(thingName: string, instanceId?: string): Promise<ThingHandler> {
   const basePath = join(__dirname, thingName);
+
+  const tdModule = await import(`${basePath}/${thingName}.td.json`, { with: { type: 'json' } });
   
   // Load TD, state, and logic files
-  const [tdModule, stateObject, logicFunction] = await Promise.all([
-    import(`${basePath}/${thingName}.td.json`, { with: { type: 'json' } }),
+  const [stateObject, logicFunction] = await Promise.all([
     loadStateFile(join(basePath, 'state.json')),
-    evaluateLogicFile(join(basePath, 'logic.js'))
+    //generateLogic(basePath, tdModule)
+    evaluateLogicFile(tdModule, join(basePath, 'logic.js'))
   ]);
 
   return new (class extends ThingHandler {

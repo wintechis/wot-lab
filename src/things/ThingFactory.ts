@@ -22,6 +22,7 @@ export class ThingFactory {
       const exposedThing = await this.wot.produce(handler.thingDescription);
       await handler.setup(exposedThing);
       await exposedThing.expose();
+      console.log(exposedThing);
       
       const thingId = handler.thingDescription.id ? 
         handler.thingDescription.id.replace('urn:wot:', '') : 

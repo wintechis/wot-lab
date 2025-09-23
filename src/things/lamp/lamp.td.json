@@ -5,13 +5,13 @@
         "https://www.w3.org/2019/wot/td/v1",
         "https://www.w3.org/2022/wot/td/v1.1",
       {
-        "booleanEqual":"https://paul.ti.rw.fau.de/~jo00defe/voc/spa#booleanEqualParameter",
+        "boolean-equal":"https://paul.ti.rw.fau.de/~jo00defe/voc/spa#booleanEqualParameter",
         "precondition":"https://paul.ti.rw.fau.de/~jo00defe/voc/spa#hasPrecondition"
       }
     ],
     "properties": {
         "on": {
-            "@id" : "on",
+            "@id" : "_:on",
             "title": "On",
             "type": "boolean",
             "description": "Lamp is on or off",
@@ -45,7 +45,7 @@
                 "default": 100
             },
             "precondition": {
-                "boolean-equal": [{"@id": "on"}, true]
+                "boolean-equal": [{"@id": "_:on"}, true]
             }
         }
     }

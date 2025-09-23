@@ -36,6 +36,8 @@ function brightnessHandler(simulation: Simulation) {
 
   console.log(`${simulation.iteration}: Daylight brightness set to ${lux} lux`);
 
+  console.log(globalState.things);
+
   globalState.things['brightnesssensor'].brightness = lux;
 }
 

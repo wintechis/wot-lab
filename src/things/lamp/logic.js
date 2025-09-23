@@ -7,24 +7,24 @@ thing.setActionHandler("toggle", async () => {
   return undefined;
 });
 
-thing.setActionHandler("setBrightness", async (params) => {
-  if (state.on === false) {
-    throw new Error("Cannot set brightness when the lamp is off");
-  }
+// thing.setActionHandler("setBrightness", async (params) => {
+//   if (state.on === false) {
+//     throw new Error("Cannot set brightness when the lamp is off");
+//   }
 
-  try {
-    const newBrightness = await params.value();
+//   try {
+//     const newBrightness = await params.value();
     
-    if (newBrightness < 0 || newBrightness > 100) {
-      throw new Error(`Brightness must be between 0 and 100, got: ${newBrightness}`);
-    }
+//     if (newBrightness < 0 || newBrightness > 100) {
+//       throw new Error(`Brightness must be between 0 and 100, got: ${newBrightness}`);
+//     }
     
-    state.brightness = newBrightness;
-    thing.emitPropertyChange("brightness");
+//     state.brightness = newBrightness;
+//     thing.emitPropertyChange("brightness");
     
-    return undefined;
-  } catch (error) {
-    console.error("Error in setBrightness action:", error);
-    throw error;
-  }
-});
+//     return undefined;
+//   } catch (error) {
+//     console.error("Error in setBrightness action:", error);
+//     throw error;
+//   }
+// });
