@@ -1,8 +1,27 @@
 {
   "things": {
-        "lamp": {
+    "counter": {
+      "instances": 3
+    },
+    "lamp": {
       "instances": 2,
       "idPrefix": "light"
+    },
+    "presence": {
+      "instances": 1,
+      "idPrefix": "presenceSensor"
+    },
+    "brightness": {
+      "instances": 1,
+      "idPrefix": "brightnessSensor"
+    },
+    "ruuvitag": {
+      "instances": 1,
+      "idPrefix": "ruuviTag"
+    },
+    "blergb": {
+      "instances": 1,
+      "idPrefix": "rgbController"
     }
   },
   "global": {

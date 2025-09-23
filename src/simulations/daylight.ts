@@ -7,8 +7,9 @@ const maxLux = 2000
 
 let lux = 0;
 
-export const time = 250;
-export const startTime = 18 * 60 * 60 * 1000 - 5*1000 + (24 * 60 * 60 * 1000);
+export const time = 2000;
+export const startTime = 5 * 60 * 60 * 1000 - 5*1000 + (24 * 60 * 60 * 1000);
+export const speedup = 10000;
 
 
 function brightnessHandler(simulation: Simulation) {
@@ -36,7 +37,7 @@ function brightnessHandler(simulation: Simulation) {
 
   console.log(`${simulation.iteration}: Daylight brightness set to ${lux} lux`);
 
-  console.log(globalState.things);
+  //console.log(globalState.things);
 
   globalState.things['brightnesssensor'].brightness = lux;
 }

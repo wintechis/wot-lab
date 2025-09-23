@@ -6,7 +6,6 @@ import { dirname, join } from "path";
 import { readdir, readFile } from "fs/promises";
 import { createLoggers } from "../utils/debug.js";
 import { Parser, Store, DataFactory, Writer } from "n3";
-import { log } from "console";
 
 import { promisifyEventEmitter } from "event-emitter-promisify";
 
@@ -128,8 +127,6 @@ async function evaluateLogicFile(
     }
   }
 
-  console.log("EFFECTS");
-
   const effects = store.getQuads(
     null,
     namedNode("https://paul.ti.rw.fau.de/~jo00defe/voc/spa#hasEffect"),
@@ -156,22 +153,16 @@ async function evaluateLogicFile(
         null
       )[0];
 
-      console.log(assign.value);
-      console.log(to);
-
       const toName = store.getObjects(
           to,
           namedNode("https://www.w3.org/2019/wot/td#name"),
           null
         )[0].value;
-      
-        console.log(toName);
 
       if (assign.value === "https://paul.ti.rw.fau.de/~jo00defe/voc/spa#inputValue") {
         // set "to" to body of request
         const actionEffect = `
           state.${toName} = await inputData.value();
-          console.log(state.${toName})
         `;
         if (actions.has(name)) {
           actions.set(name, actions.get(name) + actionEffect);
@@ -183,7 +174,6 @@ async function evaluateLogicFile(
         // set "to" to value of assign
         const actionEffect = `
           state.${toName} = ${assign.value};
-          console.log(state.${toName})
         `;
         if (actions.has(name)) {
           actions.set(name, actions.get(name) + actionEffect);
@@ -253,8 +243,6 @@ export async function loadThing(
   thingName: string,
   instanceId?: string
 ): Promise<ThingHandler> {
-  console.log("AAAAAAAAAAAAAAAA" + thingName);
-
   try {
     const basePath = join(__dirname, thingName);
 
@@ -290,6 +278,7 @@ export async function loadThing(
     })();
   } catch (error) {
     console.error(`❌ Error loading thing '${thingName}':`, error);
+    throw error;
   }
 }
 
