@@ -1,22 +1,21 @@
-import * as WoT from "wot-typescript-definitions";
-import { addThingToGlobalState } from "../globalState.js";
-import { proxy } from "valtio/vanilla";
-import { fileURLToPath } from "url";
-import { dirname, join } from "path";
-import { readdir, readFile } from "fs/promises";
-import { createLoggers } from "../utils/debug.js";
-import { Parser, Store, DataFactory, Writer } from "n3";
+import * as WoT from 'wot-typescript-definitions';
+import { addThingToGlobalState } from '../globalState.js';
+import { proxy } from 'valtio/vanilla';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+import { readdir, readFile } from 'fs/promises';
+import { createLoggers } from '../utils/debug.js';
+import { Store, DataFactory } from 'n3';
 
-import { promisifyEventEmitter } from "event-emitter-promisify";
+import { promisifyEventEmitter } from 'event-emitter-promisify';
 
-import { JsonLdParser } from "jsonld-streaming-parser";
+import { JsonLdParser } from 'jsonld-streaming-parser';
 
-const { debug, warn, error } = createLoggers("things");
+const { debug, warn, error } = createLoggers('things');
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const parser = new Parser();
 const { namedNode } = DataFactory;
 
 export abstract class ThingHandler {
@@ -30,8 +29,8 @@ export abstract class ThingHandler {
   protected initializeGlobalState(): void {
     // Use the instance ID for global state, not the full URI
     const stateId = this.td.id
-      ? this.td.id.replace("urn:wot:", "")
-      : this.td.title || "";
+      ? this.td.id.replace('urn:wot:', '')
+      : this.td.title || '';
     addThingToGlobalState(stateId, this.state);
   }
 
@@ -51,16 +50,16 @@ export abstract class ThingHandler {
 async function loadStateFile(
   filePath: string
 ): Promise<Record<string, unknown>> {
-  const content = await readFile(filePath, "utf-8");
+  const content = await readFile(filePath, 'utf-8');
   const stateObject = JSON.parse(content);
 
   // Replace any timestamp placeholders with current time
   const currentTime = new Date().toISOString();
   const replaceTimestamps = (obj: unknown): unknown => {
-    if (typeof obj === "string" && obj.endsWith("T00:00:00.000Z")) {
+    if (typeof obj === 'string' && obj.endsWith('T00:00:00.000Z')) {
       return currentTime;
     }
-    if (typeof obj === "object" && obj !== null) {
+    if (typeof obj === 'object' && obj !== null) {
       for (const key in obj as Record<string, unknown>) {
         (obj as Record<string, unknown>)[key] = replaceTimestamps(
           (obj as Record<string, unknown>)[key]
@@ -80,7 +79,7 @@ async function evaluateLogicFile(
 ): Promise<
   (_thing: WoT.ExposedThing, _state: Record<string, unknown>) => Promise<void>
 > {
-  let content = await readFile(filePath, "utf-8");
+  let content = await readFile(filePath, 'utf-8');
   const store = new Store();
   const parser = new JsonLdParser();
   parser.write(JSON.stringify(tdModule.default));
@@ -89,7 +88,7 @@ async function evaluateLogicFile(
 
   const preconditions = store.getQuads(
     null,
-    namedNode("https://paul.ti.rw.fau.de/~jo00defe/voc/spa#hasPrecondition"),
+    namedNode('https://paul.ti.rw.fau.de/~jo00defe/voc/spa#hasPrecondition'),
     null,
     null
   );
@@ -104,15 +103,15 @@ async function evaluateLogicFile(
       const condition = store.getQuads(e.object, null, null, null);
 
       if (
-        condition[0].predicate.value ==
-        "https://paul.ti.rw.fau.de/~jo00defe/voc/spa#booleanEqualParameter"
+        condition[0].predicate.value ===
+        'https://paul.ti.rw.fau.de/~jo00defe/voc/spa#booleanEqualParameter'
       ) {
         const left = condition[0].object;
         const right = condition[1].object;
 
         const name = store.getObjects(
           affordance,
-          namedNode("https://www.w3.org/2019/wot/td#name"),
+          namedNode('https://www.w3.org/2019/wot/td#name'),
           null
         )[0].value;
 
@@ -129,7 +128,7 @@ async function evaluateLogicFile(
 
   const effects = store.getQuads(
     null,
-    namedNode("https://paul.ti.rw.fau.de/~jo00defe/voc/spa#hasEffect"),
+    namedNode('https://paul.ti.rw.fau.de/~jo00defe/voc/spa#hasEffect'),
     null,
     null
   );
@@ -139,27 +138,27 @@ async function evaluateLogicFile(
       const affordance = e.subject;
       const name = store.getObjects(
         affordance,
-        namedNode("https://www.w3.org/2019/wot/td#name"),
+        namedNode('https://www.w3.org/2019/wot/td#name'),
         null
       )[0].value;
       const assign = store.getObjects(
         e.object,
-        namedNode("https://paul.ti.rw.fau.de/~jo00defe/voc/spa#hasAssignment"),
+        namedNode('https://paul.ti.rw.fau.de/~jo00defe/voc/spa#hasAssignment'),
         null
       )[0];
       const to = store.getObjects(
         e.object,
-        namedNode("https://paul.ti.rw.fau.de/~jo00defe/voc/spa#hasTarget"),
+        namedNode('https://paul.ti.rw.fau.de/~jo00defe/voc/spa#hasTarget'),
         null
       )[0];
 
       const toName = store.getObjects(
-          to,
-          namedNode("https://www.w3.org/2019/wot/td#name"),
-          null
-        )[0].value;
+        to,
+        namedNode('https://www.w3.org/2019/wot/td#name'),
+        null
+      )[0].value;
 
-      if (assign.value === "https://paul.ti.rw.fau.de/~jo00defe/voc/spa#inputValue") {
+      if (assign.value === 'https://paul.ti.rw.fau.de/~jo00defe/voc/spa#inputValue') {
         // set "to" to body of request
         const actionEffect = `
           state.${toName} = await inputData.value();
@@ -216,12 +215,12 @@ async function evaluateLogicFile(
   }
 
   // Import Node.js built-in modules that Things might need
-  const http = await import("http");
-  const url = await import("url");
-  const { createLoggers } = await import("../utils/debug.js");
+  const http = await import('http');
+  const url = await import('url');
+  const { createLoggers } = await import('../utils/debug.js');
 
   // Import the Thing HTTP server registration function
-  const { registerThingEndpoint } = await import("../StateRestAPI.js");
+  const { registerThingEndpoint } = await import('../StateRestAPI.js');
 
   // Wrap the content in an async function with built-in modules available
   const wrappedContent = `(async function(thing, state, http, URL, registerThingEndpoint, createLoggers) { ${content} })`;
@@ -247,14 +246,14 @@ export async function loadThing(
     const basePath = join(__dirname, thingName);
 
     const tdModule = await import(`${basePath}/${thingName}.td.json`, {
-      with: { type: "json" },
+      with: { type: 'json' }
     });
 
     // Load TD, state, and logic files
     const [stateObject, logicFunction] = await Promise.all([
-      loadStateFile(join(basePath, "state.json")),
+      loadStateFile(join(basePath, 'state.json')),
       //generateLogic(basePath, tdModule)
-      evaluateLogicFile(tdModule, join(basePath, "logic.js")),
+      evaluateLogicFile(tdModule, join(basePath, 'logic.js'))
     ]);
 
     return new (class extends ThingHandler {
@@ -265,7 +264,7 @@ export async function loadThing(
         const td = { ...tdModule.default };
         if (instanceId) {
           td.id = `urn:wot:${instanceId}`; // Make it a proper URI
-          td.title = `${td.title} (${instanceId})`;
+          td.title = `${td.title} ${instanceId}`;
         }
 
         super(td);
@@ -356,7 +355,7 @@ export async function loadConfiguredThings(
 ): Promise<ThingHandler[]> {
   const handlers: ThingHandler[] = [];
 
-  debug("📦 Loading Things based on configuration...");
+  debug('📦 Loading Things based on configuration...');
 
   for (const [thingName, thingConfig] of Object.entries(config.things)) {
     const { instances, idPrefix } = thingConfig as {

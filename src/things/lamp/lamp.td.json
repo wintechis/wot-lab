@@ -52,7 +52,7 @@
                 "boolean-equal": [{"@id": "_:on"}, true]
             },
             "effect": [{
-                "assign": 10,
+                "assign": { "@id": "https://paul.ti.rw.fau.de/~jo00defe/voc/spa#inputValue"},
                 "to": { "@id": "_:brightness" }
             }]
         }
