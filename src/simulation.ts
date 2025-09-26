@@ -21,7 +21,7 @@ export class Simulation {
     if (options) {
       if (options.time) { this.time = options.time; }
       if (options.maxIterations) { this.maxIterations = options.maxIterations; }
-      if (options.startTime){this.iteration = Math.floor((options.startTime|| 0) / this.time) }
+      if (options.startTime){this.iteration = Math.floor((options.startTime|| 0) / this.time); }
       if (options.speedup) {this.speedup = (options.speedup || 1); }
     }
     console.log(`Simulation created with interval ${this.time} ms and speedup ${this.speedup} X`);

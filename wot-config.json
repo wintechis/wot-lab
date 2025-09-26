@@ -4,24 +4,20 @@
       "instances": 3
     },
     "lamp": {
-      "instances": 2,
-      "idPrefix": "light"
+      "instances": 2
     },
     "presence": {
-      "instances": 1,
-      "idPrefix": "presenceSensor"
+      "instances": 1
     },
     "brightness": {
       "instances": 1,
       "idPrefix": "brightnessSensor"
     },
     "ruuvitag": {
-      "instances": 1,
-      "idPrefix": "ruuviTag"
+      "instances": 1
     },
     "blergb": {
-      "instances": 1,
-      "idPrefix": "rgbController"
+      "instances": 1
     }
   },
   "global": {
