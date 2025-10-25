@@ -180,29 +180,6 @@ async function evaluateLogicFile(
           actions.set(name, actionEffect);
         }
       }
-
-      // const left = effect[0].object;
-      // const right = effect[1].object;
-
-      // const name = store.getObjects(affordance, namedNode("https://www.w3.org/2019/wot/td#name"), null)[0].value
-
-      // content += `
-      //   thing.setActionHandler("${name}", async (inputData) => {
-
-      //   if(state.${left.value} != ${right.value}) {
-      //       throw new Error('Precondition failed:' + '${left.value} != ${right.value} ' + state.${left.value} + ' != ' + ${right.value} );
-      //     }
-      //     });
-      // `
-      // try {
-      //   const wrappedContent = `(async function(thing, state) { ${content} })`;
-      //   const logicFunction = eval(wrappedContent) as Function;
-
-      //   return (thing: WoT.ExposedThing, state: Record<string, unknown>) => logicFunction(thing, state);
-
-      // } catch (error) {
-      //   console.error('Error evaluating SPA logic:', error);
-      // }
     }
   }
 
@@ -264,7 +241,7 @@ export async function loadThing(
         const td = { ...tdModule.default };
         if (instanceId) {
           td.id = `urn:wot:${instanceId}`; // Make it a proper URI
-          td.title = `${td.title} ${instanceId}`;
+          td.title = instanceId;
         }
 
         super(td);
