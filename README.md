@@ -2,13 +2,14 @@
 
 > A Web of Things (WoT) development framework for rapid IoT device prototyping and testing.
 
-WoT Lab uses a **3-file convention** for creating new Things:
+WoT Lab creates a new Thing from a folder of convention-named files:
 
-- **Thing Description** (`.td.json`) - Defines capabilities in W3C WoT format
-- **State** (`state.json`) - Initial property values / device state  
-- **Logic** (`logic.js`) - Behavior implementation and interaction handlers
+- **Thing Description** (`.td.json`) — capabilities in W3C WoT format. **Required.**
+- **State** (`state.json`) — initial property values / device state. **Required.**
+- **Logic** (`logic.js`) — imperative behavior and interaction handlers. **Optional.**
+- **Effects** (`<name>.vre`) — declarative action effects in the VRE language. **Optional.**
 
-See [Creating Things](#creating-things) for detailed examples.
+A Thing needs only its TD and state; behavior can come from `logic.js`, a `.vre` file, or both. With neither, default property read handlers are generated from the TD so the Thing is still observable. See [Creating Things](#creating-things) for detailed examples.
 
 ## Table of Contents
 
@@ -29,41 +30,26 @@ WoT Lab provides a simplified development environment for creating virtual **Web
 
 ```bash
 # Install dependencies
-npm install
+bun install
 
 # Run in auto-discovery mode (loads all Things)
-npm run dev
+bun run dev
 
 # Or specify which Things to run
-npm run dev -- --things counter:2,lamp:1
+bun run dev -- --things counter:2,lamp:1
 ```
 
-Visit `http://localhost:3000/api/v1/` to access the Simulation API.
+The WoT servient serves Thing Descriptions at `http://localhost:8081/`.
 
 ## Features
 
-### 🏗️ Quick Thing Creation
+### State Management
 
-WoT Lab uses a **3-file convention** for creating new Things:
+WoT Lab provides two ways to interact with your IoT Things:
 
-- **Thing Description** (`.td.json`) - Defines capabilities in Thing Description format
-- **State** (`state.js`) - Initial property values and device state  
-- **Logic** (`logic.js`) - Behavior implementation and interaction handlers
+1. **Global State Tracking**: All Thing states tracked in [`globalState`](./src/globalState.ts#L10) using [Valtio proxies](https://valtio.dev/docs/api/basic/proxy) for reactivity (in-process only)
 
-See [Creating Things](#creating-things) for detailed examples.
-
-### 📊 State Management & Simulation
-
-WoT Lab provides multiple ways to interact with your IoT Things:
-
-1. **Global State Tracking**: All Thing states tracked in [`globalState`](./src/globalState.ts#L10) using [Valtio proxies](https://valtio.dev/docs/api/basic/proxy) for reactivity
-
-2. **Simulation API**: Single HTTP endpoint at [`StateRestAPI`](./src/StateRestAPI.ts) for both monitoring and simulation:
-   - **State monitoring**: `GET /api/v1/states` - View all current states
-   - **Property validation**: `GET /api/v1/check/:thingId/:property/:value` - Test conditions  
-   - **Environment simulation**: `PUT/POST /api/v1/things/:thingId/*` - Control device behavior
-
-3. **WoT Protocol**: Standard Web of Things interaction patterns via Thing Descriptions
+2. **WoT Protocol**: Standard Web of Things interaction patterns via Thing Descriptions served by `@node-wot`
 
 ## Configuration
 
@@ -81,7 +67,6 @@ Configure which Things to run and how many instances to create:
     }
   },
   "global": {
-    "apiPort": 3000,
     "wotPort": 8081
   }
 }
@@ -94,7 +79,7 @@ Configure which Things to run and how many instances to create:
 ### 2. Command Line Arguments
 
 ```bash
-npm run dev -- --things counter:3,lamp:2
+bun run dev -- --things counter:3,lamp:2
 ```
 
 ### 3. Auto-Discovery (Default)
@@ -110,11 +95,14 @@ If no configuration is provided, WoT Lab automatically discovers and loads one i
 
 ### Overview
 
-Adding a new Thing requires **3 files** in a dedicated folder:
+A Thing is a dedicated folder containing:
 
-1. **Thing Description** (TD) - JSON file describing capabilities
-2. **State** - JSON object defining properties
-3. **Logic** - JavaScript code defining behavior
+1. **Thing Description** (TD) — JSON file describing capabilities. **Required.**
+2. **State** — JSON object defining initial properties. **Required.**
+3. **Logic** — JavaScript code defining behavior. **Optional.**
+4. **Effects** — a `.vre` file declaring action effects (see [VRE](#4-effects-mydevicevre-optional)). **Optional.**
+
+Provide behavior with `logic.js`, a `.vre` file, or both. With neither, WoT Lab generates default property read handlers from the TD so the Thing's state is still readable/observable.
 
 ### Folder Structure
 
@@ -122,9 +110,10 @@ To add a new Thing called `mydevice`:
 
 ```
 src/things/mydevice/
-├── mydevice.td.json    # Thing Description
-├── state.json          # Initial state object
-└── logic.js            # Behavior implementation
+├── mydevice.td.json    # Thing Description   (required)
+├── state.json          # Initial state       (required)
+├── logic.js            # Imperative behavior  (optional)
+└── mydevice.vre        # Declarative effects  (optional)
 ```
 
 ### File Templates
@@ -166,9 +155,9 @@ JSON object literal defining initial state:
 }
 ```
 
-#### 3. Logic (`logic.js`)
+#### 3. Logic (`logic.js`) — optional
 
-JavaScript code with handler functions and helpers. Built-in Node.js modules (`http`, `URL`) are available:
+JavaScript code with handler functions and helpers. It is read as text and evaluated in a sandbox where `thing`, `state`, `http`, `URL`, and `createLoggers` are available (no imports needed):
 
 ```javascript
 // Helper functions (if needed)
@@ -189,114 +178,29 @@ thing.setActionHandler("toggle", async () => {
   return undefined;
 });
 
-// Optional: Register simulation endpoints with the API
-const thingId = thing.getThingDescription().id?.replace('urn:wot:', '') || 'mydevice';
-
-registerThingEndpoint(thingId, 'GET', '/status', (req, res) => {
-  res.json({
-    success: true,
-    data: { status: state.status, lastUpdated: state.lastUpdated }
-  });
-});
-
-registerThingEndpoint(thingId, 'POST', '/toggle', (req, res) => {
-  state.status = !state.status;
-  state.lastUpdated = new Date().toISOString();
-  thing.emitPropertyChange("status");
-  thing.emitPropertyChange("lastUpdated");
-  
-  res.json({
-    success: true,
-    message: "Status toggled",
-    data: { status: state.status, lastUpdated: state.lastUpdated }
-  });
-});
-
-console.log(`📡 ${thingId} simulation endpoints registered`);
+console.log("mydevice logic initialized");
 ```
+
+#### 4. Effects (`mydevice.vre`) — optional
+
+Instead of (or alongside) hand-written action handlers, action behavior can be declared in a `.vre` file using **VRE**, a small effect language. Each rule binds to an action and sets property post-state (`property' = expr`), with optional `guard` preconditions:
+
+```
+// mydevice.vre
+on toggle() {
+  status' = !status;
+}
+```
+
+- **Effects** `property' = expr` compile to a state assignment plus a property-change notification (so the change is observable). The right-hand side supports arithmetic, boolean/comparison operators, and `[]`/`append`/`remove`.
+- **Guards** `guard <expr>;` reject the action (throw) when the expression is false — e.g. `guard status == true;`.
+- **References**: a bare identifier that names one of the action's input parameters resolves to that input value; otherwise it resolves to a Thing property. Effect targets (left of `'`) must be Thing properties.
+
+A Thing declared with only a TD, `state.json`, and a `.vre` file needs no `logic.js` at all — see [`src/things/vswitch/`](./src/things/vswitch/) for a complete example, and [`src/things/lamp/lamp.vre`](./src/things/lamp/lamp.vre) for a guard.
 
 ## API Reference
 
-### Simulation API
-
-Base URL: `http://localhost:3000/api/v1/`
-
-#### State Monitoring Endpoints
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/` | API documentation and info |
-| GET | `/tracked` | List of tracked Things |
-| GET | `/states` | All current states |
-| GET | `/states/:thingId` | Specific Thing state |
-| GET | `/check/:thingId/:property/:expectedValue` | Check property value |
-| POST | `/check/:thingId` | Batch check multiple properties |
-
-#### Thing Simulation Endpoints
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/things/:thingId/endpoints` | Get available simulation endpoints for a thing |
-| ALL | `/things/:thingId/*` | Thing-specific simulation endpoints |
-
-**Examples:**
-- `GET /things/brightness/brightness` - Read brightness sensor value
-- `PUT /things/brightness/brightness` - Set brightness sensor value
-- `GET /things/presence/presence` - Trigger presence detection
-- `GET /things/presence/status` - Get presence sensor status
-
-### Example API Usage
-
-#### State Monitoring
-```bash
-# Get all states
-curl http://localhost:3000/api/v1/states
-
-# Get specific Thing state
-curl http://localhost:3000/api/v1/states/counter-1
-
-# Check if counter value equals 5
-curl http://localhost:3000/api/v1/check/counter-1/count/5
-
-# Batch check multiple properties
-curl -X POST http://localhost:3000/api/v1/check/lamp-1 \
-  -H "Content-Type: application/json" \
-  -d '{"on": true, "brightness": 75}'
-```
-
-#### Environment Simulation
-```bash
-# Get available endpoints for a thing
-curl http://localhost:3000/api/v1/things/brightness/endpoints
-
-# Simulate brightness sensor readings
-curl http://localhost:3000/api/v1/things/brightness/brightness
-curl -X PUT http://localhost:3000/api/v1/things/brightness/brightness \
-  -H "Content-Type: application/json" \
-  -d '{"brightness": 1500}'
-
-# Simulate presence detection
-curl http://localhost:3000/api/v1/things/presence/presence
-curl http://localhost:3000/api/v1/things/presence/absence
-curl http://localhost:3000/api/v1/things/presence/status
-
-# Simulate RuuviTag sensor readings
-curl http://localhost:3000/api/v1/things/ruuvitag/data
-curl -X POST http://localhost:3000/api/v1/things/ruuvitag/simulate \
-  -H "Content-Type: application/json" \
-  -d '{"temperature": 22.5, "humidity": 65, "movement": false}'
-curl -X POST http://localhost:3000/api/v1/things/ruuvitag/movement
-
-# Control BLE RGB LED
-curl http://localhost:3000/api/v1/things/blergb/status
-curl -X POST http://localhost:3000/api/v1/things/blergb/color \
-  -H "Content-Type: application/json" \
-  -d '{"R": 255, "G": 128, "B": 0}'
-curl -X POST http://localhost:3000/api/v1/things/blergb/power \
-  -H "Content-Type: application/json" \
-  -d '{"state": true}'
-curl http://localhost:3000/api/v1/things/blergb/color/255/0/255
-```
+Things are consumed over the standard **W3C WoT HTTP protocol** served by `@node-wot` at `http://localhost:8081/`. Fetch a Thing Description (e.g. `http://localhost:8081/counter`) and interact with its properties, actions, and events using a WoT client — see the `exampleClient.ts` files under `src/things/<name>/` and the `*client` npm scripts.
 
 ## Examples
 
@@ -321,43 +225,40 @@ WoT Lab comes with example Things:
 #### Presence Sensor
 - **Properties**: `isPresent`, `lastDetection`, `detectionCount`
 - **Events**: `presence`, `absence` (with timestamps and metadata)
-- **Simulation Endpoints**: GET endpoints at `/presence`, `/absence`, `/status`
-- **Features**: Dual interface (WoT + HTTP), duration tracking, real-time events
+- **Features**: Duration tracking, real-time events
 
 #### RuuviTag Sensor
 - **Properties**: `temperature`, `humidity`, `pressure`, `acceleration`, `batteryInfo`, `movementCounter`, `sequenceNumber`
 - **Events**: `sensorData`, `movementDetected` (with comprehensive sensor data)
 - **Actions**: `simulateReading` (with optional parameters for temperature, humidity, movement)
-- **Simulation Endpoints**: GET `/data`, POST `/simulate`, POST `/movement`
 - **Features**: Multi-sensor environmental monitoring, movement detection, automatic data simulation every 10s
 
 #### BLE RGB Controller
 - **Properties**: `currentColor`, `power`, `currentEffect`, `brightness`, `lastUpdated`
 - **Events**: `colorChanged`, `powerChanged`, `effectChanged` (with timestamps and command data)
 - **Actions**: `setColor`, `setPower`, `setEffect`, `setBrightness` (full LED control)
-- **Simulation Endpoints**: GET `/status`, POST `/color`, POST `/power`, POST `/effect`, POST `/brightness`, GET `/color/:r/:g/:b`
-- **Features**: RGB LED control with BLE command simulation, brightness adjustment, URL-based color setting
+- **Features**: RGB LED control with BLE command simulation, brightness adjustment
 
 ### Running Examples
 
 ```bash
 # Run brightness sensor client
-npm run brightnessclient
+bun run brightnessclient
 
 # Run counter client
-npm run counterclient
+bun run counterclient
 
 # Run lamp client  
-npm run lampclient
+bun run lampclient
 
 # Run presence sensor client (tests both WoT and HTTP interfaces)
-npm run presenceclient
+bun run presenceclient
 
 # Run RuuviTag sensor client (comprehensive environmental sensor)
-npm run ruuviclient
+bun run ruuviclient
 
 # Run BLE RGB Controller client (LED color control)
-npm run blergbclient
+bun run blergbclient
 ```
 
 ## Debug Logging
@@ -371,35 +272,33 @@ WoT Lab uses the [`debug`](https://www.npmjs.com/package/debug) package for stru
 | `wot-lab:system:*` | Main application | Startup, shutdown, creation summaries |
 | `wot-lab:config:*` | Configuration | Config loading, CLI parsing, auto-discovery |
 | `wot-lab:things:*` | Thing management | Thing creation, instantiation, exposure |
-| `wot-lab:http:*` | HTTP operations | Server startup, endpoint registration |
 | `wot-lab:state:*` | State management | Global state changes, Thing state updates |
-| `wot-lab:simulation:*` | Device simulation | Device actions, sensor readings, endpoint activity |
+| `wot-lab:simulation:*` | Device simulation | Device actions, sensor readings |
 
 ### Using Debug Logging
 
 **Pre-configured scripts:**
 
 ```bash
-npm run dev:debug              # Enable all wot-lab debug logging
-npm run dev:debug:core         # System, config, and things only
-npm run dev:debug:http         # HTTP operations only  
-npm run dev:debug:simulation   # Device simulation only
+bun run dev:debug              # Enable all wot-lab debug logging
+bun run dev:debug:core         # System, config, and things only
+bun run dev:debug:simulation   # Device simulation only
 ```
 
 **Manual debug configuration:**
 
 ```bash
 # Enable all wot-lab logging
-DEBUG=wot-lab:* npm run dev
+DEBUG=wot-lab:* bun run dev
 
 # Enable specific namespaces and log levels
-DEBUG=wot-lab:system:debug,wot-lab:things:info npm run dev
+DEBUG=wot-lab:system:debug,wot-lab:things:info bun run dev
 
 # Enable all simulation logging for specific devices
-DEBUG=wot-lab:simulation:brightness:*,wot-lab:simulation:ruuvitag:* npm run dev
+DEBUG=wot-lab:simulation:brightness:*,wot-lab:simulation:ruuvitag:* bun run dev
 
 # Disable debug logging (default)
-npm run dev
+bun run dev
 ```
 
 ## Development Scripts
@@ -408,40 +307,34 @@ npm run dev
 
 ```bash
 # Development
-npm run dev              # Auto-discovery mode (loads all Things)
-npm run dev:debug        # Development with full debug logging enabled
-npm run dev:debug:core   # Development with core system debugging (system, config, things)
-npm run dev:debug:http   # Development with HTTP debugging only
-npm run dev:debug:simulation # Development with simulation debugging only
-npm run dev:config       # Using configuration file
-npm run dev:cli          # Using command line arguments
-npm run dev -- --things counter:2,lamp:1  # Manual CLI specification
+bun run dev              # Auto-discovery mode (loads all Things)
+bun run dev:debug        # Development with full debug logging enabled
+bun run dev:debug:core   # Development with core system debugging (system, config, things)
+bun run dev:debug:simulation # Development with simulation debugging only
+bun run dev:config       # Using configuration file
+bun run dev:cli          # Using command line arguments
+bun run dev -- --things counter:2,lamp:1  # Manual CLI specification
 
-# Production
-npm run build           # Build TypeScript
-npm start              # Run production build
+# Production / type-check
+bun run build           # Type-check (tsc --noEmit)
+bun start              # Run the app (bun src/main.ts)
 
 # Examples
-npm run brightnessclient # Run brightness sensor example client
-npm run counterclient   # Run counter example client
-npm run lampclient     # Run lamp example client
-npm run presenceclient # Run presence sensor example client
-npm run ruuviclient    # Run RuuviTag sensor example client
-npm run blergbclient   # Run BLE RGB Controller example client
-
-# API only
-npm run api            # Run only the REST API server
+bun run brightnessclient # Run brightness sensor example client
+bun run counterclient   # Run counter example client
+bun run lampclient     # Run lamp example client
+bun run presenceclient # Run presence sensor example client
+bun run ruuviclient    # Run RuuviTag sensor example client
+bun run blergbclient   # Run BLE RGB Controller example client
 ```
 
 ### Development Workflow
 
-1. **Create your Thing** following the 3-file convention
-2. **Test locally** with `npm run dev`
-3. **Monitor states** via simulation API at `http://localhost:3000/api/v1/states`
-4. **Simulate environment** via simulation API at `http://localhost:3000/api/v1/things/`
-5. **WoT protocol access** at `http://localhost:8081/`
-6. **Build and deploy** with `npm run build && npm start`
+1. **Create your Thing** (a TD + `state.json`, plus optional `logic.js` and/or a `.vre` effect file)
+2. **Test locally** with `bun run dev`
+3. **WoT protocol access** at `http://localhost:8081/` (fetch Thing Descriptions, interact via a WoT client)
+4. **Type-check and run** with `bun run build && bun start`
 
 ---
 
-**Need help?** Check the existing examples in `src/things/` or explore the simulation API at `http://localhost:3000/api/v1/` when running.
+**Need help?** Check the existing examples in `src/things/` or fetch a Thing Description from `http://localhost:8081/` when running.
