@@ -21,7 +21,8 @@ export default [
         __filename: 'readonly',
         global: 'readonly',
         NodeJS: 'readonly',
-        setTimeout: 'readonly'
+        setTimeout: 'readonly',
+        Bun: 'readonly'
       }
     },
     plugins: {

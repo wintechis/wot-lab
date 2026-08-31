@@ -61,19 +61,4 @@ function resetMotion() {
   };
 }
 
-// Get Thing ID for endpoint registration
-const thingId = thing.getThingDescription().id?.replace('urn:wot:', '') || 'motion';
-
-// Register HTTP endpoints with centralized server
-registerThingEndpoints(thingId, 'GET', '/motion', (req, res) => {
-  const result = triggerMotion();
-  res.json(result);
-});
-
-registerThingEndpoint(thingId, 'GET', '/reset', (req, res) => {
-  const result = resetMotion();
-  res.json(result);
-});
-
-debug(`🏃 Motion sensor endpoints registered for /${thingId}`);
 debug("🏃 Motion sensor initialized.");

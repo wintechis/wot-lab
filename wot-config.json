@@ -1,27 +1,13 @@
 {
   "things": {
     "counter": {
-      "instances": 3
+      "instances": 1
     },
     "lamp": {
-      "instances": 2
-    },
-    "presence": {
-      "instances": 1
-    },
-    "brightness": {
-      "instances": 1,
-      "idPrefix": "brightnessSensor"
-    },
-    "ruuvitag": {
-      "instances": 1
-    },
-    "blergb": {
       "instances": 1
     }
   },
   "global": {
-    "apiPort": 3001,
     "wotPort": 8043
   }
 }

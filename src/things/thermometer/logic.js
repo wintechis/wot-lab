@@ -45,37 +45,4 @@ function updateTemperature(newTemp, source = 'http') {
   };
 }
 
-// Get Thing ID for endpoint registration
-const thingId = thing.getThingDescription().id?.replace('urn:wot:', '') || 'thermometer';
-
-// Register HTTP endpoint with simulation API
-registerThingEndpoint(thingId, 'PUT', '/thermometer', (req, res) => {
-  try {
-    const newTemp = req.body.temperature;
-
-    if (newTemp === undefined) {
-      return res.status(400).json({
-        success: false,
-        message: "Missing 'temperature' in request body"
-      });
-    }
-
-    if (typeof newTemp !== 'number' || newTemp < 0 || newTemp > 40) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid temperature value. Must be a number between 0 and 40 °C"
-      });
-    }
-
-    const result = updateTemperature(newTemp, 'http');
-    res.json(result);
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: err.message
-    });
-  }
-});
-
-debug(`🌡️ Thermometer simulation endpoint registered for ${thingId}`);
 debug("🌡️ Thermometer simulation initialized.");
