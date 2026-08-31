@@ -9,119 +9,74 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [18.x, 20.x, 22.x]
-    
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
-    
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v4
+
+    - name: Setup Bun
+      uses: oven-sh/setup-bun@v2
       with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
-    
+        bun-version: latest
+
     - name: Install dependencies
-      run: npm ci
-    
+      run: bun install --frozen-lockfile
+
     - name: Run linting
-      run: npm run lint
-    
+      run: bun run lint
+
+    - name: Type-check
+      run: bun run build
+
     - name: Audit dependencies for security vulnerabilities
-      run: npm audit --audit-level moderate
-    
-    - name: Build TypeScript
-      run: npm run build
-    
-    - name: Validate Thing Descriptions
+      run: bun audit --audit-level=moderate
+
+    - name: Validate JSON files (Thing Descriptions, state, config)
       run: |
-        echo "Validating Thing Description JSON files..."
-        find src/things -name "*.td.json" -exec sh -c '
-          echo "Validating: $1"
-          node -e "try { JSON.parse(require(\"fs\").readFileSync(\"$1\", \"utf8\")); console.log(\"✓ Valid JSON\"); } catch(e) { console.error(\"✗ Invalid JSON:\", e.message); process.exit(1); }"
-        ' _ {} \;
-    
-    - name: Validate State Files
-      run: |
-        echo "Validating state JSON files..."
-        find src/things -name "state.json" -exec sh -c '
-          echo "Validating: $1"
-          node -e "try { JSON.parse(require(\"fs\").readFileSync(\"$1\", \"utf8\")); console.log(\"✓ Valid JSON\"); } catch(e) { console.error(\"✗ Invalid JSON:\", e.message); process.exit(1); }"
-        ' _ {} \;
-    
-    - name: Validate Configuration Files
-      run: |
-        echo "Validating configuration files..."
-        node -e "try { JSON.parse(require('fs').readFileSync('wot-config.json', 'utf8')); console.log('✓ wot-config.json is valid'); } catch(e) { console.error('✗ wot-config.json invalid:', e.message); process.exit(1); }"
-        node -e "try { JSON.parse(require('fs').readFileSync('tsconfig.json', 'utf8')); console.log('✓ tsconfig.json is valid'); } catch(e) { console.error('✗ tsconfig.json invalid:', e.message); process.exit(1); }"
-        node -e "try { JSON.parse(require('fs').readFileSync('package.json', 'utf8')); console.log('✓ package.json is valid'); } catch(e) { console.error('✗ package.json invalid:', e.message); process.exit(1); }"
-    
-    - name: Test server startup and API availability
+        echo "Validating JSON files..."
+        FILES="$(find src/things -name '*.td.json' -o -name 'state.json') wot-config.json tsconfig.json package.json"
+        for f in $FILES; do
+          FILE="$f" bun -e "await Bun.file(process.env.FILE).json(); console.log('✓ Valid JSON:', process.env.FILE)" || {
+            echo "✗ Invalid JSON: $f"; exit 1;
+          }
+        done
+
+    - name: Test server startup and WoT availability
       run: |
         echo "Testing server startup..."
-        # Kill any existing processes on our ports
-        pkill -f ":3001" || true
         pkill -f ":8043" || true
         sleep 2
-        
-        # Start the server in background
-        timeout 30s npm start &
+
+        # wot-config.json runs the WoT servient on port 8043
+        timeout 30s bun run start &
         SERVER_PID=$!
-        
-        # Wait for server to start
+
         echo "Waiting for server to start..."
-        sleep 12
-        
-        # Test API endpoint
-        echo "Testing API endpoint..."
-        if curl -f -s http://localhost:3001/api/v1/ > /dev/null; then
-          echo "✓ Server started successfully and API is responding"
+        sleep 10
+
+        echo "Testing WoT Thing Description endpoint..."
+        if curl -f -s http://localhost:8043/counter > /dev/null; then
+          echo "✓ Server started successfully and WoT TDs are being served"
         else
-          echo "✗ API test failed"
+          echo "✗ WoT server test failed"
           kill $SERVER_PID 2>/dev/null || true
           exit 1
         fi
-        
-        # Clean shutdown
+
         kill $SERVER_PID 2>/dev/null || true
         sleep 3
-    
-    - name: Test example clients compilation
-      run: |
-        echo "Testing example client compilation..."
-        # Test that example clients can be built without runtime errors
-        echo "Testing counter client..."
-        timeout 5s npm run counterclient &
-        COUNTER_PID=$!
-        sleep 2
-        kill $COUNTER_PID 2>/dev/null || true
-        
-        echo "Testing lamp client..."
-        timeout 5s npm run lampclient &
-        LAMP_PID=$!
-        sleep 2
-        kill $LAMP_PID 2>/dev/null || true
-        
-        echo "✓ Example clients can be executed"
 
-  lint:
-    runs-on: ubuntu-latest
-    if: false  # Disabled until linting is configured
-    
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-    
-    - name: Use Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20.x'
-        cache: 'npm'
-    
-    - name: Install dependencies
-      run: npm ci
-    
-    - name: Run linter
-      run: npm run lint
+    - name: Test example clients
+      run: |
+        echo "Testing example client execution..."
+        echo "Testing counter client..."
+        timeout 5s bun run counterclient &
+        sleep 2
+        kill %1 2>/dev/null || true
+
+        echo "Testing lamp client..."
+        timeout 5s bun run lampclient &
+        sleep 2
+        kill %1 2>/dev/null || true
+
+        echo "✓ Example clients can be executed"

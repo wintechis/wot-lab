@@ -3,20 +3,14 @@ import { addThingToGlobalState } from '../globalState.js';
 import { proxy } from 'valtio/vanilla';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
-import { readdir, readFile } from 'fs/promises';
+import { readdir } from 'fs/promises';
 import { createLoggers } from '../utils/debug.js';
-import { Store, DataFactory } from 'n3';
-
-import { promisifyEventEmitter } from 'event-emitter-promisify';
-
-import { JsonLdParser } from 'jsonld-streaming-parser';
+import { vreToHandlers } from './vre.js';
 
 const { debug, warn, error } = createLoggers('things');
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-
-const { namedNode } = DataFactory;
 
 export abstract class ThingHandler {
   private td: WoT.ThingDescription;
@@ -50,8 +44,8 @@ export abstract class ThingHandler {
 async function loadStateFile(
   filePath: string
 ): Promise<Record<string, unknown>> {
-  const content = await readFile(filePath, 'utf-8');
-  const stateObject = JSON.parse(content);
+  // Bun.file(...).json() reads and parses in one native call
+  const stateObject = await Bun.file(filePath).json();
 
   // Replace any timestamp placeholders with current time
   const currentTime = new Date().toISOString();
@@ -74,121 +68,40 @@ async function loadStateFile(
 
 // Helper function to evaluate a logic file (function body)
 async function evaluateLogicFile(
-  tdModule: any,
-  filePath: string
+  td: WoT.ThingDescription,
+  filePath: string,
+  vrePath: string
 ): Promise<
   (_thing: WoT.ExposedThing, _state: Record<string, unknown>) => Promise<void>
 > {
-  let content = await readFile(filePath, 'utf-8');
-  const store = new Store();
-  const parser = new JsonLdParser();
-  parser.write(JSON.stringify(tdModule.default));
-  parser.end();
-  await promisifyEventEmitter(store.import(parser));
+  // logic.js is optional. A Thing can be declared purely as TD + state.json
+  // (+ optional VRE effect annotations); when logic.js is absent we generate
+  // default property read handlers from the TD so the Thing's state is still
+  // observable over WoT. A present logic.js is used verbatim (it wires its own
+  // read handlers), preserving existing behavior.
+  const logicFile = Bun.file(filePath);
+  const hasLogic = await logicFile.exists();
+  let content = hasLogic ? await logicFile.text() : '';
 
-  const preconditions = store.getQuads(
-    null,
-    namedNode('https://paul.ti.rw.fau.de/~jo00defe/voc/spa#hasPrecondition'),
-    null,
-    null
-  );
-
-  const actions = new Map<string, string>();
-
-  if (preconditions.length > 0) {
-    // if yes generate logic from spa
-    for (const e of preconditions) {
-      const affordance = e.subject;
-
-      const condition = store.getQuads(e.object, null, null, null);
-
-      if (
-        condition[0].predicate.value ===
-        'https://paul.ti.rw.fau.de/~jo00defe/voc/spa#booleanEqualParameter'
-      ) {
-        const left = condition[0].object;
-        const right = condition[1].object;
-
-        const name = store.getObjects(
-          affordance,
-          namedNode('https://www.w3.org/2019/wot/td#name'),
-          null
-        )[0].value;
-
-        const actionPrecondition = `            
-          if(state.${left.value} != ${right.value}) {
-              throw new Error('Precondition failed:' + '${left.value} != ${right.value} ' + state.${left.value} + ' != ' + ${right.value} );
-          }
-        `;
-
-        actions.set(name, actionPrecondition);
-      }
-    }
+  if (!hasLogic) {
+    const propNames = Object.keys(td.properties ?? {});
+    content = propNames
+      .map(
+        (p) =>
+          `thing.setPropertyReadHandler(${JSON.stringify(
+            p
+          )}, async () => state[${JSON.stringify(p)}]);\n`
+      )
+      .join('');
   }
 
-  const effects = store.getQuads(
-    null,
-    namedNode('https://paul.ti.rw.fau.de/~jo00defe/voc/spa#hasEffect'),
-    null,
-    null
-  );
-
-  if (effects.length > 0) {
-    for (const e of effects) {
-      const affordance = e.subject;
-      const name = store.getObjects(
-        affordance,
-        namedNode('https://www.w3.org/2019/wot/td#name'),
-        null
-      )[0].value;
-      const assign = store.getObjects(
-        e.object,
-        namedNode('https://paul.ti.rw.fau.de/~jo00defe/voc/spa#hasAssignment'),
-        null
-      )[0];
-      const to = store.getObjects(
-        e.object,
-        namedNode('https://paul.ti.rw.fau.de/~jo00defe/voc/spa#hasTarget'),
-        null
-      )[0];
-
-      const toName = store.getObjects(
-        to,
-        namedNode('https://www.w3.org/2019/wot/td#name'),
-        null
-      )[0].value;
-
-      if (assign.value === 'https://paul.ti.rw.fau.de/~jo00defe/voc/spa#inputValue') {
-        // set "to" to body of request
-        const actionEffect = `
-          state.${toName} = await inputData.value();
-        `;
-        if (actions.has(name)) {
-          actions.set(name, actions.get(name) + actionEffect);
-        } else {
-          actions.set(name, actionEffect);
-        }
-      
-      } else {
-        // set "to" to value of assign
-        const actionEffect = `
-          state.${toName} = ${assign.value};
-        `;
-        if (actions.has(name)) {
-          actions.set(name, actions.get(name) + actionEffect);
-        } else {
-          actions.set(name, actionEffect);
-        }
-      }
-    }
-  }
-
-  for (const [name, code] of actions) {
-    content += `
-      thing.setActionHandler("${name}", async (inputData) => {
-        ${code}
-      });
-    `;
+  // Generate action handlers from the Thing's VRE effect program (<name>.vre),
+  // if present. VRE (see ./vre.ts) compiles effect assignments into
+  // `state.X = ...` + emitPropertyChange and guards into throw-guards. It works
+  // with or without logic.js.
+  const vreFile = Bun.file(vrePath);
+  if (await vreFile.exists()) {
+    content += `\n${vreToHandlers(await vreFile.text(), td)}`;
   }
 
   // Import Node.js built-in modules that Things might need
@@ -196,11 +109,8 @@ async function evaluateLogicFile(
   const url = await import('url');
   const { createLoggers } = await import('../utils/debug.js');
 
-  // Import the Thing HTTP server registration function
-  const { registerThingEndpoint } = await import('../StateRestAPI.js');
-
   // Wrap the content in an async function with built-in modules available
-  const wrappedContent = `(async function(thing, state, http, URL, registerThingEndpoint, createLoggers) { ${content} })`;
+  const wrappedContent = `(async function(thing, state, http, URL, createLoggers) { ${content} })`;
   const logicFunction = eval(wrappedContent) as Function;
 
   return (thing: WoT.ExposedThing, state: Record<string, unknown>) =>
@@ -209,7 +119,6 @@ async function evaluateLogicFile(
       state,
       http,
       url.URL,
-      registerThingEndpoint,
       createLoggers
     );
 }
@@ -222,15 +131,19 @@ export async function loadThing(
   try {
     const basePath = join(__dirname, thingName);
 
-    const tdModule = await import(`${basePath}/${thingName}.td.json`, {
-      with: { type: 'json' }
-    });
+    // Read the Thing Description natively via Bun.file
+    const td: WoT.ThingDescription = await Bun.file(
+      join(basePath, `${thingName}.td.json`)
+    ).json();
 
-    // Load TD, state, and logic files
+    // Load TD, state, and behavior (logic.js and/or <name>.vre)
     const [stateObject, logicFunction] = await Promise.all([
       loadStateFile(join(basePath, 'state.json')),
-      //generateLogic(basePath, tdModule)
-      evaluateLogicFile(tdModule, join(basePath, 'logic.js'))
+      evaluateLogicFile(
+        td,
+        join(basePath, 'logic.js'),
+        join(basePath, `${thingName}.vre`)
+      )
     ]);
 
     return new (class extends ThingHandler {
@@ -238,13 +151,13 @@ export async function loadThing(
 
       constructor() {
         // Clone TD and set custom ID if provided
-        const td = { ...tdModule.default };
+        const instanceTd = { ...td };
         if (instanceId) {
-          td.id = `urn:wot:${instanceId}`; // Make it a proper URI
-          td.title = instanceId;
+          instanceTd.id = `urn:wot:${instanceId}`; // Make it a proper URI
+          instanceTd.title = instanceId;
         }
 
-        super(td);
+        super(instanceTd);
         this.initializeGlobalState();
       }
 
