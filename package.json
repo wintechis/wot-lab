@@ -16,7 +16,6 @@
     "dev:cli": "bun --watch src/main.ts -- --things counter:2,lamp:1",
     "lint": "eslint \"src/**/*.ts\"",
     "lint:fix": "eslint \"src/**/*.ts\" --fix",
-    "security-audit": "bun audit",
     "counterclient": "bun src/things/counter/exampleClient.ts",
     "lampclient": "bun src/things/lamp/exampleClient.ts",
     "presenceclient": "bun src/things/presence/exampleClient.ts",
