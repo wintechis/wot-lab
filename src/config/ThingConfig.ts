@@ -16,8 +16,6 @@ export interface WotLabConfig {
   global?: {
     /** Base port for WoT HTTP server */
     wotPort?: number;
-    /** Port for State REST API */
-    apiPort?: number;
   };
 }
 
@@ -29,22 +27,22 @@ export class ConfigLoader {
    */
   static async loadConfig(configPath?: string): Promise<WotLabConfig | null> {
     const path = configPath || this.DEFAULT_CONFIG_PATH;
-    
+
+    const file = Bun.file(path);
+    if (!(await file.exists())) {
+      info(`ℹ No config file found at ${path}, using auto-discovery mode`);
+      return null;
+    }
+
     try {
-      const { readFile } = await import('fs/promises');
-      const configContent = await readFile(path, 'utf-8');
-      const config = JSON.parse(configContent) as WotLabConfig;
-      
+      const config = (await file.json()) as WotLabConfig;
+
       debug(`✓ Loaded configuration from: ${path}`);
       debug(`✓ Thing types configured: ${Object.keys(config.things).join(', ')}`);
-      
+
       return config;
     } catch (error) {
-      if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-        info(`ℹ No config file found at ${path}, using auto-discovery mode`);
-      } else {
-        console.warn(`⚠ Failed to load config from ${path}:`, (error as Error).message);
-      }
+      console.warn(`⚠ Failed to load config from ${path}:`, (error as Error).message);
       return null;
     }
   }

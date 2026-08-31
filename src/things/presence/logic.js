@@ -74,30 +74,4 @@ function triggerAbsence() {
   };
 }
 
-// Get Thing ID for endpoint registration
-const thingId = thing.getThingDescription().id?.replace('urn:wot:', '') || 'presence';
-
-// Register HTTP endpoints with centralized server
-registerThingEndpoint(thingId, 'GET', '/presence', (req, res) => {
-  const result = triggerPresence();
-  res.json(result);
-});
-
-registerThingEndpoint(thingId, 'GET', '/absence', (req, res) => {
-  const result = triggerAbsence();
-  res.json(result);
-});
-
-registerThingEndpoint(thingId, 'GET', '/status', (req, res) => {
-  res.json({
-    success: true,
-    data: {
-      isPresent: state.isPresent,
-      lastDetection: state.lastDetection,
-      detectionCount: state.detectionCount
-    }
-  });
-});
-
-debug(`📡 Presence sensor endpoints registered for /${thingId}`);
 debug("📡 Presence sensor initialized.");

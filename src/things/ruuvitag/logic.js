@@ -8,9 +8,6 @@ thing.setPropertyReadHandler("movementCounter", async () => state.movementCounte
 thing.setPropertyReadHandler("sequenceNumber", async () => state.sequenceNumber);
 thing.setPropertyReadHandler("lastUpdated", async () => state.lastUpdated);
 
-// Get Thing ID for endpoint registration
-const thingId = thing.getThingDescription().id?.replace('urn:wot:', '') || 'ruuvitag';
-
 const { debug } = createLoggers("simulation", "ruuvitag");
 
 // Helper function to simulate environmental data
@@ -123,63 +120,6 @@ thing.setActionHandler("simulateReading", async (input) => {
   return result.data;
 });
 
-// Register HTTP endpoints for simulation
-registerThingEndpoint(thingId, 'GET', '/data', (req, res) => {
-  res.json({
-    success: true,
-    data: {
-      temperature: state.temperature,
-      humidity: state.humidity,
-      pressure: state.pressure,
-      acceleration: state.acceleration,
-      batteryInfo: state.batteryInfo,
-      movementCounter: state.movementCounter,
-      sequenceNumber: state.sequenceNumber,
-      lastUpdated: state.lastUpdated
-    }
-  });
-});
-
-registerThingEndpoint(thingId, 'POST', '/simulate', (req, res) => {
-  try {
-    const { temperature, humidity, movement } = req.body || {};
-    
-    const result = updateSensorData({
-      temperature: temperature ? parseFloat(temperature) : undefined,
-      humidity: humidity ? parseFloat(humidity) : undefined
-    }, Boolean(movement));
-    
-    res.json(result);
-    
-  } catch (error) {
-    res.status(400).json({
-      success: false,
-      error: error.message
-    });
-  }
-});
-
-registerThingEndpoint(thingId, 'POST', '/movement', (req, res) => {
-  try {
-    const result = updateSensorData({}, true);
-    res.json({
-      success: true,
-      message: "Movement triggered",
-      data: {
-        movementCounter: state.movementCounter,
-        acceleration: state.acceleration,
-        timestamp: result.data.timestamp
-      }
-    });
-    
-  } catch (error) {
-    res.status(400).json({
-      success: false,
-      error: error.message
-    });
-  }
-});
-
 // Automatic sensor data simulation every 10 seconds
 setInterval(() => {
   // 10% chance of movement detection
@@ -187,5 +127,4 @@ setInterval(() => {
   updateSensorData({}, randomMovement);
 }, 10000);
 
-debug(`📱 RuuviTag sensor endpoints registered for /${thingId}`);
 debug("📱 RuuviTag initialized with automatic sensor simulation!");
