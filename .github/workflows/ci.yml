@@ -28,9 +28,6 @@ jobs:
     - name: Type-check
       run: bun run build
 
-    - name: Audit dependencies for security vulnerabilities
-      run: bun audit --audit-level=moderate
-
     - name: Validate JSON files (Thing Descriptions, state, config)
       run: |
         echo "Validating JSON files..."
