@@ -27,8 +27,6 @@ if (config) {
   results = await thingFactory.createAllThings();
 }
 
-console.log(results);
-
 // Report results
 debug('\n📊 Thing Creation Summary:');
 debug(`✓ Successfully created: ${results.filter(r => r.success).length} Things`);
@@ -46,8 +44,7 @@ if (results.length > 0) {
 }
 
 debug('\n🌐 Available endpoints:');
-debug('- WoT Thing Descriptions: http://localhost:8081/');
-
+debug(`- WoT Thing Descriptions: http://localhost:${config?.global?.wotPort || 8081}/`);
 
 // Graceful shutdown
 process.on('SIGINT', () => {

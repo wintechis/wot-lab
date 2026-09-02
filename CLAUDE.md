@@ -23,7 +23,6 @@ bun run build                        # tsc --noEmit (type-check only; alias: typ
 bun start                            # run src/main.ts directly (no build step needed)
 bun run lint                         # eslint src/**/*.ts
 bun run lint:fix
-bun audit                            # dependency vulnerability audit (script: security-audit)
 ```
 
 There is **no test runner configured**. The `*client` scripts (e.g. `bun run counterclient`, `bun run lampclient`) run per-Thing WoT clients in `src/things/<name>/exampleClient.ts` and serve as manual/integration checks.
