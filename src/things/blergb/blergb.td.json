@@ -12,7 +12,7 @@
   ],
   "@type": "Thing",
   "title": "BLE RGB Controller",
-  "description": "A Bluetooth Low Energy (BLE) controller that can be used to control RGB LED lights.",
+  "description": "A Bluetooth Low Energy (BLE) controller for RGB LED lights, with color, brightness, power, and effect control.",
   "securityDefinitions": {
     "nosec_sc": {
       "scheme": "nosec"
@@ -50,14 +50,14 @@
     "power": {
       "title": "Power State",
       "type": "boolean",
-      "description": "The power state of the RGB controller",
+      "description": "Whether the controller output is currently on.",
       "readOnly": true,
       "observable": true
     },
     "currentEffect": {
       "title": "Current Effect",
       "type": "integer",
-      "description": "The current effect mode (128-156)",
+      "description": "Active lighting effect mode (128–156).",
       "minimum": 128,
       "maximum": 156,
       "readOnly": true,
@@ -66,7 +66,7 @@
     "brightness": {
       "title": "Brightness",
       "type": "integer",
-      "description": "Overall brightness level (0-100%)",
+      "description": "Overall brightness level, 0–100 percent.",
       "minimum": 0,
       "maximum": 100,
       "readOnly": true,
@@ -75,7 +75,7 @@
     "lastUpdated": {
       "title": "Last Updated",
       "type": "string",
-      "description": "Timestamp of last command",
+      "description": "Timestamp of the most recent command applied.",
       "readOnly": true,
       "observable": true
     }
@@ -83,7 +83,7 @@
   "actions": {
     "setColor": {
       "title": "Set Color",
-      "description": "Set the RGB color of the LED light",
+      "description": "Set the LED color from red, green, and blue components (0–255).",
       "input": {
         "type": "object",
         "properties": {
@@ -111,7 +111,7 @@
     },
     "setPower": {
       "title": "Set Power",
-      "description": "Turn the RGB controller on or off",
+      "description": "Turn the controller output on or off.",
       "input": {
         "type": "object",
         "properties": {
@@ -125,7 +125,7 @@
     },
     "setEffect": {
       "title": "Set Effect",
-      "description": "Set the LED light effect mode",
+      "description": "Select a lighting effect mode (128–156).",
       "input": {
         "type": "object",
         "properties": {
@@ -140,8 +140,8 @@
       }
     },
     "setBrightness": {
-      "title": "Set Brightness", 
-      "description": "Set the overall brightness level",
+      "title": "Set Brightness",
+      "description": "Set the overall brightness (0–100%).",
       "input": {
         "type": "object",
         "properties": {
@@ -159,7 +159,7 @@
   "events": {
     "colorChanged": {
       "title": "Color Changed",
-      "description": "Emitted when the RGB color changes",
+      "description": "Fires when the color changes, carrying the new RGB values.",
       "data": {
         "type": "object",
         "properties": {
@@ -172,7 +172,7 @@
     },
     "powerChanged": {
       "title": "Power Changed",
-      "description": "Emitted when power state changes",
+      "description": "Fires when the power state changes.",
       "data": {
         "type": "object",
         "properties": {
@@ -183,7 +183,7 @@
     },
     "effectChanged": {
       "title": "Effect Changed",
-      "description": "Emitted when effect mode changes",
+      "description": "Fires when the effect mode changes.",
       "data": {
         "type": "object",
         "properties": {

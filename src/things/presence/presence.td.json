@@ -2,24 +2,24 @@
   "@context": "https://www.w3.org/2019/wot/td/v1",
   "@type": "Thing",
   "title": "Presence Sensor",
-  "description": "Motion/presence detection sensor with HTTP trigger endpoints",
+  "description": "A presence sensor reporting whether a space is occupied, with a running count of detections.",
   "properties": {
     "isPresent": {
       "type": "boolean",
-      "description": "Current presence status",
+      "description": "Whether presence is currently detected in the monitored space.",
       "observable": true,
       "readOnly": true
     },
     "lastDetection": {
       "type": "string",
       "format": "date-time",
-      "description": "Timestamp of last presence change",
+      "description": "Timestamp of the most recent presence change.",
       "observable": true,
       "readOnly": true
     },
     "detectionCount": {
       "type": "integer",
-      "description": "Total number of presence events detected",
+      "description": "Total presence detections since startup.",
       "minimum": 0,
       "observable": true,
       "readOnly": true
@@ -28,7 +28,7 @@
   "events": {
     "presence": {
       "title": "Presence Detected",
-      "description": "Emitted when presence is detected",
+      "description": "Fires when presence is detected, carrying the running detection count.",
       "data": {
         "type": "object",
         "properties": {
@@ -44,7 +44,7 @@
     },
     "absence": {
       "title": "Absence Detected", 
-      "description": "Emitted when absence is detected",
+      "description": "Fires when the space becomes empty, carrying how long presence lasted.",
       "data": {
         "type": "object",
         "properties": {

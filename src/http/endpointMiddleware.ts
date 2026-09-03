@@ -1,5 +1,6 @@
 import { IncomingMessage, ServerResponse } from 'http';
 import { URL } from 'url';
+import { brotliCompressSync, constants as zlibConstants, gzipSync } from 'zlib';
 import * as WoT from 'wot-typescript-definitions';
 
 interface Endpoint {
@@ -254,19 +255,95 @@ function frontendContentType(pathname: string): string {
   return types[extension || ''] || 'application/octet-stream';
 }
 
-async function serveFrontend(pathname: string, res: ServerResponse): Promise<boolean> {
+// Text assets are worth compressing; images, fonts and wasm are already packed.
+const compressibleTypes = /^(text\/|application\/(javascript|json|xml)|image\/svg)/;
+
+// Below about a kilobyte the framing costs more than the compression saves.
+const compressionThreshold = 1024;
+
+type FrontendAsset = { contentType: string; identity: Buffer; gzip?: Buffer; brotli?: Buffer };
+
+// The built frontend is immutable for the lifetime of the process, so each file
+// is read — and compressed — at most once, and every later request is answered
+// from this map. Without it, Brotli would run on every page load.
+const frontendCache = new Map<string, FrontendAsset>();
+
+function negotiateEncoding(req: IncomingMessage): 'br' | 'gzip' | null {
+  const accepted = String(req.headers['accept-encoding'] || '').toLowerCase();
+  if (accepted.includes('br')) {
+    return 'br';
+  }
+  if (accepted.includes('gzip')) {
+    return 'gzip';
+  }
+  return null;
+}
+
+// Vite fingerprints everything under /assets/, so those URLs can never change
+// content and earn a year of immutable caching. index.html is the mutable entry
+// point naming them, so it must be revalidated on every load.
+function cacheControlFor(relativePath: string): string {
+  return relativePath.startsWith('assets/')
+    ? 'public, max-age=31536000, immutable'
+    : 'no-cache';
+}
+
+async function loadFrontendAsset(relativePath: string): Promise<FrontendAsset | null> {
+  const cached = frontendCache.get(relativePath);
+  if (cached) {
+    return cached;
+  }
+
+  const file = Bun.file(`${process.cwd()}/frontend/dist/${relativePath}`);
+  if (!(await file.exists())) {
+    return null;
+  }
+
+  const identity = Buffer.from(await file.arrayBuffer());
+  const contentType = frontendContentType(relativePath);
+  const asset: FrontendAsset = { contentType, identity };
+
+  if (compressibleTypes.test(contentType) && identity.byteLength >= compressionThreshold) {
+    asset.gzip = gzipSync(identity);
+    // Quality 5 rather than the default 11: it lands within a few percent of
+    // maximum Brotli on these bundles for a fraction of the time, which matters
+    // because the first request for each asset pays for it.
+    asset.brotli = brotliCompressSync(identity, {
+      params: { [zlibConstants.BROTLI_PARAM_QUALITY]: 5 }
+    });
+  }
+
+  frontendCache.set(relativePath, asset);
+  return asset;
+}
+
+async function serveFrontend(req: IncomingMessage, pathname: string, res: ServerResponse): Promise<boolean> {
   const relativePath = pathname === '/' ? 'index.html' : pathname.slice(1);
   if (relativePath.includes('..') || relativePath.includes('\\')) {
     return false;
   }
 
-  const file = Bun.file(`${process.cwd()}/frontend/dist/${relativePath}`);
-  if (!(await file.exists())) {
+  const asset = await loadFrontendAsset(relativePath);
+  if (!asset) {
     return false;
   }
 
-  res.writeHead(200, { 'Content-Type': frontendContentType(relativePath) });
-  res.end(await file.arrayBuffer());
+  const encoding = negotiateEncoding(req);
+  const body = encoding === 'br' ? asset.brotli : encoding === 'gzip' ? asset.gzip : undefined;
+  const headers: Record<string, string> = {
+    'Content-Type': asset.contentType,
+    'Content-Length': String((body ?? asset.identity).byteLength),
+    'Cache-Control': cacheControlFor(relativePath),
+    // The same URL can answer with different encodings, so shared caches must
+    // key on the request's Accept-Encoding rather than the URL alone.
+    Vary: 'Accept-Encoding'
+  };
+  if (body) {
+    headers['Content-Encoding'] = encoding as string;
+  }
+
+  res.writeHead(200, headers);
+  res.end(body ?? asset.identity);
   return true;
 }
 
@@ -274,6 +351,7 @@ function renderIndex(things: ThingMap, html: boolean, port: number, res: ServerR
   const entries = [...things.values()].map(thing => ({
     id: thingId(thing),
     title: thingDescription(thing).title || thingId(thing),
+    description: thingDescription(thing).description,
     href: `http://localhost:${port}/${encodeURIComponent(thingId(thing))}`
   }));
 
@@ -370,20 +448,20 @@ export function createEndpointMiddleware(getThings: () => ThingMap, port: number
     const things = getThings();
 
     if (pathParts.length === 0) {
-      if (acceptsHtml(req) && await serveFrontend('/', res)) {
+      if (acceptsHtml(req) && await serveFrontend(req, '/', res)) {
         return;
       }
       renderIndex(things, acceptsHtml(req), port, res);
       return;
     }
 
-    if (pathParts[0] === 'assets' && await serveFrontend(requestUrl.pathname, res)) {
+    if (pathParts[0] === 'assets' && await serveFrontend(req, requestUrl.pathname, res)) {
       return;
     }
 
     const thing = [...things.values()].find(candidate => thingId(candidate) === decodeURIComponent(pathParts[0]));
     if (thing && acceptsHtml(req)) {
-      if (await serveFrontend('/', res)) {
+      if (await serveFrontend(req, '/', res)) {
         return;
       }
       renderThing(thing, true, res);

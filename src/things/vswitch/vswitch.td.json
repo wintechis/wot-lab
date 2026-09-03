@@ -4,12 +4,12 @@
         "https://www.w3.org/2022/wot/td/v1.1"
     ],
     "title": "Virtual Switch",
-    "description": "Demo Thing declared with NO logic.js. Its behavior comes from the TD plus a VRE effect file (vswitch.vre) and state.json only.",
+    "description": "A minimal demo Thing defined with no logic.js — its behavior comes entirely from the Thing Description, a VRE effect file (vswitch.vre), and state.json.",
     "properties": {
         "level": {
             "title": "Level",
             "type": "number",
-            "description": "Current level, observable via readProperty/observeProperty",
+            "description": "The switch's current level; observable, so it streams updates live.",
             "observable": true,
             "readOnly": true
         }
@@ -17,7 +17,7 @@
     "actions": {
         "setLevel": {
             "title": "Set Level",
-            "description": "Set the level to the request input value",
+            "description": "Set the level to the provided value.",
             "input": {
                 "type": "number"
             }

@@ -14,7 +14,7 @@
   ],
   "@type": "Thing",
   "title": "Ruuvi Tag",
-  "description": "RuuviTag is a wireless Bluetooth sensor node that measures temperature, air humidity, and movement.",
+  "description": "A wireless Bluetooth sensor node measuring temperature, humidity, atmospheric pressure, and movement.",
   "securityDefinitions": {
     "nosec_sc": {
       "scheme": "nosec"
@@ -25,7 +25,7 @@
     "temperature": {
       "type": "number",
       "title": "Temperature",
-      "description": "Current temperature reading",
+      "description": "Current temperature reading in degrees Celsius.",
       "unit": "qudtUnit:DEG_C",
       "readOnly": true,
       "observable": true
@@ -33,7 +33,7 @@
     "humidity": {
       "type": "number",
       "title": "Humidity",
-      "description": "Current humidity reading",
+      "description": "Current relative humidity, 0–100 percent.",
       "unit": "qudtUnit:PERCENT",
       "readOnly": true,
       "observable": true,
@@ -43,7 +43,7 @@
     "pressure": {
       "type": "number",
       "title": "Pressure",
-      "description": "Current atmospheric pressure",
+      "description": "Current atmospheric pressure in pascals.",
       "unit": "qudt:PA",
       "readOnly": true,
       "observable": true
@@ -51,7 +51,7 @@
     "acceleration": {
       "type": "object",
       "title": "Acceleration",
-      "description": "3-axis acceleration data",
+      "description": "Acceleration on the X, Y, and Z axes in milli-g.",
       "readOnly": true,
       "observable": true,
       "properties": {
@@ -89,7 +89,7 @@
     "movementCounter": {
       "type": "integer",
       "title": "Movement Counter",
-      "description": "Number of movement detections",
+      "description": "Running count of detected movements.",
       "readOnly": true,
       "observable": true
     },
@@ -111,7 +111,7 @@
   "events": {
     "sensorData": {
       "title": "Sensor Data Update",
-      "description": "Emitted when new sensor data is received",
+      "description": "Fires when a new sensor reading is received, carrying all measured values.",
       "data": {
         "type": "object",
         "properties": {
@@ -132,7 +132,7 @@
     },
     "movementDetected": {
       "title": "Movement Detected",
-      "description": "Emitted when movement is detected",
+      "description": "Fires when movement is detected, carrying the updated movement count.",
       "data": {
         "type": "object",
         "properties": {
@@ -145,7 +145,7 @@
   "actions": {
     "simulateReading": {
       "title": "Simulate Reading",
-      "description": "Generate simulated sensor data",
+      "description": "Inject a simulated sensor reading; any field left unset is generated automatically.",
       "input": {
         "type": "object",
         "properties": {
