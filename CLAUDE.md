@@ -39,7 +39,7 @@ Each Thing lives in `src/things/<name>/`:
 - `<name>.td.json` — W3C Thing Description (capabilities: properties/actions/events). **Required.**
 - `state.json` — initial state object. Any string value ending in `T00:00:00.000Z` is replaced with the current timestamp at load time (see `loadStateFile`). **Required.**
 - `logic.js` — imperative behavior. **Optional.** Read as text and `eval`'d inside an async wrapper (`ThingHandler.ts` → `evaluateLogicFile`). The wrapper injects these locals, available with no import: `thing` (the WoT `ExposedThing`), `state` (a Valtio proxy of `state.json`), `http`, `URL`, `createLoggers`.
-- `<name>.vre` — declarative action effects (VRE). **Optional.** See the VRE section below.
+- `vre:effects` in action affordances — declarative action effects (VRE). **Optional.** See the VRE section below.
 
 `logic.js` typically calls `thing.setPropertyReadHandler(...)`, `thing.setActionHandler(...)`, and `thing.emitPropertyChange(...)`. Mutating `state.*` is reactive (Valtio) and reflected in the global state store. Some `state.js` files exist alongside `state.json` but the loader only reads `state.json`.
 
@@ -59,14 +59,14 @@ Instance IDs: multiple instances → `<prefix>-1`, `<prefix>-2`; single → `<pr
 
 ## VRE: declarative action effects (`<name>.vre`)
 
-Action handlers can be **generated from a declarative effect file** instead of hand-written. A Thing's optional `<name>.vre` holds one or more action rules; `evaluateLogicFile` compiles them and **appends generated `thing.setActionHandler(...)` code** to the logic body before eval. This works with or without `logic.js`, so an action's runtime behavior may come from the `.vre` file, not only from `logic.js`. (This replaced an earlier SPA JSON-LD annotation scheme embedded in the TD; the `n3`/`jsonld-streaming-parser` deps went with it.)
+Action handlers can be **generated from a declarative effect file** instead of hand-written. A Thing's optional `<name>.vre` contains standard VRE bindings and primed assignments; `evaluateLogicFile` compiles them and **appends generated `thing.setActionHandler(...)` code** to the logic body before eval. Since standard VRE does not declare actions, multi-action files use `// action(params):` section headers; a headerless file is allowed for a Thing with one action. This works with or without `logic.js`, so an action's runtime behavior may come from the `.vre` file, not only from `logic.js`.
 
 Dialect and pipeline:
-- `src/things/vre-parser.ts` — lexer + AST + recursive-descent parser, **vendored from the V-Realm project's VRE** (`vre-to-spa.ts`) and adapted: dropped `const`/URI bindings, added `{}` blocks + an `on <action>(params) { … }` rule grammar with a `guard` statement, and added the equality/comparison precedence levels. Operator precedence matches V-Realm.
-- `src/things/vre.ts` — wot-lab codegen. Effects `<prop>' = <expr>` become `state.<prop> = <expr>` + `thing.emitPropertyChange(<prop>)` (so effects are observable via `observeProperty`, not just `readProperty`); `guard <expr>;` becomes a throw-guard.
+- `src/things/vre-parser.ts` — lexer + AST + recursive-descent parser aligned with the V-Realm project's VRE (`vre-to-spa.ts`): `const`/URI bindings followed by primed effect assignments. VRE has no action blocks or permission guards; WoT-Lab uses `// action(params):` comments as adapter metadata.
+- `src/things/vre.ts` — wot-lab codegen. Effects `<prop>' = <expr>` become `state.<prop> = <expr>` + `thing.emitPropertyChange(<prop>)` (so effects are observable via `observeProperty`, not just `readProperty`).
 - Reference resolution is TD-informed: a bare identifier naming an action **input parameter** resolves to that input value; a bare identifier naming a **Thing property** resolves to `state[name]`; effect targets (LHS) must be Thing properties. Cross-Thing/dotted refs are not supported (single-Thing loader).
 
-Example (`src/things/lamp/lamp.vre`): `on setBrightness(brightness) { guard on == true; brightness' = brightness; }`. `src/things/vswitch/` is a full TD + `state.json` + `.vre` Thing with **no** `logic.js`.
+Example (`src/things/lamp/lamp.vre`): `const lamp = <urn:wot:lamp>;` followed by `// setBrightness(brightness):` and `lamp.brightness' = brightness;`. `src/things/vswitch/` is a full TD + `state.json` + `.vre` Thing with **no** `logic.js`.
 
 ## Conventions & gotchas
 

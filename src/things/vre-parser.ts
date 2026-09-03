@@ -1,25 +1,10 @@
-/**
- * VRE parser — lexer, AST, and recursive-descent parser.
- *
- * Vendored from the V-Realm project's `implementation/vre-to-spa.ts` (the `lex`
- * function, the `VREExpr` AST, and the `Parser` expression grammar), adapted for
- * wot-lab:
- *   - dropped `const name = <uri>;` bindings and URI tokens (single-Thing loader
- *     has no cross-Thing references), so `<`/`>` lex as comparison operators;
- *   - added `{` / `}` tokens and an `on <action>(params) { ... }` rule grammar
- *     with a `guard` statement (V-Realm's effect DSL has neither — its action
- *     name is caller-supplied and guards live in its separate VRP layer);
- *   - added the equality/comparison precedence levels (V-Realm's lexer already
- *     tokenizes `== != < <= > >=` but its effect parser never consumes them).
- * Operator precedence below is preserved verbatim from V-Realm so expression
- * semantics match: `||` < `&&` < `== !=` < `< <= > >=` < `!` < `+ -` < `* / %`
- * < unary `-` < postfix `.method(...)` < primary.
- */
-
 type TokenKind =
+  | 'CONST'
   | 'IDENT'
+  | 'URI'
   | 'NUMBER'
   | 'BOOL'
+  | 'STRING'
   | 'PRIME'
   | 'ASSIGN'
   | 'EQ'
@@ -40,11 +25,11 @@ type TokenKind =
   | 'RPAREN'
   | 'LBRACKET'
   | 'RBRACKET'
-  | 'LBRACE'
-  | 'RBRACE'
   | 'DOT'
   | 'COMMA'
   | 'SEMICOLON'
+  | 'QUESTION'
+  | 'COLON'
   | 'EOF';
 
 interface Token {
@@ -56,21 +41,32 @@ interface Token {
 export type VREExpr =
   | { kind: 'number'; value: number }
   | { kind: 'bool'; value: boolean }
+  | { kind: 'string'; value: string }
   | { kind: 'emptyArray' }
   | { kind: 'ref'; parts: string[] }
   | { kind: 'binary'; op: string; left: VREExpr; right: VREExpr }
   | { kind: 'unary'; op: string; operand: VREExpr }
+  | {
+      kind: 'conditional';
+      condition: VREExpr;
+      whenTrue: VREExpr;
+      whenFalse: VREExpr;
+    }
+  | { kind: 'functionCall'; name: string; args: VREExpr[] }
   | { kind: 'call'; base: VREExpr; method: string; args: VREExpr[] };
 
 export interface VreEffect {
   lhs: string[];
   rhs: VREExpr;
 }
-export interface VreRule {
-  action: string;
-  params: string[];
-  guards: VREExpr[];
+export interface VreEvent {
+  name: string;
+  data?: VREExpr;
+}
+export interface VreProgram {
+  bindings: Map<string, string>;
   effects: VreEffect[];
+  events: VreEvent[];
 }
 
 function lex(input: string): Token[] {
@@ -101,8 +97,16 @@ function lex(input: string): Token[] {
         tokens.push({ kind: 'LTE', value: '<=', pos });
         i += 2;
       } else {
-        tokens.push({ kind: 'LT', value: '<', pos });
         i++;
+        let uri = '';
+        while (i < input.length && input[i] !== '>') {
+          uri += input[i++];
+        }
+        if (i >= input.length) {
+          throw new Error(`VRE: unterminated URI at position ${pos}`);
+        }
+        i++;
+        tokens.push({ kind: 'URI', value: uri, pos });
       }
       continue;
     }
@@ -129,7 +133,9 @@ function lex(input: string): Token[] {
       while (i < input.length && /[a-zA-Z0-9_]/.test(input[i])) {
         ident += input[i++];
       }
-      if (ident === 'true' || ident === 'false') {
+      if (ident === 'const') {
+        tokens.push({ kind: 'CONST', value: ident, pos });
+      } else if (ident === 'true' || ident === 'false') {
         tokens.push({ kind: 'BOOL', value: ident, pos });
       } else {
         tokens.push({ kind: 'IDENT', value: ident, pos });
@@ -161,6 +167,22 @@ function lex(input: string): Token[] {
       i += 2;
       continue;
     }
+    if (input[i] === '"') {
+      i++;
+      let value = '';
+      while (i < input.length && input[i] !== '"') {
+        if (input[i] === '\\' && i + 1 < input.length) {
+          value += input[i++];
+        }
+        value += input[i++];
+      }
+      if (i >= input.length) {
+        throw new Error(`VRE: unterminated string at position ${pos}`);
+      }
+      i++;
+      tokens.push({ kind: 'STRING', value, pos });
+      continue;
+    }
     const singles: Record<string, TokenKind> = {
       '=': 'ASSIGN',
       '+': 'PLUS',
@@ -173,11 +195,11 @@ function lex(input: string): Token[] {
       ')': 'RPAREN',
       '[': 'LBRACKET',
       ']': 'RBRACKET',
-      '{': 'LBRACE',
-      '}': 'RBRACE',
       '.': 'DOT',
       ',': 'COMMA',
-      ';': 'SEMICOLON'
+      ';': 'SEMICOLON',
+      '?': 'QUESTION',
+      ':': 'COLON'
     };
     if (input[i] in singles) {
       tokens.push({ kind: singles[input[i]], value: input[i], pos });
@@ -224,46 +246,39 @@ class Parser {
     return false;
   }
 
-  parseProgram(): VreRule[] {
-    const rules: VreRule[] = [];
-    while (this.peek().kind !== 'EOF') {
-      rules.push(this.parseRule());
-    }
-    return rules;
-  }
-
-  private parseRule(): VreRule {
-    const kw = this.expect('IDENT');
-    if (kw.value !== 'on') {
-      throw new Error(
-        `VRE: expected 'on' to start an action rule, got '${kw.value}' at position ${kw.pos}`
-      );
-    }
-    const action = this.expect('IDENT').value;
-    this.expect('LPAREN');
-    const params: string[] = [];
-    if (this.peek().kind !== 'RPAREN') {
-      params.push(this.expect('IDENT').value);
-      while (this.match('COMMA')) {
-        params.push(this.expect('IDENT').value);
-      }
-    }
-    this.expect('RPAREN');
-    this.expect('LBRACE');
-    const guards: VREExpr[] = [];
+  parseProgram(): VreProgram {
+    const bindings = new Map<string, string>();
     const effects: VreEffect[] = [];
-    while (this.peek().kind !== 'RBRACE') {
-      const t = this.peek();
-      if (t.kind === 'IDENT' && t.value === 'guard') {
-        this.consume();
-        guards.push(this.parseExpr());
-        this.match('SEMICOLON');
+    const events: VreEvent[] = [];
+    while (this.peek().kind === 'CONST') {
+      this.consume();
+      const name = this.expect('IDENT').value;
+      this.expect('ASSIGN');
+      const uri = this.expect('URI').value;
+      this.match('SEMICOLON');
+      bindings.set(name, uri);
+    }
+    while (this.peek().kind !== 'EOF') {
+      if (this.peek().kind === 'IDENT' && this.peek().value === 'emitEvent') {
+        events.push(this.parseEventStmt());
       } else {
         effects.push(this.parseEffectStmt());
       }
     }
-    this.expect('RBRACE');
-    return { action, params, guards, effects };
+    return { bindings, effects, events };
+  }
+
+  private parseEventStmt(): VreEvent {
+    this.expect('IDENT');
+    this.expect('LPAREN');
+    const name = this.expect('STRING').value;
+    let data: VREExpr | undefined;
+    if (this.match('COMMA')) {
+      data = this.parseExpr();
+    }
+    this.expect('RPAREN');
+    this.match('SEMICOLON');
+    return { name: JSON.parse(`"${name}"`) as string, data };
   }
 
   private parseEffectStmt(): VreEffect {
@@ -280,7 +295,17 @@ class Parser {
   }
 
   private parseExpr(): VREExpr {
-    return this.parseOr();
+    return this.parseConditional();
+  }
+  private parseConditional(): VREExpr {
+    const condition = this.parseOr();
+    if (!this.match('QUESTION')) {
+      return condition;
+    }
+    const whenTrue = this.parseExpr();
+    this.expect('COLON');
+    const whenFalse = this.parseExpr();
+    return { kind: 'conditional', condition, whenTrue, whenFalse };
   }
   private parseOr(): VREExpr {
     let left = this.parseAnd();
@@ -391,13 +416,29 @@ class Parser {
       this.consume();
       return { kind: 'bool', value: t.value === 'true' };
     }
+    if (t.kind === 'STRING') {
+      this.consume();
+      return { kind: 'string', value: JSON.parse(`"${t.value}"`) as string };
+    }
     if (t.kind === 'LBRACKET') {
       this.consume();
       this.expect('RBRACKET');
       return { kind: 'emptyArray' };
     }
     if (t.kind === 'IDENT') {
-      const parts: string[] = [this.consume().value];
+      const name = this.consume().value;
+      if (this.match('LPAREN')) {
+        const args: VREExpr[] = [];
+        if (this.peek().kind !== 'RPAREN') {
+          args.push(this.parseExpr());
+          while (this.match('COMMA')) {
+            args.push(this.parseExpr());
+          }
+        }
+        this.expect('RPAREN');
+        return { kind: 'functionCall', name, args };
+      }
+      const parts: string[] = [name];
       while (
         this.peek().kind === 'DOT' &&
         this.peekAt(1).kind === 'IDENT' &&
@@ -414,7 +455,7 @@ class Parser {
   }
 }
 
-/** Parse a `.vre` source string into action rules. */
-export function parseVre(source: string): VreRule[] {
+/** Parse a VRE effect program: bindings followed by primed assignments. */
+export function parseVre(source: string): VreProgram {
   return new Parser(lex(source)).parseProgram();
 }

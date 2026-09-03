@@ -1,14 +1,12 @@
 import * as WoT from 'wot-typescript-definitions';
-import { parseVre, VREExpr, VreRule } from './vre-parser.js';
+import { parseVre, VREExpr, VreProgram, VreEffect } from './vre-parser.js';
 
 /**
  * Compile a `.vre` file into JavaScript that registers WoT action handlers.
  *
- * Parsing (lexer + expression grammar + AST) is vendored from V-Realm's VRE — see
- * `vre-parser.ts`. This module is the wot-lab code generator: it walks the AST and
- * emits `thing.setActionHandler(...)` bodies (guards → throw, effects →
- * `state.X = ...` + `emitPropertyChange`). The emitted string is appended to a
- * Thing's logic body and evaluated in the same sandbox (`thing`, `state`, ...).
+ * Parsing (lexer + expression grammar + AST) follows V-Realm's VRE effect
+ * language — see `vre-parser.ts`. Action names are adapter metadata supplied by
+ * `// action(params):` section headers because they are not part of VRE.
  *
  * Reference resolution is TD-informed (single-Thing): a bare identifier naming an
  * action input parameter resolves to that input value; a bare identifier naming a
@@ -22,12 +20,14 @@ interface ActionInputSchema {
 }
 interface ActionSchema {
   input?: ActionInputSchema;
+  'vre:effects'?: string;
 }
 
 interface Ctx {
   params: Set<string>;
   properties: Set<string>;
   action: string;
+  bindings: Map<string, string>;
 }
 
 function genExpr(expr: VREExpr, ctx: Ctx): string {
@@ -37,28 +37,42 @@ function genExpr(expr: VREExpr, ctx: Ctx): string {
   if (expr.kind === 'bool') {
     return expr.value ? 'true' : 'false';
   }
+  if (expr.kind === 'string') {
+    return JSON.stringify(expr.value);
+  }
   if (expr.kind === 'emptyArray') {
     return '[]';
   }
   if (expr.kind === 'ref') {
-    if (expr.parts.length > 1) {
-      throw new Error(
-        `VRE: cross-Thing reference '${expr.parts.join('.')}' is not supported in action '${ctx.action}'`
-      );
+    if (expr.parts.length === 1 && ctx.params.has(expr.parts[0])) {
+      return `__p_${expr.parts[0]}`;
     }
-    const name = expr.parts[0];
-    if (ctx.params.has(name)) {
-      return `__p_${name}`;
-    }
-    if (ctx.properties.has(name)) {
-      return `state[${JSON.stringify(name)}]`;
+    const property = expr.parts.length === 1
+      ? expr.parts[0]
+      : expr.parts[expr.parts.length - 1];
+    if (ctx.properties.has(property)) {
+      if (expr.parts.length === 1 || ctx.bindings.has(expr.parts[0])) {
+        return `state[${JSON.stringify(property)}]`;
+      }
     }
     throw new Error(
-      `VRE: '${name}' in action '${ctx.action}' is neither an input parameter nor a Thing property`
+      `VRE: '${expr.parts.join('.')}' in action '${ctx.action}' is not a local property or input parameter`
     );
   }
   if (expr.kind === 'unary') {
     return `(${expr.op}${genExpr(expr.operand, ctx)})`;
+  }
+  if (expr.kind === 'conditional') {
+    return `(${genExpr(expr.condition, ctx)} ? ${genExpr(
+      expr.whenTrue,
+      ctx
+    )} : ${genExpr(expr.whenFalse, ctx)})`;
+  }
+  if (expr.kind === 'functionCall') {
+    if (expr.name !== 'now' || expr.args.length !== 0) {
+      throw new Error(`VRE: unsupported function '${expr.name}'`);
+    }
+    return 'new Date().toISOString()';
   }
   if (expr.kind === 'binary') {
     const op = expr.op === '==' ? '===' : expr.op === '!=' ? '!==' : expr.op;
@@ -83,67 +97,93 @@ function genExpr(expr: VREExpr, ctx: Ctx): string {
   );
 }
 
-function genRule(rule: VreRule, td: WoT.ThingDescription): string {
+function genEffect(effect: VreEffect, td: WoT.ThingDescription, ctx: Ctx): string {
+  const properties = new Set(Object.keys(td.properties ?? {}));
+  const target = effect.lhs[effect.lhs.length - 1];
+  if (!properties.has(target)) {
+    throw new Error(`VRE: effect target '${effect.lhs.join('.')}' is not a Thing property`);
+  }
+  if (effect.lhs.length > 1 && !ctx.bindings.has(effect.lhs[0])) {
+    throw new Error(`VRE: unknown Thing binding '${effect.lhs[0]}' in effect target`);
+  }
+  return `  state[${JSON.stringify(target)}] = ${genExpr(effect.rhs, ctx)};\n` +
+    `  thing.emitPropertyChange(${JSON.stringify(target)});\n`;
+}
+
+function genRule(
+  action: string,
+  params: string[],
+  program: VreProgram,
+  td: WoT.ThingDescription
+): string {
   const properties = new Set(Object.keys(td.properties ?? {}));
   const actions = (td.actions ?? {}) as unknown as Record<string, ActionSchema>;
-
-  if (!actions[rule.action]) {
-    throw new Error(
-      `VRE: action '${rule.action}' is not declared in the Thing Description`
-    );
+  if (!actions[action]) {
+    throw new Error(`VRE: action '${action}' is not declared in the Thing Description`);
   }
-
-  const ctx: Ctx = {
-    params: new Set(rule.params),
-    properties,
-    action: rule.action
-  };
-
-  const input = actions[rule.action].input;
-  const isObjectInput = Boolean(
-    input && input.type === 'object' && input.properties
-  );
-  if (!isObjectInput && rule.params.length > 1) {
-    throw new Error(
-      `VRE: action '${rule.action}' has a scalar input but the rule declares multiple parameters`
-    );
-  }
-
+  const ctx: Ctx = { params: new Set(params), properties, action, bindings: program.bindings };
   let body = '  const __input = await inputData.value();\n';
-  for (const p of rule.params) {
-    const accessor = isObjectInput ? `__input[${JSON.stringify(p)}]` : '__input';
-    body += `  const __p_${p} = ${accessor};\n`;
+  const input = actions[action].input;
+  const isObjectInput = Boolean(input?.type === 'object' && input.properties);
+  for (const param of params) {
+    const accessor = isObjectInput ? `__input[${JSON.stringify(param)}]` : '__input';
+    body += `  const __p_${param} = ${accessor};\n`;
   }
-  for (const g of rule.guards) {
-    const message = `VRE precondition failed for action '${rule.action}'`;
-    body += `  if (!(${genExpr(g, ctx)})) { throw new Error(${JSON.stringify(
-      message
-    )}); }\n`;
+  for (const effect of program.effects) {
+    body += genEffect(effect, td, ctx);
   }
-  for (const effect of rule.effects) {
-    if (effect.lhs.length > 1) {
-      throw new Error(
-        `VRE: cross-Thing effect target '${effect.lhs.join('.')}' is not supported in action '${rule.action}'`
-      );
-    }
-    const target = effect.lhs[0];
-    if (!properties.has(target)) {
-      throw new Error(
-        `VRE: effect target '${target}' in action '${rule.action}' is not a Thing property`
-      );
-    }
-    body += `  state[${JSON.stringify(target)}] = ${genExpr(effect.rhs, ctx)};\n`;
-    body += `  thing.emitPropertyChange(${JSON.stringify(target)});\n`;
+  for (const event of program.events) {
+    const data = event.data ? `, ${genExpr(event.data, ctx)}` : '';
+    body += `  thing.emitEvent(${JSON.stringify(event.name)}${data});\n`;
   }
-
+  for (const event of program.events) {
+    const data = event.data ? `, ${genExpr(event.data, ctx)}` : '';
+    body += `  thing.emitEvent(${JSON.stringify(event.name)}${data});\n`;
+  }
   return `thing.setActionHandler(${JSON.stringify(
-    rule.action
+    action
   )}, async (inputData) => {\n${body}});\n`;
 }
 
-/** Compile `.vre` source into JS that registers the described action handlers. */
+interface ActionSection { action: string; params: string[]; source: string; }
+
+function splitSections(source: string, actionNames: string[]): ActionSection[] {
+  const header = /^\s*\/\/\s*([A-Za-z_]\w*)\s*\(([^)]*)\)\s*:\s*$/gm;
+  const matches = [...source.matchAll(header)];
+  if (matches.length === 0) {
+    if (actionNames.length !== 1) {
+      throw new Error('VRE: multi-action files require // action(params): section headers');
+    }
+    return [{ action: actionNames[0], params: [], source }];
+  }
+  const shared = source.slice(0, matches[0].index);
+  return matches.map((match, index) => ({
+    action: match[1],
+    params: match[2].split(',').map((p) => p.trim()).filter(Boolean),
+    source: shared + source.slice((match.index ?? 0) + match[0].length, matches[index + 1]?.index ?? source.length)
+  }));
+}
+
+/** Compile standard VRE source into JS action handlers. */
 export function vreToHandlers(source: string, td: WoT.ThingDescription): string {
-  return parseVre(source)
-    .map((rule) => genRule(rule, td))
+  const actions = Object.keys(td.actions ?? {});
+  return splitSections(source, actions)
+    .map((section) => genRule(section.action, section.params, parseVre(section.source), td))
+    .join('\n');
+}
+
+/** Compile VRE effect strings embedded directly in TD action affordances. */
+export function vreEffectsToHandlers(td: WoT.ThingDescription): string {
+  const actions = (td.actions ?? {}) as unknown as Record<string, ActionSchema>;
+  return Object.entries(actions)
+    .filter(([, action]) => typeof action['vre:effects'] === 'string')
+    .map(([action, definition]) => {
+      const effects = definition['vre:effects'];
+      const input = definition.input;
+      const params = input?.type === 'object' && input.properties
+        ? Object.keys(input.properties)
+        : input ? ['input'] : [];
+      return genRule(action, params, parseVre(effects as string), td);
+    })
     .join('\n');
 }

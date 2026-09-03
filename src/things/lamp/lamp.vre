@@ -1,7 +1,0 @@
-// Behavior for the Lamp's setBrightness action, in VRE.
-// The `toggle` action and property read handlers stay in lamp/logic.js.
-// setBrightness(brightness): only allowed while the lamp is on; sets brightness.
-on setBrightness(brightness) {
-  guard on == true;
-  brightness' = brightness;
-}
