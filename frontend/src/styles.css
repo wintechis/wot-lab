@@ -1,28 +1,383 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+/*
+ * Minimal styling only. Everything here that can be a Primer component or a
+ * Primer Primitives token is one — no hard-coded colors, radii, or fonts.
+ * Layout is handled by Primer's <Stack> / <PageLayout>; the rules below cover
+ * the affordance tables, the live-value treatment and the event log, which
+ * have no direct Primer component.
+ */
 
-:root { font-family: 'Space Grotesk', sans-serif; background: #f6f8fa; color: #1f2328; }
-body { margin: 0; }
-.topbar { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 18px 28px; box-sizing: border-box; background: #0d1117; color: #f0f6fc; }
-.topbar h1 { color: #f0f6fc; }
-.brand { display: flex; align-items: center; gap: 8px; }
-.brand h1 { font-size: 20px; }
-.brand-muted, .muted { color: #656d76; font-weight: normal; }
-.eyebrow { display: block; color: #656d76; font-size: 12px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; }
-.eyebrow.accent { color: #0969da; }
-.console-grid { display: grid; grid-template-columns: 260px minmax(0, 1fr); min-height: calc(100vh - 68px); }
-.sidebar { padding: 32px 18px; border-right: 1px solid #d0d7de; background: #fff; }
-.workspace { max-width: 940px; width: 100%; box-sizing: border-box; padding: 44px clamp(24px, 6vw, 80px) 80px; }
-.hero { padding: 0 0 32px; margin-bottom: 30px; border-bottom: 1px solid #d8dee4; }
-.hero h2 { font-size: clamp(28px, 4vw, 44px); letter-spacing: 0; }
-.operations { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; }
-.operation { padding: 18px; border: 1px solid #d0d7de; border-radius: 6px; background: #fff; box-shadow: 0 1px 2px #1f23280d; }
-.operation-name { display: block; font-weight: 600; }
-.operation-description { display: block; margin: 4px 0 0; font-size: 13px; }
-.field { margin-top: 16px; }
-.thing-id { display: block; color: #656d76; font: 11px 'DM Mono', monospace; }
-.section-heading { margin: 0 0 12px; font-size: 18px; }
-.actions-heading { margin-top: 40px; }
-.result { padding: 10px; border-radius: 4px; background: #f6f8fa; }
-.result pre { max-height: 160px; overflow: auto; margin: 8px 0 0; font: 12px 'DM Mono', monospace; white-space: pre-wrap; }
-.empty { display: grid; justify-items: center; align-content: center; min-height: 50vh; text-align: center; }
-@media (max-width: 700px) { .console-grid { grid-template-columns: 1fr; } .sidebar { border-right: 0; border-bottom: 1px solid #d0d7de; padding: 20px; } .workspace { padding: 30px 20px 60px; } .topbar { padding: 16px 20px; } }
+body {
+  margin: 0;
+}
+
+.app-root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: var(--bgColor-default);
+}
+
+/* Run the split (pane + content) to the bottom of the window even when the page
+ * is short, so the pane's divider reaches the bottom edge. Primer's PageLayout
+ * has no full-height prop and is content-height by default, so stretch its
+ * wrapper chain to fill the space left below the header.
+ *
+ * The wrapper is normally a flex-wrap row (header/footer are full-width rows
+ * that wrap above/below the pane+content row); stretching it that way would let
+ * align-content grow *every* row, ballooning the header. Forcing the wrapper to
+ * a plain column instead means only the content row (already flex: 1 1 100%)
+ * grows. Class prefixes are stable across Primer versions (only the hashed
+ * suffix changes), so match them with a substring selector, scoped to our root. */
+.app-root [class*="PageLayout-PageLayoutRoot"] {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-root [class*="PageLayout-PageLayoutWrapper"] {
+  flex: 1 1 auto;
+  flex-direction: column;
+  flex-wrap: nowrap;
+}
+
+.muted {
+  color: var(--fgColor-muted);
+}
+
+.mono {
+  font-family: var(--fontStack-monospace);
+}
+
+.eyebrow {
+  font-size: var(--text-caption-size, 12px);
+  font-weight: var(--base-text-weight-semibold, 600);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--fgColor-muted);
+}
+
+.eyebrow-accent {
+  color: var(--fgColor-accent);
+}
+
+/* Provenance tag: names the Thing Description field a value comes from. */
+.field-label {
+  font-family: var(--fontStack-monospace);
+  font-size: var(--text-caption-size, 12px);
+  color: var(--fgColor-muted);
+}
+
+/* GitHub-style inline code: monospace on a subtly tinted, rounded ground. */
+.inline-code {
+  padding: 0.2em 0.4em;
+  font-family: var(--fontStack-monospace);
+  font-size: 85%;
+  white-space: break-spaces;
+  background-color: var(--bgColor-neutral-muted, rgba(129, 139, 152, 0.12));
+  border-radius: var(--borderRadius-medium, 6px);
+}
+
+/* --- Affordance tables (Properties / Actions / Events) ------------------ */
+
+.table-scroll {
+  overflow-x: auto;
+}
+
+.aff-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  border: var(--borderWidth-thin, 1px) solid var(--borderColor-default);
+  border-radius: var(--borderRadius-medium);
+  overflow: hidden;
+}
+
+.aff-table th {
+  text-align: left;
+  font-size: var(--text-caption-size, 12px);
+  font-weight: var(--base-text-weight-semibold, 600);
+  color: var(--fgColor-muted);
+  background-color: var(--bgColor-muted);
+  padding: var(--stack-padding-condensed, 8px) var(--stack-padding-normal, 16px);
+  border-bottom: var(--borderWidth-thin, 1px) solid var(--borderColor-default);
+}
+
+.aff-table td {
+  padding: var(--stack-padding-condensed, 10px) var(--stack-padding-normal, 16px);
+  border-bottom: var(--borderWidth-thin, 1px) solid var(--borderColor-muted);
+  vertical-align: top;
+}
+
+.aff-table tr:last-child td {
+  border-bottom: 0;
+}
+
+/* A main row with a following result/log subrow reads as one group: the main
+   row drops its divider, the subrow carries it and sits closer above. */
+.aff-table tr.has-subrow > td {
+  border-bottom: 0;
+  padding-bottom: var(--base-size-4, 4px);
+}
+
+.aff-table tr.subrow > td {
+  padding-top: var(--base-size-4, 4px);
+}
+
+/* Control-only columns (Invoke / Subscribe) shrink to their content, and the
+   first column absorbs the slack, so the trailing controls group next to the
+   row's data instead of stranding a gap before the far right edge. */
+.aff-table td.cell-shrink {
+  width: 1%;
+  white-space: nowrap;
+}
+
+.aff-table--grow td:first-child,
+.aff-table--grow th:first-child {
+  width: 100%;
+}
+
+/* Actions layout: the Input column carries the interactive forms, so it takes
+   the slack and starts right after a readable Action column; Output and Invoke
+   shrink to their content on the right. */
+.aff-table--actions td:first-child,
+.aff-table--actions th:first-child {
+  min-width: 15rem;
+}
+
+.aff-table--actions td:nth-child(2),
+.aff-table--actions th:nth-child(2) {
+  width: 100%;
+}
+
+.aff-table--actions td:nth-child(3),
+.aff-table--actions th:nth-child(3),
+.aff-table--actions td:nth-child(4),
+.aff-table--actions th:nth-child(4) {
+  width: 1%;
+  white-space: nowrap;
+}
+
+/* Recursive schema input. An object/array renders a header (its name + type)
+   above its child fields; the children sit indented beneath a left rule so the
+   parent→child relationship, and each level of nesting, reads at a glance. */
+/* Size the input block to its widest row (not the whole column), so the
+   controls land at that block's right edge — across from their label — instead
+   of drifting to the far edge of a wide column. Children fill this block. */
+.action-input {
+  width: fit-content;
+  max-width: 100%;
+}
+
+.schema-object {
+  width: 100%;
+  min-width: 0;
+}
+
+.schema-group-header {
+  gap: 0;
+}
+
+.schema-group {
+  padding: var(--stack-padding-condensed, 8px) var(--stack-padding-normal, 12px);
+  border: var(--borderWidth-thin, 1px) solid var(--borderColor-muted);
+  border-left: var(--borderWidth-thick, 2px) solid var(--borderColor-muted);
+  border-radius: 0 var(--borderRadius-medium) var(--borderRadius-medium) 0;
+  background-color: var(--bgColor-muted);
+}
+
+/* Nested groups sit inside their parent's panel; the inset ground already reads
+   as one level, so a second fill just muddies it — keep only the accent rule. */
+.schema-group .schema-group {
+  background-color: transparent;
+}
+
+/* Highlight the rule while hovering the group, so it's clear which fields a
+   given object owns when several are nested. */
+.schema-object:hover > .schema-group {
+  border-left-color: var(--borderColor-accent-emphasis, var(--fgColor-accent));
+}
+
+.schema-leaf {
+  width: 100%;
+  min-width: 0;
+}
+
+/* Keep the label/description block from crowding the control on one line. */
+.schema-leaf-label {
+  min-width: 0;
+}
+
+.array-item {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* Recursive read-only value display for object/array outputs. */
+.value-nest {
+  padding-left: var(--stack-padding-condensed, 8px);
+  border-left: var(--borderWidth-thin, 1px) solid var(--borderColor-muted);
+}
+
+.prop-value {
+  font-family: var(--fontStack-monospace);
+  font-size: var(--text-body-size-medium, 14px);
+  color: var(--fgColor-default);
+  word-break: break-word;
+}
+
+.value-error {
+  color: var(--fgColor-danger);
+}
+
+/* Replay a brief highlight every time a live value changes (keyed remount). */
+.prop-value-flash {
+  border-radius: var(--borderRadius-small, 3px);
+  animation: valueFlash 0.9s ease-out;
+}
+
+@keyframes valueFlash {
+  from { background-color: var(--bgColor-accent-muted, rgba(84, 174, 255, 0.4)); }
+  to { background-color: transparent; }
+}
+
+.live-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: var(--borderRadius-full, 50%);
+  background-color: var(--bgColor-success-emphasis, var(--fgColor-success));
+}
+
+.inline-input {
+  max-width: 180px;
+}
+
+/* Action result + event log: token-styled monospace panels inside a subrow. */
+.result,
+.event-log {
+  margin: 0;
+  max-height: 220px;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  border: var(--borderWidth-thin, 1px) solid var(--borderColor-muted);
+  border-radius: var(--borderRadius-medium);
+  background-color: var(--bgColor-inset, var(--bgColor-muted));
+  padding: var(--stack-padding-condensed, 8px);
+  font-family: var(--fontStack-monospace);
+  font-size: var(--text-caption-size, 12px);
+  color: var(--fgColor-default);
+}
+
+.event-log {
+  max-height: 200px;
+}
+
+.event-log-empty {
+  color: var(--fgColor-muted);
+}
+
+/* --- Header brand / landing / navigation ------------------------------- */
+
+/* Reset the bare <button> used as the clickable brand and Thing cards. */
+.brand {
+  display: inline-flex;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+/* Thin vertical rule separating groups in the top bar. */
+.header-divider {
+  width: var(--borderWidth-thin, 1px);
+  align-self: stretch;
+  min-height: 20px;
+  background-color: var(--borderColor-default);
+}
+
+.thing-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--stack-gap-normal, 16px);
+}
+
+.thing-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--base-size-4, 4px);
+  padding: var(--stack-padding-normal, 16px);
+  text-align: left;
+  border: var(--borderWidth-thin, 1px) solid var(--borderColor-default);
+  border-radius: var(--borderRadius-medium);
+  background-color: var(--bgColor-default);
+  box-shadow: var(--shadow-resting-xsmall);
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.thing-card:hover {
+  border-color: var(--borderColor-accent-emphasis, var(--fgColor-accent));
+  background-color: var(--bgColor-muted);
+}
+
+/* --- "Create a new Thing" file layout ---------------------------------- */
+
+.file-tree {
+  border: var(--borderWidth-thin, 1px) solid var(--borderColor-default);
+  border-radius: var(--borderRadius-medium);
+  background-color: var(--bgColor-muted);
+  padding: var(--stack-padding-normal, 16px);
+}
+
+.file-tree-root {
+  display: flex;
+  align-items: center;
+  gap: var(--base-size-8, 8px);
+  padding-bottom: var(--stack-padding-condensed, 8px);
+  margin-bottom: var(--stack-padding-condensed, 8px);
+  border-bottom: var(--borderWidth-thin, 1px) solid var(--borderColor-muted);
+  color: var(--fgColor-muted);
+}
+
+/* Indent each file under the directory root and let its description fill the
+   remaining width, wrapping beside the file name and its required/optional tag. */
+.file-tree-row {
+  padding-left: var(--stack-padding-normal, 16px);
+  flex-wrap: wrap;
+}
+
+.file-tree-desc {
+  flex: 1 1 24ch;
+  min-width: 0;
+}
+
+/* Worked code examples: a filename header bar over a scrollable code body,
+   tokened to match the action-result / event-log panels. */
+.code-example {
+  border: var(--borderWidth-thin, 1px) solid var(--borderColor-default);
+  border-radius: var(--borderRadius-medium);
+  overflow: hidden;
+}
+
+.code-example-head {
+  padding: var(--base-size-6, 6px) var(--stack-padding-condensed, 8px);
+  background-color: var(--bgColor-muted);
+  border-bottom: var(--borderWidth-thin, 1px) solid var(--borderColor-default);
+  color: var(--fgColor-muted);
+}
+
+.code-example-body {
+  margin: 0;
+  max-height: 320px;
+  overflow: auto;
+  padding: var(--stack-padding-condensed, 12px);
+  background-color: var(--bgColor-inset, var(--bgColor-muted));
+  font-family: var(--fontStack-monospace);
+  font-size: var(--text-caption-size, 12px);
+  line-height: 1.55;
+  color: var(--fgColor-default);
+}

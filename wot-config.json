@@ -5,6 +5,9 @@
     },
     "lamp": {
       "instances": 1
+    },
+    "blergb": {
+      "instances": 1
     }
   },
   "global": {

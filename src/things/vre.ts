@@ -136,10 +136,6 @@ function genRule(
     const data = event.data ? `, ${genExpr(event.data, ctx)}` : '';
     body += `  thing.emitEvent(${JSON.stringify(event.name)}${data});\n`;
   }
-  for (const event of program.events) {
-    const data = event.data ? `, ${genExpr(event.data, ctx)}` : '';
-    body += `  thing.emitEvent(${JSON.stringify(event.name)}${data});\n`;
-  }
   return `thing.setActionHandler(${JSON.stringify(
     action
   )}, async (inputData) => {\n${body}});\n`;
