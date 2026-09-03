@@ -1,9 +1,8 @@
 import * as WoT from 'wot-typescript-definitions';
-import { ThingHandler, loadAllThings, loadConfiguredThings } from './ThingHandler.js';
-import { WotLabConfig } from '../config/ThingConfig.js';
+import { ThingHandler } from './ThingHandler.js';
 import { createLoggers } from '../utils/debug.js';
 
-const { debug, info } = createLoggers('things');
+const { debug } = createLoggers('things');
 
 export interface ThingCreationResult {
   thingId: string;
@@ -19,17 +18,28 @@ export class ThingFactory {
 
   async createThing(handler: ThingHandler): Promise<ThingCreationResult> {
     try {
-      const exposedThing = await this.wot.produce(handler.thingDescription);
+      const td = handler.thingDescription;
+      const instanceId = (td.id as string).replace('urn:wot:', '');
+
+      // node-wot addresses a Thing by `slugify(title)`, not by its id
+      // (binding-http's `expose`), and it bakes that path into every form it
+      // generates. Exposing under the instance id as the title is what makes
+      // the URL, the form hrefs and the Thing Description's own `id` agree —
+      // /lamp-2 is the Thing whose id is urn:wot:lamp-2, always.
+      const exposedThing = await this.wot.produce({ ...td, title: instanceId });
       await handler.setup(exposedThing);
       await exposedThing.expose();
 
-      const thingId = handler.thingDescription.id ? 
-        handler.thingDescription.id.replace('urn:wot:', '') : 
-        (handler.thingDescription.title || 'unknown');
-      debug(`✓ Thing '${handler.thingDescription.title}' exposed with ID: ${thingId}`);
-      
+      // The routing title has done its job once the paths are fixed. The Thing
+      // Description is serialized from this object on every request, so putting
+      // the human title back here means clients see "Motion Sensor" while the
+      // Thing stays addressable as /motion.
+      (exposedThing as unknown as { title: string }).title = td.title || instanceId;
+
+      debug(`✓ Thing '${td.title}' exposed with ID: ${instanceId}`);
+
       return {
-        thingId,
+        thingId: instanceId,
         title: handler.thingDescription.title || 'Unknown',
         success: true
       };
@@ -50,25 +60,4 @@ export class ThingFactory {
     }
   }
 
-  async createThings(handlers: ThingHandler[]): Promise<ThingCreationResult[]> {
-    const results: ThingCreationResult[] = [];
-    
-    for (const handler of handlers) {
-      const result = await this.createThing(handler);
-      results.push(result);
-    }
-    
-    return results;
-  }
-
-  async createAllThings(): Promise<ThingCreationResult[]> {
-    info('Auto-discovering all Things...');
-    const handlers = await loadAllThings();
-    return await this.createThings(handlers);
-  }
-
-  async createConfiguredThings(config: WotLabConfig): Promise<ThingCreationResult[]> {
-    const handlers = await loadConfiguredThings(config);
-    return await this.createThings(handlers);
-  }
 }

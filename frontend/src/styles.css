@@ -237,13 +237,6 @@ body {
   border-left: var(--borderWidth-thin, 1px) solid var(--borderColor-muted);
 }
 
-.prop-value {
-  font-family: var(--fontStack-monospace);
-  font-size: var(--text-body-size-medium, 14px);
-  color: var(--fgColor-default);
-  word-break: break-word;
-}
-
 .value-error {
   color: var(--fgColor-danger);
 }
@@ -254,9 +247,17 @@ body {
   animation: valueFlash 0.9s ease-out;
 }
 
+/* The flash has to end on whatever the element's resting background is, or the
+   value snaps back to that colour the moment the animation finishes. A chipped
+   value rests on the neutral tint; the wrapper around a structured value has no
+   background of its own and keeps the transparent default. */
+.inline-code.prop-value-flash {
+  --value-flash-rest: var(--bgColor-neutral-muted, rgba(129, 139, 152, 0.12));
+}
+
 @keyframes valueFlash {
   from { background-color: var(--bgColor-accent-muted, rgba(84, 174, 255, 0.4)); }
-  to { background-color: transparent; }
+  to { background-color: var(--value-flash-rest, transparent); }
 }
 
 .live-dot {
@@ -368,34 +369,6 @@ body {
 
 /* --- "Create a new Thing" file layout ---------------------------------- */
 
-.file-tree {
-  border: var(--borderWidth-thin, 1px) solid var(--borderColor-default);
-  border-radius: var(--borderRadius-medium);
-  background-color: var(--bgColor-muted);
-  padding: var(--stack-padding-normal, 16px);
-}
-
-.file-tree-root {
-  display: flex;
-  align-items: center;
-  gap: var(--base-size-8, 8px);
-  padding-bottom: var(--stack-padding-condensed, 8px);
-  margin-bottom: var(--stack-padding-condensed, 8px);
-  border-bottom: var(--borderWidth-thin, 1px) solid var(--borderColor-muted);
-  color: var(--fgColor-muted);
-}
-
-/* Indent each file under the directory root and let its description fill the
-   remaining width, wrapping beside the file name and its required/optional tag. */
-.file-tree-row {
-  padding-left: var(--stack-padding-normal, 16px);
-  flex-wrap: wrap;
-}
-
-.file-tree-desc {
-  flex: 1 1 24ch;
-  min-width: 0;
-}
 
 /* Worked code examples: a filename header bar over a scrollable code body,
    tokened to match the action-result / event-log panels. */
@@ -610,4 +583,131 @@ body {
   text-indent: 0;
   color: var(--fgColor-muted);
   user-select: none;
+}
+
+/* --- Filename header of a code panel ---------------------------------- */
+/* Was a <Text> before the highlighter moved into its own module; the styles
+   it carried (small, semibold) live here now so the panel is unchanged. */
+.code-example-name {
+  font-size: var(--text-caption-size, 12px);
+  font-weight: var(--base-text-weight-semibold, 600);
+}
+
+/* --- Empty lab -------------------------------------------------------- */
+/* Nothing runs unless it was asked for, so this is a normal resting state,
+   not an error: an inset panel rather than a warning colour. */
+.empty-state {
+  padding: var(--stack-padding-spacious, 24px);
+  border: var(--borderWidth-thin, 1px) dashed var(--borderColor-default);
+  border-radius: var(--borderRadius-medium);
+  background-color: var(--bgColor-inset, var(--bgColor-muted));
+}
+
+/* --- Reproducing a session -------------------------------------------- */
+.start-command {
+  margin-top: var(--stack-gap-spacious, 24px);
+  padding-top: var(--stack-padding-condensed, 8px);
+  border-top: var(--borderWidth-thin, 1px) solid var(--borderColor-muted);
+  align-items: start;
+}
+
+.start-command-code {
+  display: block;
+  width: 100%;
+  padding: var(--base-size-6, 6px) var(--stack-padding-condensed, 8px);
+  border-radius: var(--borderRadius-medium);
+  background-color: var(--bgColor-inset, var(--bgColor-muted));
+  font-family: var(--fontStack-monospace);
+  font-size: var(--text-caption-size, 12px);
+  color: var(--fgColor-default);
+  overflow-wrap: anywhere;
+}
+
+/* --- The create-a-Thing form ------------------------------------------ */
+/* Rows of small controls: they wrap rather than scroll, so the dialog stays
+   usable at a narrow window without a horizontal scrollbar inside a form. */
+.spec-field {
+  gap: var(--base-size-4, 4px);
+  min-width: 0;
+}
+
+/* The box you add rows into. Giving the group real padding is what makes it
+   read as a container rather than as rows floating under a heading — and it is
+   what visually holds a nested object's members inside their parent. */
+.spec-group {
+  padding: var(--stack-padding-normal, 16px);
+  border: var(--borderWidth-thin, 1px) solid var(--borderColor-muted);
+  border-radius: var(--borderRadius-medium);
+  background-color: var(--bgColor-default);
+}
+
+/* One entry in a group: a property, a parameter, an action, an event. */
+.spec-node {
+  width: 100%;
+}
+
+/* One action or event: a card you fill in, so it gets the roomier padding —
+   it holds a whole sub-form (name, input parameters, output, effects) rather
+   than a single row of controls. */
+.spec-block {
+  width: 100%;
+  padding: var(--stack-padding-normal, 16px);
+  margin-block-end: var(--base-size-4, 4px);
+  border: var(--borderWidth-thin, 1px) solid var(--borderColor-muted);
+  border-radius: var(--borderRadius-medium);
+  background-color: var(--bgColor-inset, var(--bgColor-muted));
+}
+
+/* A datatype nested inside another — an object's members, an array's item type,
+   an action's output. The rule and the inset say "this belongs to the row
+   above", which is the only cue that survives three levels of nesting. */
+.spec-nested {
+  width: 100%;
+  margin-left: var(--base-size-8, 8px);
+  padding-left: var(--stack-padding-condensed, 12px);
+  border-left: var(--borderWidth-thick, 2px) solid var(--borderColor-muted);
+}
+
+/* Nested groups sit on the panel tint so depth stays legible without adding a
+   heavier border at every level. */
+.spec-nested .spec-group {
+  padding: var(--stack-padding-condensed, 8px);
+  background-color: var(--bgColor-inset, var(--bgColor-muted));
+}
+
+.spec-name input {
+  font-family: var(--fontStack-monospace);
+}
+
+.spec-name {
+  width: 10rem;
+}
+
+.spec-small {
+  width: 6.5rem;
+}
+
+.spec-wide {
+  width: 100%;
+}
+
+.spec-effects textarea,
+.spec-json textarea {
+  width: 100%;
+  font-family: var(--fontStack-monospace);
+  font-size: var(--text-caption-size, 12px);
+}
+
+.spec-effects,
+.spec-json {
+  width: 100%;
+}
+
+/* A value chip inside a code panel (an action's structured output) must not
+   shrink again: 85% of the panel's 12px would land near 10px. It keeps the
+   tint, which is what distinguishes the value from the labels around it. */
+.result .inline-code,
+.event-log .inline-code {
+  font-size: 100%;
+  padding: 0.1em 0.3em;
 }

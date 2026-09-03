@@ -5,12 +5,15 @@ import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { readdir } from 'fs/promises';
 import { createLoggers } from '../utils/debug.js';
-import { vreEffectsToHandlers, vreToHandlers } from './vre.js';
+import { vreEffectsToHandlers } from './vre.js';
 
-const { debug, warn, error } = createLoggers('things');
+const { debug, warn } = createLoggers('things');
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+
+/** Directory holding one sub-directory per Thing Model. */
+export const thingsDirectory = __dirname;
 
 export abstract class ThingHandler {
   private td: WoT.ThingDescription;
@@ -21,11 +24,9 @@ export abstract class ThingHandler {
   }
 
   protected initializeGlobalState(): void {
-    // Use the instance ID for global state, not the full URI
-    const stateId = this.td.id
-      ? this.td.id.replace('urn:wot:', '')
-      : this.td.title || '';
-    addThingToGlobalState(stateId, this.state);
+    // Use the instance ID for global state, not the full URI. `loadThing`
+    // guarantees an id is present, so this never falls back to a title.
+    addThingToGlobalState((this.td.id as string).replace('urn:wot:', ''), this.state);
   }
 
   // eslint-disable-next-line no-unused-vars
@@ -69,13 +70,12 @@ async function loadStateFile(
 // Helper function to evaluate a logic file (function body)
 async function evaluateLogicFile(
   td: WoT.ThingDescription,
-  filePath: string,
-  vrePath: string
+  filePath: string
 ): Promise<
   (_thing: WoT.ExposedThing, _state: Record<string, unknown>) => Promise<void>
 > {
   // logic.js is optional. A Thing can be declared purely as TD + state.json
-  // (+ optional VRE effect annotations); when logic.js is absent we generate
+  // (+ optional `vre:effects` annotations); when logic.js is absent we generate
   // default property read handlers from the TD so the Thing's state is still
   // observable over WoT. A present logic.js is used verbatim (it wires its own
   // read handlers), preserving existing behavior.
@@ -84,25 +84,34 @@ async function evaluateLogicFile(
   let content = hasLogic ? await logicFile.text() : '';
 
   if (!hasLogic) {
-    const propNames = Object.keys(td.properties ?? {});
-    content = propNames
-      .map(
-        (p) =>
-          `thing.setPropertyReadHandler(${JSON.stringify(
-            p
-          )}, async () => state[${JSON.stringify(p)}]);\n`
-      )
+    const properties = Object.entries(td.properties ?? {}) as [
+      string,
+      { readOnly?: boolean }
+    ][];
+    content = properties
+      .map(([name, schema]) => {
+        const key = JSON.stringify(name);
+        const read = `thing.setPropertyReadHandler(${key}, async () => state[${key}]);\n`;
+        if (schema?.readOnly) {
+          return read;
+        }
+        // A property the TD says is writable has to actually accept a write.
+        // Without this the affordance is advertised, node-wot has no handler
+        // for it, and a PUT fails — so the TD would be promising something the
+        // Thing cannot do. The change is emitted for the same reason a VRE
+        // effect emits: so observers see it, not just the next reader.
+        return (
+          read +
+          `thing.setPropertyWriteHandler(${key}, async (value) => { state[${key}] = await value.value(); thing.emitPropertyChange(${key}); });\n`
+        );
+      })
       .join('');
   }
 
-  // Generate action handlers from the Thing's VRE effect program (<name>.vre),
-  // if present. VRE (see ./vre.ts) compiles effect assignments into
-  // `state.X = ...` + emitPropertyChange and guards into throw-guards. It works
-  // with or without logic.js.
-  const vreFile = Bun.file(vrePath);
-  if (await vreFile.exists()) {
-    content += `\n${vreToHandlers(await vreFile.text(), td)}`;
-  }
+  // Generate action handlers from the `vre:effects` annotations in the Thing
+  // Description. VRE (see ./vre.ts) compiles effect assignments into
+  // `state.X = ...` + emitPropertyChange. Effects live on the affordance they
+  // belong to, and work with or without logic.js.
   content += `\n${vreEffectsToHandlers(td)}`;
 
   // Import Node.js built-in modules that Things might need
@@ -124,38 +133,44 @@ async function evaluateLogicFile(
     );
 }
 
-// Auto-loader for convention-based Things
+/**
+ * Load one Thing from its Thing Model on disk.
+ *
+ * `instanceId` is required, and that is the point: it is the only thing
+ * standing between a Thing and an anonymous Thing Description, which node-wot
+ * answers by minting a random `urn:uuid:` id — a different URL on every boot.
+ * Making the caller name the instance makes that state unrepresentable.
+ *
+ * The instance id sets the Thing Description's `id` only. The `title` is the
+ * type's own human name and survives untouched unless `title` overrides it,
+ * so "Motion Sensor" never becomes "motion".
+ */
 export async function loadThing(
-  thingName: string,
-  instanceId?: string
+  modelName: string,
+  instanceId: string,
+  title?: string
 ): Promise<ThingHandler> {
   try {
-    const basePath = join(__dirname, thingName);
+    const basePath = join(thingsDirectory, modelName);
 
     // Read the Thing Description natively via Bun.file
     const td: WoT.ThingDescription = await Bun.file(
-      join(basePath, `${thingName}.td.json`)
+      join(basePath, `${modelName}.td.json`)
     ).json();
 
-    // Load TD, state, and behavior (logic.js and/or <name>.vre)
+    // Load TD, state, and behavior (logic.js and/or `vre:effects`)
     const [stateObject, logicFunction] = await Promise.all([
       loadStateFile(join(basePath, 'state.json')),
-      evaluateLogicFile(
-        td,
-        join(basePath, 'logic.js'),
-        join(basePath, `${thingName}.vre`)
-      )
+      evaluateLogicFile(td, join(basePath, 'logic.js'))
     ]);
 
     return new (class extends ThingHandler {
       protected state = proxy(stateObject);
 
       constructor() {
-        // Clone TD and set custom ID if provided
-        const instanceTd = { ...td };
-        if (instanceId) {
-          instanceTd.id = `urn:wot:${instanceId}`; // Make it a proper URI
-          instanceTd.title = instanceId;
+        const instanceTd = { ...td, id: `urn:wot:${instanceId}` };
+        if (title) {
+          instanceTd.title = title;
         }
 
         super(instanceTd);
@@ -167,106 +182,71 @@ export async function loadThing(
       }
     })();
   } catch (error) {
-    console.error(`ERROR: Error loading thing '${thingName}':`, error);
+    console.error(`ERROR: Error loading Thing Model '${modelName}':`, error);
     throw error;
   }
 }
 
 /**
- * Create multiple instances of a Thing type
+ * A Thing Model on disk: the Thing Description and state a Thing is made from,
+ * before any instance of it exists.
  */
-export async function loadThingInstances(
-  thingName: string,
-  instanceCount: number,
-  idPrefix?: string
-): Promise<ThingHandler[]> {
-  const handlers: ThingHandler[] = [];
-  const prefix = idPrefix || thingName.toLowerCase();
-
-  for (let i = 1; i <= instanceCount; i++) {
-    const instanceId = instanceCount === 1 ? prefix : `${prefix}-${i}`;
-    try {
-      const handler = await loadThing(thingName, instanceId);
-      handlers.push(handler);
-      debug(`✓ Created instance: ${instanceId}`);
-    } catch (e) {
-      error(`ERROR: Failed to create instance ${instanceId}:`, e);
-    }
-  }
-
-  return handlers;
+export interface ThingModelInfo {
+  name: string;
+  title: string;
+  description?: string;
+  hasLogic: boolean;
 }
 
-// Load all things from a directory
-export async function loadAllThings(
-  thingsDir?: string
-): Promise<ThingHandler[]> {
-  const targetDir = thingsDir || __dirname;
+/**
+ * Read one Thing Model's descriptor, or null when the directory is not one.
+ *
+ * A directory is a Thing Model exactly when it holds `<name>.td.json`; anything
+ * else in `src/things/` (the loader modules, for instance) is simply not a
+ * model, so it is skipped rather than warned about.
+ */
+export async function readThingModel(name: string): Promise<ThingModelInfo | null> {
+  const basePath = join(thingsDirectory, name);
+  const tdFile = Bun.file(join(basePath, `${name}.td.json`));
+  if (!(await tdFile.exists())) {
+    return null;
+  }
 
   try {
-    const entries = await readdir(targetDir, { withFileTypes: true });
-    const thingDirs = entries
-      .filter((entry) => entry.isDirectory())
-      .map((entry) => entry.name);
-
-    const things: ThingHandler[] = [];
-    for (const thingName of thingDirs) {
-      try {
-        const thing = await loadThing(thingName);
-        things.push(thing);
-      } catch (error) {
-        warn(`Failed to load thing '${thingName}':`, error);
-      }
-    }
-
-    return things;
-  } catch (e) {
-    error(`Failed to read things directory '${targetDir}':`, e);
-    return [];
-  }
-}
-
-/**
- * Configuration interface for Things
- */
-interface ThingConfig {
-  instances: number;
-  idPrefix?: string;
-}
-
-interface Config {
-  things: Record<string, ThingConfig>;
-}
-
-/**
- * Load Things based on configuration
- */
-export async function loadConfiguredThings(
-  config: Config
-): Promise<ThingHandler[]> {
-  const handlers: ThingHandler[] = [];
-
-  debug('Loading Things based on configuration...');
-
-  for (const [thingName, thingConfig] of Object.entries(config.things)) {
-    const { instances, idPrefix } = thingConfig as {
-      instances: number;
-      idPrefix?: string;
+    const td = (await tdFile.json()) as WoT.ThingDescription;
+    return {
+      name,
+      title: td.title || name,
+      description: td.description,
+      hasLogic: await Bun.file(join(basePath, 'logic.js')).exists()
     };
+  } catch (cause) {
+    warn(`Skipping Thing Model '${name}': unreadable Thing Description`, cause);
+    return null;
+  }
+}
 
-    debug(`Creating ${instances} instance(s) of '${thingName}'`);
+/**
+ * The catalog: Thing Models present on disk.
+ *
+ * This reads Thing Descriptions and nothing else — no state, no logic, no
+ * `eval`, no exposure. Having a model and running a Thing from it are separate
+ * acts, which is why adding a directory can no longer change what is live.
+ */
+export async function listThingModels(): Promise<ThingModelInfo[]> {
+  const entries = await readdir(thingsDirectory, { withFileTypes: true });
+  const models: ThingModelInfo[] = [];
 
-    try {
-      const thingHandlers = await loadThingInstances(
-        thingName,
-        instances,
-        idPrefix
-      );
-      handlers.push(...thingHandlers);
-    } catch (e) {
-      error(`ERROR: Failed to load thing type '${thingName}':`, e);
+  for (const entry of entries) {
+    if (!entry.isDirectory()) {
+      continue;
+    }
+    const model = await readThingModel(entry.name);
+    if (model) {
+      models.push(model);
     }
   }
 
-  return handlers;
+  debug(`Thing Models on disk: ${models.map((model) => model.name).join(', ') || '(none)'}`);
+  return models.sort((a, b) => a.name.localeCompare(b.name));
 }

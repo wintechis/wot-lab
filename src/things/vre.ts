@@ -2,11 +2,13 @@ import * as WoT from 'wot-typescript-definitions';
 import { parseVre, VREExpr, VreProgram, VreEffect } from './vre-parser.js';
 
 /**
- * Compile a `.vre` file into JavaScript that registers WoT action handlers.
+ * Compile the `vre:effects` annotations in a Thing Description into JavaScript
+ * that registers WoT action handlers.
  *
  * Parsing (lexer + expression grammar + AST) follows V-Realm's VRE effect
- * language — see `vre-parser.ts`. Action names are adapter metadata supplied by
- * `// action(params):` section headers because they are not part of VRE.
+ * language — see `vre-parser.ts`. Effects are annotations on an action
+ * affordance, so the action a program belongs to is the affordance carrying it;
+ * VRE itself declares no actions.
  *
  * Reference resolution is TD-informed (single-Thing): a bare identifier naming an
  * action input parameter resolves to that input value; a bare identifier naming a
@@ -141,34 +143,7 @@ function genRule(
   )}, async (inputData) => {\n${body}});\n`;
 }
 
-interface ActionSection { action: string; params: string[]; source: string; }
-
-function splitSections(source: string, actionNames: string[]): ActionSection[] {
-  const header = /^\s*\/\/\s*([A-Za-z_]\w*)\s*\(([^)]*)\)\s*:\s*$/gm;
-  const matches = [...source.matchAll(header)];
-  if (matches.length === 0) {
-    if (actionNames.length !== 1) {
-      throw new Error('VRE: multi-action files require // action(params): section headers');
-    }
-    return [{ action: actionNames[0], params: [], source }];
-  }
-  const shared = source.slice(0, matches[0].index);
-  return matches.map((match, index) => ({
-    action: match[1],
-    params: match[2].split(',').map((p) => p.trim()).filter(Boolean),
-    source: shared + source.slice((match.index ?? 0) + match[0].length, matches[index + 1]?.index ?? source.length)
-  }));
-}
-
-/** Compile standard VRE source into JS action handlers. */
-export function vreToHandlers(source: string, td: WoT.ThingDescription): string {
-  const actions = Object.keys(td.actions ?? {});
-  return splitSections(source, actions)
-    .map((section) => genRule(section.action, section.params, parseVre(section.source), td))
-    .join('\n');
-}
-
-/** Compile VRE effect strings embedded directly in TD action affordances. */
+/** Compile the `vre:effects` annotations carried by a TD's action affordances. */
 export function vreEffectsToHandlers(td: WoT.ThingDescription): string {
   const actions = (td.actions ?? {}) as unknown as Record<string, ActionSchema>;
   return Object.entries(actions)

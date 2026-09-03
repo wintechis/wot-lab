@@ -28,27 +28,43 @@ subscribe(globalState, (ops) => {
   }
 });
 
+/**
+ * Register a Thing's state under the id it is exposed with.
+ *
+ * This throws rather than renaming on collision. Ids are allocated up front by
+ * `ThingRegistry`, which is the single authority for them; if an id arrives
+ * here twice, the allocator has been bypassed, and silently renaming would put
+ * the state key out of step with the id in the Thing Description — the exact
+ * drift that made the aggregated state untrustworthy.
+ */
 export function addThingToGlobalState(thingId: string, thingState: unknown): void {
-  debug(`Adding thing with ID: ${thingId}`);
-  thingId = ensureUniqueId(thingId);
-  globalState.things[thingId] = thingState;
+  const id = normalizeThingId(thingId);
+  if (isIdTaken(id)) {
+    throw new Error(`Thing id '${id}' is already registered`);
+  }
+  debug(`Adding thing with ID: ${id}`);
+  globalState.things[id] = thingState;
 }
 
-export function ensureUniqueId(id: string): string {
-  id = id.replace(/\s+/g, '-').toLowerCase();
-  // Ensure the ID is unique
-  if (globalState.things[id]) {
-    let counter = 1;
-    while (globalState.things[`${id}-${counter}`]) {
-      counter++;
-    }
-    id = `${id}-${counter}`;
-  }
-  return id;
+/**
+ * The canonical spelling of an id: lowercase, with every run of other
+ * characters collapsed to a single hyphen.
+ *
+ * The result is deliberately slug-shaped. node-wot derives a Thing's URL by
+ * slugifying the title it is exposed under (see ThingFactory), so an id that is
+ * already a slug survives that step unchanged — which is what lets the id, the
+ * URL and the Thing Description's `id` be the same string.
+ */
+export function normalizeThingId(id: string): string {
+  return id.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+}
+
+export function isIdTaken(id: string): boolean {
+  return Object.prototype.hasOwnProperty.call(globalState.things, normalizeThingId(id));
 }
 
 export function removeThingFromGlobalState(thingId: string): void {
-  delete globalState.things[thingId];
+  delete globalState.things[normalizeThingId(thingId)];
 }
 
 export function getGlobalState(): GlobalStateType {
