@@ -32,7 +32,7 @@ function updateTemperature(newTemp, source = 'http') {
   thing.emitPropertyChange("temperature");
   thing.emitPropertyChange("lastUpdated");
   
-  debug(`🌡️ Temperature updated: ${oldTemp} → ${state.temperature} °C (source: ${source})`);
+  debug(`Temperature updated: ${oldTemp} -> ${state.temperature} °C (source: ${source})`);
   
   return {
     success: true,
@@ -45,4 +45,4 @@ function updateTemperature(newTemp, source = 'http') {
   };
 }
 
-debug("🌡️ Thermometer simulation initialized.");
+debug("Thermometer simulation initialized.");

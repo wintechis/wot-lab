@@ -29,7 +29,7 @@ function triggerPresence() {
     thing.emitPropertyChange("lastDetection");
     thing.emitPropertyChange("detectionCount");
     
-    debug(`🟢 Presence detected (count: ${state.detectionCount})`);
+    debug(`Presence detected (count: ${state.detectionCount})`);
   }
   
   return {
@@ -64,7 +64,7 @@ function triggerAbsence() {
     thing.emitPropertyChange("isPresent");
     thing.emitPropertyChange("lastDetection");
     
-    debug(`🔴 Absence detected (was present for ${duration}s)`);
+    debug(`Absence detected (was present for ${duration}s)`);
   }
   
   return {
@@ -74,4 +74,4 @@ function triggerAbsence() {
   };
 }
 
-debug("📡 Presence sensor initialized.");
+debug("Presence sensor initialized.");

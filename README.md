@@ -200,7 +200,53 @@ A Thing declared with only a TD, `state.json`, and a `.vre` file needs no `logic
 
 ## API Reference
 
-Things are consumed over the standard **W3C WoT HTTP protocol** served by `@node-wot` at `http://localhost:8081/`. Fetch a Thing Description (e.g. `http://localhost:8081/counter`) and interact with its properties, actions, and events using a WoT client — see the `exampleClient.ts` files under `src/things/<name>/` and the `*client` npm scripts.
+WoT Lab exposes one HTTP server from `@node-wot/binding-http`. It listens on port `8081` by default; set `global.wotPort` in `wot-config.json` to change it. There is no separate REST API, state endpoint, or port-4000 server. The Thing Description is the source of truth for the affordances and payload schemas available for each Thing.
+
+The root path is content-negotiated: request `Accept: application/json` for a machine-readable list of Things, or `Accept: text/html` for a browsable directory. A Thing path requested with `Accept: text/html` shows links for its Thing Description, properties, observations, actions, and events. Requests with other `Accept` values continue to the standard WoT routes below.
+
+### Endpoint shapes
+
+Replace `{thingId}` with the exposed instance ID (for example, `counter`, `counter-1`, or a configured `idPrefix`). Use the `forms` in the returned Thing Description when a Thing uses URI variables or a non-default content type.
+
+| Operation | HTTP endpoint | Method | Notes |
+|-----------|---------------|--------|-------|
+| Fetch Thing Description | `/{thingId}` | `GET` | Returns the TD, including generated `forms`. |
+| Read all properties | `/{thingId}/properties` | `GET` | Returns a JSON object of readable properties. |
+| Read one property | `/{thingId}/properties/{propertyName}` | `GET` | Available for readable properties. |
+| Write all properties | `/{thingId}/properties` | `PUT` | Only available when the TD declares writable properties. |
+| Write one property | `/{thingId}/properties/{propertyName}` | `PUT` | Only available for writable properties. |
+| Observe a property | `/{thingId}/properties/{propertyName}/observable` | `GET` | Long-poll stream for properties marked `observable`. |
+| Invoke an action | `/{thingId}/actions/{actionName}` | `POST` | Send the action input as the request body. |
+| Subscribe to an event | `/{thingId}/events/{eventName}` | `GET` | Long-poll stream of emitted event data. |
+
+The property collection routes also support the binding's multiple-property operations where described by the TD forms. `PUT` is not available for the current included Things because their properties are read-only. Event and property observation are long-poll HTTP subscriptions; a WoT client such as the examples below handles the protocol details.
+
+### Included Thing affordances
+
+This is the endpoint inventory for the Things shipped in `src/things/`. Every listed property has an individual read endpoint. Every listed action has an individual invoke endpoint, and every listed event has an individual subscription endpoint.
+
+| Thing ID | Properties | Actions | Events |
+|----------|------------|---------|--------|
+| `blergb` | `currentColor`, `power`, `currentEffect`, `brightness`, `lastUpdated` | `setColor`, `setPower`, `setEffect`, `setBrightness` | `colorChanged`, `powerChanged`, `effectChanged` |
+| `brightness` | `brightness`, `lastUpdated` | None | None |
+| `counter` | `count`, `lastChange` | `increment`, `decrement`, `reset` | `change` |
+| `door` | `locked`, `lockState`, `batteryLevel`, `lastAction` | `lock`, `unlock` | `lockStateChanged`, `unauthorizedAccess` |
+| `lamp` | `on`, `brightness` | `toggle`, `setBrightness` | None |
+| `motion` | `motionDetected`, `lastMotion`, `activityLevel` | None | `motion`, `noMotion` |
+| `presence` | `isPresent`, `lastDetection`, `detectionCount` | None | `presence`, `absence` |
+| `ruuvitag` | `temperature`, `humidity`, `pressure`, `acceleration`, `batteryInfo`, `movementCounter`, `sequenceNumber`, `lastUpdated` | `simulateReading` | `sensorData`, `movementDetected` |
+| `thermometer` | `temperature`, `lastUpdated` | None | None |
+| `vswitch` | `level` | `setLevel` | None |
+
+For example, these requests read a TD, read a property, and invoke a no-input action:
+
+```bash
+curl http://localhost:8081/counter
+curl http://localhost:8081/counter/properties/count
+curl -X POST http://localhost:8081/counter/actions/increment
+```
+
+Use a WoT client for observation, event subscriptions, and action inputs. The repository includes clients under `src/things/<name>/exampleClient.ts`, runnable through the `*client` scripts.
 
 ## Examples
 
@@ -251,7 +297,7 @@ bun run counterclient
 # Run lamp client  
 bun run lampclient
 
-# Run presence sensor client (tests both WoT and HTTP interfaces)
+# Run presence sensor client (tests WoT properties and events)
 bun run presenceclient
 
 # Run RuuviTag sensor client (comprehensive environmental sensor)
@@ -297,7 +343,7 @@ DEBUG=wot-lab:system:debug,wot-lab:things:info bun run dev
 # Enable all simulation logging for specific devices
 DEBUG=wot-lab:simulation:brightness:*,wot-lab:simulation:ruuvitag:* bun run dev
 
-# Disable debug logging (default)
+# System startup logging (default); disable it with DEBUG=none
 bun run dev
 ```
 

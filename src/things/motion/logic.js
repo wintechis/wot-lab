@@ -26,7 +26,7 @@ function triggerMotion() {
     thing.emitPropertyChange("lastMotion");
     thing.emitPropertyChange("activityLevel");
     
-    debug(`🏃 Motion detected (level: ${state.activityLevel})`);
+    debug(`Motion detected (level: ${state.activityLevel})`);
   }
   
   return {
@@ -51,7 +51,7 @@ function resetMotion() {
     // Notify property change
     thing.emitPropertyChange("motionDetected");
     
-    debug(`🛑 Motion reset`);
+    debug(`Motion reset`);
   }
   
   return {
@@ -61,4 +61,4 @@ function resetMotion() {
   };
 }
 
-debug("🏃 Motion sensor initialized.");
+debug("Motion sensor initialized.");

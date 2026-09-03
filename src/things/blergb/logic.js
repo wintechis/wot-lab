@@ -63,7 +63,7 @@ thing.setActionHandler("setColor", async (input) => {
   
   // Generate BLE command (simulated)
   const command = generateColorCommand(R, G, B);
-  debug(`🎨 RGB Command sent: [${command.join(', ')}]`);
+  debug(`RGB Command sent: [${command.join(', ')}]`);
   
   // Emit property changes and event
   thing.emitPropertyChange("currentColor");
@@ -73,7 +73,7 @@ thing.setActionHandler("setColor", async (input) => {
     timestamp
   });
   
-  debug(`🌈 Color changed: RGB(${oldColor.R},${oldColor.G},${oldColor.B}) → RGB(${R},${G},${B})`);
+  debug(`Color changed: RGB(${oldColor.R},${oldColor.G},${oldColor.B}) -> RGB(${R},${G},${B})`);
   
   return {
     success: true,
@@ -100,7 +100,7 @@ thing.setActionHandler("setPower", async (input) => {
   
   // Generate BLE command (simulated)
   const command = generatePowerCommand(powerState);
-  debug(`🔌 Power Command sent: [${command.join(', ')}]`);
+  debug(`Power Command sent: [${command.join(', ')}]`);
   
   // Emit property changes and event
   thing.emitPropertyChange("power");
@@ -110,7 +110,7 @@ thing.setActionHandler("setPower", async (input) => {
     timestamp
   });
   
-  debug(`⚡ Power ${oldPower ? 'ON' : 'OFF'} → ${powerState ? 'ON' : 'OFF'}`);
+  debug(`Power ${oldPower ? 'ON' : 'OFF'} -> ${powerState ? 'ON' : 'OFF'}`);
   
   return {
     success: true,
@@ -137,7 +137,7 @@ thing.setActionHandler("setEffect", async (input) => {
   
   // Generate BLE command (simulated)
   const command = generateEffectCommand(effect);
-  debug(`✨ Effect Command sent: [${command.join(', ')}]`);
+  debug(`Effect Command sent: [${command.join(', ')}]`);
   
   // Emit property changes and event
   thing.emitPropertyChange("currentEffect");
@@ -147,7 +147,7 @@ thing.setActionHandler("setEffect", async (input) => {
     timestamp
   });
   
-  debug(`✨ Effect changed: ${oldEffect} → ${effect}`);
+  debug(`Effect changed: ${oldEffect} -> ${effect}`);
   
   return {
     success: true,
@@ -181,13 +181,13 @@ thing.setActionHandler("setBrightness", async (input) => {
   );
   
   const command = generateColorCommand(adjustedColor.R, adjustedColor.G, adjustedColor.B);
-  debug(`💡 Brightness Command sent: [${command.join(', ')}]`);
+  debug(`Brightness Command sent: [${command.join(', ')}]`);
   
   // Emit property changes
   thing.emitPropertyChange("brightness");
   thing.emitPropertyChange("lastUpdated");
   
-  debug(`💡 Brightness changed: ${oldBrightness}% → ${brightness}%`);
+  debug(`Brightness changed: ${oldBrightness}% -> ${brightness}%`);
   
   return {
     success: true,
@@ -199,4 +199,4 @@ thing.setActionHandler("setBrightness", async (input) => {
   };
 });
 
-debug("🎨 BLE RGB Controller initialized with full color control!");
+debug("BLE RGB Controller initialized with full color control!");

@@ -30,7 +30,7 @@ export class ConfigLoader {
 
     const file = Bun.file(path);
     if (!(await file.exists())) {
-      info(`ℹ No config file found at ${path}, using auto-discovery mode`);
+      info(`INFO: No config file found at ${path}, using auto-discovery mode`);
       return null;
     }
 
@@ -42,7 +42,7 @@ export class ConfigLoader {
 
       return config;
     } catch (error) {
-      console.warn(`⚠ Failed to load config from ${path}:`, (error as Error).message);
+      console.warn(`WARN: Failed to load config from ${path}:`, (error as Error).message);
       return null;
     }
   }
@@ -79,7 +79,7 @@ export class ConfigLoader {
       debug(`✓ Parsed CLI configuration: ${Object.entries(things).map(([name, config]) => `${name}:${config.instances}`).join(', ')}`);
       return { things };
     } catch (error) {
-      console.error(`❌ Failed to parse CLI arguments:`, (error as Error).message);
+      console.error(`ERROR: Failed to parse CLI arguments:`, (error as Error).message);
       return null;
     }
   }

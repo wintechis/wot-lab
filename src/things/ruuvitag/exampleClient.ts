@@ -81,7 +81,7 @@ async function testRuuviTag() {
 
     thing.observeProperty('movementCounter', async (data) => {
       const value = await data.value();
-      console.log(`🚶 Movement Count: ${value}`);
+      console.log(`Movement Count: ${value}`);
     });
 
     // Subscribe to events
@@ -99,7 +99,7 @@ async function testRuuviTag() {
     const centralizedHttpPort = 4000;
     const thingId = 'ruuvitag';
 
-    console.log(`\n📱 Centralized HTTP server on port ${centralizedHttpPort}`);
+    console.log(`\nCentralized HTTP server on port ${centralizedHttpPort}`);
     console.log('=================================');
 
     // Test sequence
@@ -154,7 +154,7 @@ async function testRuuviTag() {
       console.log('   WoT Action Result:', actionResult);
       
     } catch (error) {
-      console.log(`   ⚠️  HTTP endpoints not available (port ${centralizedHttpPort}):`, (error as Error).message);
+      console.log(`   HTTP endpoints not available (port ${centralizedHttpPort}):`, (error as Error).message);
       console.log('   This is normal if the Thing hasn\'t fully initialized yet.');
     }
 
@@ -169,8 +169,8 @@ async function testRuuviTag() {
     console.log(`   Movement count: ${await finalMovementCount.value()}`);
     console.log(`   Sequence number: ${await finalSequence.value()}`);
 
-    console.log('\n✅ Test completed!');
-    console.log('\n📱 You can also test manually:');
+    console.log('\nTest completed!');
+    console.log('\nYou can also test manually:');
     console.log(`   curl http://localhost:${centralizedHttpPort}/${thingId}/data`);
     console.log(`   curl -X POST http://localhost:${centralizedHttpPort}/${thingId}/simulate -H "Content-Type: application/json" -d '{"temperature": 22.5, "humidity": 55, "movement": false}'`);
     console.log(`   curl -X POST http://localhost:${centralizedHttpPort}/${thingId}/movement`);
@@ -178,8 +178,8 @@ async function testRuuviTag() {
     console.log('\nKeep this running to see real-time sensor events (updates every 10s)...');
 
   } catch (error) {
-    console.error('❌ Error:', error instanceof Error ? error.message : String(error));
-    console.log('\n💡 Make sure WoT Lab is running with:');
+    console.error('Error:', error instanceof Error ? error.message : String(error));
+    console.log('\nMake sure WoT Lab is running with:');
     console.log('   npm run dev');
   }
 }

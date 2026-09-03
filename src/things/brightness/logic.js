@@ -22,7 +22,7 @@ function updateBrightness(newBrightness, source = 'http') {
   thing.emitPropertyChange("brightness");
   thing.emitPropertyChange("lastUpdated");
   
-  debug(`💡 Brightness updated: ${oldBrightness} → ${state.brightness} lux (source: ${source})`);
+  debug(`Brightness updated: ${oldBrightness} -> ${state.brightness} lux (source: ${source})`);
   
   return {
     success: true,
@@ -35,4 +35,4 @@ function updateBrightness(newBrightness, source = 'http') {
   };
 }
 
-debug("💡 Brightness sensor initialized.");
+debug("Brightness sensor initialized.");

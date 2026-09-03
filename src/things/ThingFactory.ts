@@ -39,7 +39,7 @@ export class ThingFactory {
         (handler.thingDescription.title || 'unknown');
       const errorMessage = error instanceof Error ? error.message : String(error);
       
-      console.error(`❌ Failed to expose thing '${thingId}':`, errorMessage);
+      console.error(`ERROR: Failed to expose thing '${thingId}':`, errorMessage);
       
       return {
         thingId,
@@ -62,7 +62,7 @@ export class ThingFactory {
   }
 
   async createAllThings(): Promise<ThingCreationResult[]> {
-    info('🔍 Auto-discovering all Things...');
+    info('Auto-discovering all Things...');
     const handlers = await loadAllThings();
     return await this.createThings(handlers);
   }

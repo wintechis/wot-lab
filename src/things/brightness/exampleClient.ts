@@ -42,12 +42,12 @@ async function testBrightnessSensor() {
     const finalBrightness = await thing.readProperty('brightness');
     console.log(`   Final brightness: ${await finalBrightness.value()} lux`);
 
-    console.log('\n✅ Test completed!');
+    console.log('\nTest completed!');
     console.log('\nKeep this running to see real-time events...');
 
   } catch (error) {
-    console.error('❌ Error:', error instanceof Error ? error.message : String(error));
-    console.log('\n💡 Make sure WoT Lab is running with:');
+    console.error('Error:', error instanceof Error ? error.message : String(error));
+    console.log('\nMake sure WoT Lab is running with:');
     console.log('   bun run dev');
   }
 }
