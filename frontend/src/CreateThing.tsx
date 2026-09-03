@@ -28,7 +28,7 @@ import {
   createThingModel,
   validateThingModel
 } from './api';
-import { CodeExample } from './Json';
+import { CodeExample, InlineCode } from './Json';
 
 const dataTypes: DataType[] = ['boolean', 'integer', 'number', 'string', 'object', 'array'];
 
@@ -322,7 +322,7 @@ function NewModelTab({ busy, onCreate }: { busy: boolean; onCreate: (payload: { 
 
   return <Stack gap="normal">
     <Text className="muted">
-      Writes the Thing Model <Text as="span" className="mono">src/things/{name || '<name>'}/</Text> and
+      Writes the Thing Model <InlineCode>src/things/{name || '<name>'}/</InlineCode> and
       creates one Thing from it. The files stay on disk, so the model is available to every later session.
     </Text>
 

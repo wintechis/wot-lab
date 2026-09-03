@@ -49,7 +49,7 @@ import {
   removeThing,
   requestJson
 } from './api';
-import { HighlightedJson, JsonBlock } from './Json';
+import { HighlightedJson, InlineCode, JsonBlock } from './Json';
 import { CreateThingDialog } from './CreateThing';
 
 type ThingEntry = { id: string; title: string; href: string; description?: string };
@@ -313,12 +313,6 @@ function formatValue(value: unknown): string {
 // A small monospace tag naming the Thing Description field a value comes from.
 function FieldLabel({ children }: { children: React.ReactNode }) {
   return <Text as="span" className="field-label">{children}</Text>;
-}
-
-// GitHub-style inline code — Primer ships no such component, so this is a
-// <code> tinted with Primer Primitives tokens, for code within prose.
-function InlineCode({ children, className }: { children: React.ReactNode; className?: string }) {
-  return <code className={`inline-code${className ? ` ${className}` : ''}`}>{children}</code>;
 }
 
 // A runtime value, rendered in the same tinted code chip the landing page uses
@@ -1346,9 +1340,11 @@ function App() {
   const currentThing = thing && thing.id === route.thingId ? thing : null;
   const removingModel = removing ? live.find(thing => thing.id === removing.id)?.model : undefined;
   // Deleting the files is only meaningful for the last Thing built from a
-  // model; while siblings are still running the model is still in use.
+  // model, and only for a model the lab wrote: one that ships with the lab
+  // would come back on the next deploy.
   const removingIsLastOfModel = Boolean(removingModel) &&
-    live.filter(thing => thing.model === removingModel).length === 1;
+    live.filter(thing => thing.model === removingModel).length === 1 &&
+    models.find(model => model.name === removingModel)?.writable === true;
 
   return <ThemeProvider colorMode={colorMode} nightScheme="dark_dimmed">
     <BaseStyles className="app-root">

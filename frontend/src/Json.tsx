@@ -45,6 +45,14 @@ export function JsonBlock({ source, className }: { source: string; className: st
   return <pre className={className}><HighlightedJson source={source} /></pre>;
 }
 
+// GitHub-style inline code — Primer ships no such component, so this is a
+// <code> tinted with Primer Primitives tokens, for code within prose. It is the
+// one "this is code" treatment in the app: paths, TD terms, flags and values all
+// use it, so they read alike wherever they appear.
+export function InlineCode({ children, className }: { children: React.ReactNode; className?: string }) {
+  return <code className={`inline-code${className ? ` ${className}` : ''}`}>{children}</code>;
+}
+
 // A filename-headed code panel, tokened to match the action/event result panels.
 export function CodeExample({ filename, code }: { filename: string; code: string }) {
   return <div className="code-example">

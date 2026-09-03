@@ -17,7 +17,7 @@ export async function requestJson<T>(path: string, signal?: AbortSignal): Promis
 
 // A Thing Model is what a Thing is made from: the Thing Description and initial
 // state on disk, before any Thing exists.
-export type ThingModel = { name: string; title: string; description?: string; hasLogic: boolean };
+export type ThingModel = { name: string; title: string; description?: string; hasLogic: boolean; writable: boolean };
 export type LabThing = { id: string; model: string; title: string };
 export type ThingDraft = { name: string; td: Record<string, unknown>; state: Record<string, unknown> };
 

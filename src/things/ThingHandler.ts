@@ -12,8 +12,49 @@ const { debug, warn } = createLoggers('things');
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-/** Directory holding one sub-directory per Thing Model. */
-export const thingsDirectory = __dirname;
+/** Thing Models that ship with the lab, one sub-directory each. */
+export const bundledModelsDirectory = __dirname;
+
+// Where models authored at runtime are written. Left unset, authoring writes
+// alongside the bundled models, which is what you want in a checkout. A
+// deployment points it somewhere outside the release directory, so a model
+// someone wrote in the dashboard is not part of the code that gets replaced on
+// the next deploy.
+let userModelsDirectory: string | undefined;
+
+export function setUserModelsDirectory(directory?: string): void {
+  userModelsDirectory = directory;
+}
+
+export function getUserModelsDirectory(): string | undefined {
+  return userModelsDirectory;
+}
+
+/** Where a newly authored Thing Model is written. */
+export function authoringDirectory(): string {
+  return userModelsDirectory ?? bundledModelsDirectory;
+}
+
+/**
+ * The roots that make up the catalog, most specific first.
+ *
+ * A user model shadows a bundled one of the same name — the lab's own copy is
+ * never edited in place, so overriding is the only way to change a shipped
+ * model, and it stays reversible by deleting the override.
+ */
+export function modelRoots(): string[] {
+  return userModelsDirectory ? [userModelsDirectory, bundledModelsDirectory] : [bundledModelsDirectory];
+}
+
+/** The directory a Thing Model lives in, or null when no root holds it. */
+export async function resolveModelDirectory(name: string): Promise<string | null> {
+  for (const root of modelRoots()) {
+    if (await Bun.file(join(root, name, `${name}.td.json`)).exists()) {
+      return join(root, name);
+    }
+  }
+  return null;
+}
 
 export abstract class ThingHandler {
   private td: WoT.ThingDescription;
@@ -151,7 +192,10 @@ export async function loadThing(
   title?: string
 ): Promise<ThingHandler> {
   try {
-    const basePath = join(thingsDirectory, modelName);
+    const basePath = await resolveModelDirectory(modelName);
+    if (!basePath) {
+      throw new Error(`Unknown Thing Model '${modelName}'`);
+    }
 
     // Read the Thing Description natively via Bun.file
     const td: WoT.ThingDescription = await Bun.file(
@@ -196,6 +240,8 @@ export interface ThingModelInfo {
   title: string;
   description?: string;
   hasLogic: boolean;
+  /** False for a model that ships with the lab: it may be read, never deleted. */
+  writable: boolean;
 }
 
 /**
@@ -206,11 +252,11 @@ export interface ThingModelInfo {
  * model, so it is skipped rather than warned about.
  */
 export async function readThingModel(name: string): Promise<ThingModelInfo | null> {
-  const basePath = join(thingsDirectory, name);
-  const tdFile = Bun.file(join(basePath, `${name}.td.json`));
-  if (!(await tdFile.exists())) {
+  const basePath = await resolveModelDirectory(name);
+  if (!basePath) {
     return null;
   }
+  const tdFile = Bun.file(join(basePath, `${name}.td.json`));
 
   try {
     const td = (await tdFile.json()) as WoT.ThingDescription;
@@ -218,7 +264,8 @@ export async function readThingModel(name: string): Promise<ThingModelInfo | nul
       name,
       title: td.title || name,
       description: td.description,
-      hasLogic: await Bun.file(join(basePath, 'logic.js')).exists()
+      hasLogic: await Bun.file(join(basePath, 'logic.js')).exists(),
+      writable: basePath === join(authoringDirectory(), name)
     };
   } catch (cause) {
     warn(`Skipping Thing Model '${name}': unreadable Thing Description`, cause);
@@ -234,19 +281,29 @@ export async function readThingModel(name: string): Promise<ThingModelInfo | nul
  * acts, which is why adding a directory can no longer change what is live.
  */
 export async function listThingModels(): Promise<ThingModelInfo[]> {
-  const entries = await readdir(thingsDirectory, { withFileTypes: true });
-  const models: ThingModelInfo[] = [];
+  const byName = new Map<string, ThingModelInfo>();
 
-  for (const entry of entries) {
-    if (!entry.isDirectory()) {
+  for (const root of modelRoots()) {
+    let entries;
+    try {
+      entries = await readdir(root, { withFileTypes: true });
+    } catch {
+      // A user models directory that does not exist yet is empty, not broken.
       continue;
     }
-    const model = await readThingModel(entry.name);
-    if (model) {
-      models.push(model);
+
+    for (const entry of entries) {
+      if (!entry.isDirectory() || byName.has(entry.name)) {
+        continue;
+      }
+      const model = await readThingModel(entry.name);
+      if (model) {
+        byName.set(entry.name, model);
+      }
     }
   }
 
+  const models = [...byName.values()];
   debug(`Thing Models on disk: ${models.map((model) => model.name).join(', ') || '(none)'}`);
   return models.sort((a, b) => a.name.localeCompare(b.name));
 }
