@@ -2,24 +2,24 @@
   "@context": "https://www.w3.org/2019/wot/td/v1",
   "@type": "Thing",
   "title": "Door Lock",
-  "description": "Smart door lock with security features",
+  "description": "A smart door lock reporting lock state and battery, with lock/unlock actions and security events.",
   "properties": {
     "locked": {
       "type": "boolean",
-      "description": "Whether the door is currently locked",
+      "description": "Whether the door is currently locked.",
       "observable": true,
       "readOnly": true
     },
     "lockState": {
       "type": "string",
-      "description": "Detailed state of the lock",
+      "description": "Detailed lock state, including transitional (locking/unlocking) and jammed states.",
       "enum": ["locked", "unlocked", "jammed", "locking", "unlocking"],
       "observable": true,
       "readOnly": true
     },
     "batteryLevel": {
       "type": "integer",
-      "description": "Battery level percentage",
+      "description": "Remaining battery charge, 0–100 percent.",
       "minimum": 0,
       "maximum": 100,
       "unit": "percent",
@@ -28,7 +28,7 @@
     },
     "lastAction": {
       "type": "object",
-      "description": "Details of the last action performed",
+      "description": "The most recent lock/unlock action, with its method and timestamp.",
       "properties": {
         "action": {
           "type": "string",
@@ -49,7 +49,7 @@
   },
   "actions": {
     "lock": {
-      "description": "Lock the door",
+      "description": "Lock the door; optionally record how it was triggered.",
       "input": {
         "type": "object",
         "properties": {
@@ -63,7 +63,7 @@
       }
     },
     "unlock": {
-      "description": "Unlock the door",
+      "description": "Unlock the door; optionally supply the trigger method and a security PIN.",
       "input": {
         "type": "object",
         "properties": {
@@ -83,7 +83,7 @@
   },
   "events": {
     "lockStateChanged": {
-      "description": "Emitted when lock state changes",
+      "description": "Fires when the lock state changes, carrying the previous and new state.",
       "data": {
         "type": "object",
         "properties": {
@@ -104,7 +104,7 @@
       }
     },
     "unauthorizedAccess": {
-      "description": "Emitted on unauthorized access attempt",
+      "description": "Fires when an unlock attempt is rejected as unauthorized.",
       "data": {
         "type": "object",
         "properties": {

@@ -26,18 +26,28 @@ body {
  * that wrap above/below the pane+content row); stretching it that way would let
  * align-content grow *every* row, ballooning the header. Forcing the wrapper to
  * a plain column instead means only the content row (already flex: 1 1 100%)
- * grows. Class prefixes are stable across Primer versions (only the hashed
- * suffix changes), so match them with a substring selector, scoped to our root. */
-.app-root [class*="PageLayout-PageLayoutRoot"] {
+ * grows. Target them by DOM structure rather than Primer's hashed class names:
+ * BaseStyles (.app-root) wraps a single PageLayout root, whose single child is
+ * the wrapper — so `> div` / `> div > div` reach them without coupling to class
+ * names that change across Primer versions. Revisit if PageLayout's DOM changes. */
+.app-root > div {
   flex: 1 1 auto;
   display: flex;
   flex-direction: column;
 }
 
-.app-root [class*="PageLayout-PageLayoutWrapper"] {
+.app-root > div > div {
   flex: 1 1 auto;
   flex-direction: column;
   flex-wrap: nowrap;
+}
+
+/* Give the top bar a recessed surface so it reads as app chrome distinct from
+   the content canvas, beyond the divider line alone. Works in both the light and
+   dark_dimmed themes since it's a token, not a fixed color (#151b23 in
+   dark_dimmed, #f6f8fa in light). */
+.app-header {
+  background-color: var(--bgColor-inset);
 }
 
 .muted {
@@ -83,6 +93,15 @@ body {
   overflow-x: auto;
 }
 
+/* A real <caption> (associated with the table for assistive tech), styled as the
+   muted lead-in text it reads as. table-caption honors text-align. */
+.aff-caption {
+  text-align: left;
+  margin-bottom: var(--stack-gap-condensed, 8px);
+  font-size: var(--text-body-size-small, 12px);
+  color: var(--fgColor-muted);
+}
+
 .aff-table {
   width: 100%;
   border-collapse: separate;
@@ -103,7 +122,7 @@ body {
 }
 
 .aff-table td {
-  padding: var(--stack-padding-condensed, 10px) var(--stack-padding-normal, 16px);
+  padding: var(--stack-padding-condensed, 8px) var(--stack-padding-normal, 16px);
   border-bottom: var(--borderWidth-thin, 1px) solid var(--borderColor-muted);
   vertical-align: top;
 }
@@ -178,7 +197,7 @@ body {
 }
 
 .schema-group {
-  padding: var(--stack-padding-condensed, 8px) var(--stack-padding-normal, 12px);
+  padding: var(--stack-padding-condensed, 8px) var(--stack-padding-normal, 16px);
   border: var(--borderWidth-thin, 1px) solid var(--borderColor-muted);
   border-left: var(--borderWidth-thick, 2px) solid var(--borderColor-muted);
   border-radius: 0 var(--borderRadius-medium) var(--borderRadius-medium) 0;
@@ -277,6 +296,18 @@ body {
   color: var(--fgColor-muted);
 }
 
+/* Keep the timestamp out of the highlighter's way: it's a gutter, not payload
+   (an unhighlighted "14:23:01" would otherwise tokenize as three numbers). */
+.event-log-row {
+  display: block;
+}
+
+.event-log-time {
+  color: var(--fgColor-muted);
+  margin-right: var(--stack-gap-condensed, 8px);
+  user-select: none;
+}
+
 /* --- Header brand / landing / navigation ------------------------------- */
 
 /* Reset the bare <button> used as the clickable brand and Thing cards. */
@@ -322,6 +353,17 @@ body {
 .thing-card:hover {
   border-color: var(--borderColor-accent-emphasis, var(--fgColor-accent));
   background-color: var(--bgColor-muted);
+}
+
+/* The Thing's description under its id. Nudge it below the id and clamp to a few
+   lines so a long description doesn't make one card tower over its neighbours. */
+.thing-card-desc {
+  margin-top: var(--base-size-4, 4px);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  overflow: hidden;
 }
 
 /* --- "Create a new Thing" file layout ---------------------------------- */
@@ -374,10 +416,198 @@ body {
   margin: 0;
   max-height: 320px;
   overflow: auto;
-  padding: var(--stack-padding-condensed, 12px);
+  padding: var(--stack-padding-condensed, 8px);
   background-color: var(--bgColor-inset, var(--bgColor-muted));
   font-family: var(--fontStack-monospace);
   font-size: var(--text-caption-size, 12px);
   line-height: 1.55;
   color: var(--fgColor-default);
+}
+
+/* --- Thing Description detail panels ------------------------------------
+ *
+ * The affordance tables show what a row has a column for; everything else in
+ * the TD node (schema tree, constraints, semantic annotations, protocol forms,
+ * and any term this UI doesn't recognise) lives in an expandable panel below
+ * the row. Tokened to match the action-result / event-log panels so an expanded
+ * row still reads as one group. */
+
+.detail-panel {
+  border: var(--borderWidth-thin, 1px) solid var(--borderColor-muted);
+  border-radius: var(--borderRadius-medium);
+  background-color: var(--bgColor-inset, var(--bgColor-muted));
+  padding: var(--stack-padding-normal, 16px);
+}
+
+/* Separate stacked sections with a rule rather than gap alone, so "Schema",
+   "Forms" and "Other terms" don't run together in a tall panel. */
+.detail-section + .detail-section {
+  padding-top: var(--stack-padding-normal, 16px);
+  border-top: var(--borderWidth-thin, 1px) solid var(--borderColor-muted);
+}
+
+/* A borderless inner table (forms). The panel already provides the frame. */
+.detail-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.detail-table th {
+  text-align: left;
+  font-size: var(--text-caption-size, 12px);
+  font-weight: var(--base-text-weight-semibold, 600);
+  color: var(--fgColor-muted);
+  padding: var(--base-size-4, 4px) var(--stack-padding-condensed, 8px);
+  border-bottom: var(--borderWidth-thin, 1px) solid var(--borderColor-muted);
+}
+
+.detail-table td {
+  padding: var(--base-size-6, 6px) var(--stack-padding-condensed, 8px);
+  border-bottom: var(--borderWidth-thin, 1px) solid var(--borderColor-muted);
+  vertical-align: top;
+}
+
+.detail-table tr:last-child td {
+  border-bottom: 0;
+}
+
+/* Declared schema tree: each nesting level indents beneath a left rule, matching
+   the treatment the recursive schema *inputs* already use. */
+.schema-tree-children {
+  margin-top: var(--base-size-4, 4px);
+  padding-left: var(--stack-padding-condensed, 8px);
+  border-left: var(--borderWidth-thin, 1px) solid var(--borderColor-muted);
+  display: flex;
+  flex-direction: column;
+  gap: var(--stack-gap-condensed, 8px);
+}
+
+/* A validation keyword (range, pattern, default) shown beside a value. */
+.constraint {
+  font-family: var(--fontStack-monospace);
+}
+
+/* An unrecognised TD term and its value. */
+.term-row {
+  gap: 0;
+}
+
+.term-code {
+  margin: var(--base-size-4, 4px) 0 0;
+  max-height: 200px;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  padding: var(--stack-padding-condensed, 8px);
+  border: var(--borderWidth-thin, 1px) solid var(--borderColor-muted);
+  border-radius: var(--borderRadius-medium);
+  background-color: var(--bgColor-default);
+  font-family: var(--fontStack-monospace);
+  font-size: var(--text-caption-size, 12px);
+  color: var(--fgColor-default);
+}
+
+/* The highlighter wraps its output in <code>, which would otherwise fall back to
+   the UA monospace font inside these token-styled panels. */
+.result code,
+.event-log code,
+.term-code code,
+.code-example-body code {
+  font: inherit;
+}
+
+/* The Thing's identifying facts, under its title. Row-gap is wider than the
+   label/value gap so pairs group visually as they wrap. */
+.thing-meta {
+  column-gap: var(--stack-gap-spacious, 24px);
+  row-gap: var(--base-size-4, 4px);
+}
+
+/* --- Datatypes and flags ------------------------------------------------
+ *
+ * Neither is a status, so neither is a Label. A datatype is a tinted monospace
+ * word (the same reading as highlighted source); a boolean is an icon plus its
+ * name, so an absence costs a dash rather than a whole grey pill. */
+
+.type-name {
+  font-family: var(--fontStack-monospace);
+  font-size: var(--text-caption-size, 12px);
+  font-weight: var(--base-text-weight-semibold, 600);
+}
+
+.type-accent { color: var(--fgColor-accent); }
+.type-success { color: var(--fgColor-success); }
+.type-done { color: var(--fgColor-done); }
+.type-attention { color: var(--fgColor-attention); }
+.type-severe { color: var(--fgColor-severe); }
+.type-neutral { color: var(--fgColor-muted); }
+
+.flag {
+  color: var(--fgColor-muted);
+}
+
+.flag-on {
+  color: var(--fgColor-default);
+}
+
+.flag-on svg {
+  color: var(--fgColor-success);
+}
+
+/* A protocol operation name (readproperty, invokeaction, longpoll). It labels
+   its row, so it carries weight rather than a fill. */
+.op-name {
+  font-weight: var(--base-text-weight-semibold, 600);
+  color: var(--fgColor-default);
+}
+
+/* --- Thing Description source ------------------------------------------
+ *
+ * Primer ships GitHub's syntax palette as Primitives tokens but no highlighter,
+ * so App.tsx tokenizes the JSON and these rules paint it. Using the
+ * prettylights tokens (rather than picking colors) means the source view tracks
+ * the light / dark_dimmed themes exactly as a GitHub code view does. */
+
+/* Keys use the *entity-tag* token, not constant: GitHub's JSON grammar scopes an
+   object key `entity.name.tag.key.json` (-> .pl-ent), which is a different colour
+   from `constant` in every dark theme (#8ddb8c vs #6cb6ff in dark_dimmed) and
+   coincidentally identical to it in light (#0550ae) — so getting this wrong
+   looks correct until you switch to a dark theme. */
+.tok-key {
+  color: var(--color-prettylights-syntax-entity-tag);
+}
+
+.tok-string {
+  color: var(--color-prettylights-syntax-string);
+}
+
+.tok-constant {
+  color: var(--color-prettylights-syntax-constant);
+}
+
+/* The document is the point of this tab, so let it use the height rather than
+   scrolling inside the 320px box the worked examples on the landing page use. */
+.td-source {
+  max-height: none;
+  counter-reset: td-line;
+}
+
+/* Line numbers as a CSS counter on each row, not a gutter column: they render
+   in the flow but aren't text, so selecting the block copies clean JSON. */
+.td-line {
+  display: block;
+  counter-increment: td-line;
+  padding-left: 3.5rem;
+  text-indent: -3.5rem;
+}
+
+.td-line::before {
+  content: counter(td-line);
+  display: inline-block;
+  width: 2.5rem;
+  margin-right: 1rem;
+  text-align: right;
+  text-indent: 0;
+  color: var(--fgColor-muted);
+  user-select: none;
 }

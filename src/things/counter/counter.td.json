@@ -1,6 +1,6 @@
 {
     "title": "Counter",
-    "description": "Counter example Thing",
+    "description": "A simple integer counter you can increment, decrement, or reset. It emits a change event on every update.",
     "links": [
         {
             "href": "https://www.thingweb.io/img/favicon/favicon.png",
@@ -19,7 +19,7 @@
         "count": {
             "title": "Count",
             "type": "integer",
-            "description": "Current counter value",
+            "description": "The counter's current value; updates live as actions run.",
             "observable": true,
             "readOnly": true
         }
@@ -27,24 +27,24 @@
     "actions": {
         "increment": {
             "title": "Increment",
-            "description": "Increment counter value",
+            "description": "Increase the count by one and emit a change event.",
             "vre:effects": "count' = count + 1; emitEvent(\"change\", count);"
         },
         "decrement": {
             "title": "Decrement",
-            "description": "Decrementing counter value",
+            "description": "Decrease the count by one and emit a change event.",
             "vre:effects": "count' = count - 1; emitEvent(\"change\", count);"
         },
         "reset": {
             "title": "Reset",
-            "description": "Resetting counter value",
+            "description": "Set the count back to zero and emit a change event.",
             "vre:effects": "count' = 0; emitEvent(\"change\", count);"
         }
     },
     "events": {
         "change": {
             "title": "Changed",
-            "description": "Change event"
+            "description": "Fires whenever the count changes, carrying the new value."
         }
     }
 }

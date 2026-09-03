@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import {
   BaseStyles,
   Button,
@@ -8,7 +8,6 @@ import {
   Heading,
   IconButton,
   Label,
-  type LabelColorOptions,
   Link,
   NavList,
   PageLayout,
@@ -24,9 +23,14 @@ import {
 } from '@primer/react';
 import {
   BeakerIcon,
+  CheckIcon,
+  ChevronDownIcon,
+  ChevronRightIcon,
+  CopyIcon,
+  DashIcon,
   DeviceDesktopIcon,
   FileDirectoryIcon,
-  MarkGithubIcon,
+  LinkExternalIcon,
   MoonIcon,
   PlayIcon,
   PlusIcon,
@@ -37,14 +41,50 @@ import {
 
 const repositoryUrl = 'https://github.com/wintechis/wot-lab';
 
-type ThingEntry = { id: string; title: string; href: string };
-type Schema = { type?: string; title?: string; description?: string; default?: unknown; enum?: unknown[]; minimum?: number; maximum?: number; unit?: string; readOnly?: boolean; observable?: boolean; properties?: Record<string, Schema>; required?: string[]; items?: Schema };
-type ThingDescription = { id?: string; title?: string; description?: string; base?: string; '@type'?: string | string[]; properties?: Record<string, Schema>; actions?: Record<string, Schema & { input?: Schema; output?: Schema }>; events?: Record<string, Schema & { data?: Schema }> };
+type ThingEntry = { id: string; title: string; href: string; description?: string };
 
-type Property = { name: string; title?: string; description?: string; schema: Schema; type: string; writable: boolean; observable: boolean };
-type Action = { name: string; title?: string; description?: string; input?: Schema; output?: Schema };
-type EventAffordance = { name: string; title?: string; description?: string; data?: Schema };
-type ThingModel = { id: string; title: string; description?: string; atType?: string; properties: Property[]; actions: Action[]; events: EventAffordance[] };
+// Every TD node keeps its `[term: string]: unknown` index signature on purpose.
+// The named members below are the terms this UI gives a dedicated control; the
+// index signature is what lets everything else — a vendor extension like
+// `vre:effects`, or a TD term standardised after this was written — survive as
+// far as the renderer, which falls back to <ExtraTerms> for it. Narrowing these
+// types to a fixed allowlist is what previously made the inspector lossy.
+type TdNode = Record<string, unknown>;
+
+// A protocol binding: where an operation lives and how to speak to it.
+type Form = { href: string; op?: string | string[]; contentType?: string; subprotocol?: string; 'htv:methodName'?: string; [term: string]: unknown };
+type TdLink = { href?: string; rel?: string; type?: string; sizes?: string; [term: string]: unknown };
+type SecurityScheme = { scheme?: string; description?: string; in?: string; name?: string; [term: string]: unknown };
+
+type Schema = {
+  type?: string; title?: string; description?: string; unit?: string; '@type'?: string | string[];
+  default?: unknown; const?: unknown; enum?: unknown[]; format?: string; pattern?: string;
+  minimum?: number; maximum?: number; exclusiveMinimum?: number; exclusiveMaximum?: number; multipleOf?: number;
+  minLength?: number; maxLength?: number; minItems?: number; maxItems?: number;
+  readOnly?: boolean; writeOnly?: boolean; observable?: boolean;
+  properties?: Record<string, Schema>; required?: string[]; items?: Schema;
+  forms?: Form[];
+  [term: string]: unknown;
+};
+type ActionNode = Schema & { input?: Schema; output?: Schema; safe?: boolean; idempotent?: boolean; synchronous?: boolean };
+type EventNode = Schema & { data?: Schema; subscription?: Schema; cancellation?: Schema; dataResponse?: Schema };
+
+type ThingDescription = {
+  id?: string; title?: string; description?: string; base?: string;
+  '@context'?: unknown; '@type'?: string | string[];
+  securityDefinitions?: Record<string, SecurityScheme>; security?: string | string[];
+  links?: TdLink[]; forms?: Form[];
+  version?: unknown; created?: string; modified?: string; support?: string;
+  properties?: Record<string, Schema>; actions?: Record<string, ActionNode>; events?: Record<string, EventNode>;
+  [term: string]: unknown;
+};
+
+// Affordance models carry the terms the tables read directly *plus* `node`, the
+// untouched TD entry the detail panel renders in full.
+type Property = { name: string; title?: string; description?: string; schema: Schema; type: string; writable: boolean; observable: boolean; node: Schema };
+type Action = { name: string; title?: string; description?: string; input?: Schema; output?: Schema; node: ActionNode };
+type EventAffordance = { name: string; title?: string; description?: string; data?: Schema; node: EventNode };
+type ThingModel = { id: string; title: string; description?: string; atType?: string; properties: Property[]; actions: Action[]; events: EventAffordance[]; context: TdContextValue; td: ThingDescription };
 
 type ColorMode = 'auto' | 'light' | 'dark';
 
@@ -56,9 +96,11 @@ const apiUrl = (path: string) => `${apiBase}${path}`;
 // Real paths, not hashes: a Thing is /counter, and each affordance kind is its
 // own sub-page at /counter/actions. The server serves this SPA for any path
 // whose first segment is a Thing, so these deep links load directly.
-const sections = ['properties', 'actions', 'events'] as const;
+// `td` is not an interaction affordance — it's the source document itself, the
+// ground truth the other three tabs interpret.
+const sections = ['properties', 'actions', 'events', 'td'] as const;
 type Section = (typeof sections)[number];
-const sectionLabel: Record<Section, string> = { properties: 'Properties', actions: 'Actions', events: 'Events' };
+const sectionLabel: Record<Section, string> = { properties: 'Properties', actions: 'Actions', events: 'Events', td: 'Thing Description' };
 type Route = { thingId: string | null; section: Section | null };
 
 function parseRoute(): Route {
@@ -105,22 +147,134 @@ function modelFromDescription(description: ThingDescription, fallbackId: string)
     description: schema.description,
     schema,
     type: schema.type || 'unknown',
-    writable: !schema.readOnly,
-    observable: schema.observable === true
+    // Writability is a protocol fact when the TD declares forms: a Thing is
+    // writable exactly when it advertises a `writeproperty` operation. Fall back
+    // to the `readOnly` term only for a TD served without forms (e.g. read from
+    // disk), where there is nothing else to go on.
+    writable: schema.forms?.length ? hasOp(schema.forms, 'writeproperty') : !schema.readOnly,
+    observable: schema.observable === true,
+    node: schema
   }));
   const actions: Action[] = Object.entries(description.actions || {}).map(([name, action]) => ({
-    name, title: action.title, description: action.description, input: action.input, output: action.output
+    name, title: action.title, description: action.description, input: action.input, output: action.output, node: action
   }));
   const events: EventAffordance[] = Object.entries(description.events || {}).map(([name, event]) => ({
-    name, title: event.title, description: event.description, data: event.data
+    name, title: event.title, description: event.description, data: event.data, node: event
   }));
   return {
     id,
     title: description.title || id,
     description: description.description,
     atType: Array.isArray(atTypeRaw) ? atTypeRaw.join(', ') : atTypeRaw,
-    properties, actions, events
+    properties, actions, events,
+    context: parseContext(description['@context']),
+    td: description
   };
+}
+
+// --- @context: prefix resolution ----------------------------------------
+
+// The `@context` of a TD is both a list of vocabulary IRIs and (in its object
+// entries) a prefix map. Parsing it is what turns an opaque `qudtUnit:DEG_C`
+// into a resolvable term, so semantic annotations stop reading as noise.
+type TdContextValue = { vocabularies: string[]; prefixes: Record<string, string>; language?: string };
+
+const emptyContext: TdContextValue = { vocabularies: [], prefixes: {} };
+
+const TdContext = createContext<TdContextValue>(emptyContext);
+const useTdContext = () => useContext(TdContext);
+
+function parseContext(raw: unknown): TdContextValue {
+  const vocabularies: string[] = [];
+  const prefixes: Record<string, string> = {};
+  let language: string | undefined;
+  for (const entry of Array.isArray(raw) ? raw : [raw]) {
+    if (typeof entry === 'string') { vocabularies.push(entry); continue; }
+    if (!entry || typeof entry !== 'object') continue;
+    for (const [term, value] of Object.entries(entry as Record<string, unknown>)) {
+      if (term === '@language') { if (typeof value === 'string') language = value; continue; }
+      if (typeof value === 'string') prefixes[term] = value;
+    }
+  }
+  return { vocabularies, prefixes, language };
+}
+
+// "qudtUnit:DEG_C" → "https://qudt.org/vocab/unit/DEG_C" when @context maps the
+// prefix; undefined for a plain string like "percent", which stays as written.
+function expandIri(term: string, context: TdContextValue): string | undefined {
+  const separator = term.indexOf(':');
+  if (separator < 1) return undefined;
+  if (/^https?$/i.test(term.slice(0, separator))) return term;
+  const namespace = context.prefixes[term.slice(0, separator)];
+  return namespace ? namespace + term.slice(separator + 1) : undefined;
+}
+
+// A compact IRI shown as written, linking out to its expansion when @context
+// declares the prefix — so the annotation stays readable but stays checkable.
+function SemanticTerm({ term }: { term: string }) {
+  const expanded = expandIri(term, useTdContext());
+  if (!expanded) return <Text className="mono">{term}</Text>;
+  return <Link href={expanded} target="_blank" rel="noopener noreferrer" className="mono" title={expanded}>{term}</Link>;
+}
+
+// --- Forms: the protocol binding ----------------------------------------
+
+const opList = (form: Form): string[] => Array.isArray(form.op) ? form.op : form.op ? [form.op] : [];
+const hasOp = (forms: Form[] | undefined, op: string): boolean => (forms || []).some(form => opList(form).includes(op));
+
+// The advertised href is bound to whichever interface node-wot picked
+// (a LAN address, an IPv6 address, …), not the origin that served this page.
+// Requests must therefore reuse only the *path* — same-origin, and still behind
+// the Vite dev proxy — while the forms panel shows the full advertised href.
+function formPath(href: string): string | undefined {
+  try {
+    const url = new URL(href, window.location.origin);
+    return `${apiBase}${url.pathname}${url.search}`;
+  } catch { return undefined; }
+}
+
+// Resolve an operation to a concrete request. Prefers the form the TD actually
+// declares (JSON first — this client parses JSON), and falls back to wot-lab's
+// conventional path so a TD served without forms keeps working.
+type Resolved = { url: string; method: string; contentType: string; subprotocol?: string; declared: boolean };
+
+function resolveOp(forms: Form[] | undefined, op: string, fallbackPath: string, fallbackMethod: string): Resolved {
+  const matches = (forms || []).filter(form => opList(form).includes(op));
+  const form = matches.find(candidate => (candidate.contentType || 'application/json').startsWith('application/json')) ?? matches[0];
+  const path = form && formPath(form.href);
+  return {
+    url: path ?? apiUrl(fallbackPath),
+    method: (typeof form?.['htv:methodName'] === 'string' ? form['htv:methodName'] : undefined) || fallbackMethod,
+    contentType: form?.contentType || 'application/json',
+    subprotocol: form?.subprotocol,
+    declared: Boolean(path)
+  };
+}
+
+// node-wot advertises the same operation once per bound network interface and
+// per content type — twelve forms for one observable property. Collapse them to
+// one row per (path, operation set), listing the content types and counting the
+// hosts, so the panel shows the protocol surface instead of an address dump.
+type FormSummary = { path: string; ops: string[]; method?: string; subprotocol?: string; contentTypes: string[]; hosts: string[]; href: string };
+
+function summarizeForms(forms: Form[] | undefined): FormSummary[] {
+  const grouped = new Map<string, FormSummary>();
+  for (const form of forms || []) {
+    let path = form.href;
+    let host = '';
+    try { const url = new URL(form.href); path = `${url.pathname}${url.search}`; host = url.host; } catch { /* keep raw href */ }
+    const ops = opList(form);
+    const key = `${path}|${ops.join(',')}|${form.subprotocol ?? ''}`;
+    const existing = grouped.get(key);
+    const method = typeof form['htv:methodName'] === 'string' ? form['htv:methodName'] : undefined;
+    if (existing) {
+      if (form.contentType && !existing.contentTypes.includes(form.contentType)) existing.contentTypes.push(form.contentType);
+      if (host && !existing.hosts.includes(host)) existing.hosts.push(host);
+      continue;
+    }
+    grouped.set(key, { path, ops, method, subprotocol: form.subprotocol, contentTypes: form.contentType ? [form.contentType] : [], hosts: host ? [host] : [], href: form.href });
+  }
+  return [...grouped.values()];
 }
 
 // Open the machine-readable Thing Description in a new tab. A plain link can't:
@@ -135,10 +289,66 @@ async function openThingDescription(id: string): Promise<void> {
   } catch { /* ignore — the overview already shows the id */ }
 }
 
+// True when a Thing's id carries nothing the title doesn't — i.e. it's just the
+// title with case and separators (spaces/hyphens/underscores) stripped, as the
+// auto-derived id usually is (title "Counter" → id "counter"). In that case the
+// id is redundant next to the title and not worth showing.
+function idEchoesTitle(id: string, title: string): boolean {
+  const normalize = (value: string) => value.toLowerCase().replace(/[\s_-]+/g, '');
+  return normalize(id) === normalize(title);
+}
+
 function formatValue(value: unknown): string {
   if (value === undefined || value === null) return '—';
   if (typeof value === 'string') return value;
   return JSON.stringify(value);
+}
+
+// Primer ships GitHub's syntax palette as Primitives tokens
+// (--color-prettylights-syntax-*, themed for light and dark_dimmed alike) but no
+// highlighter component, so tokenize here rather than take a dependency — JSON
+// is a small enough grammar to be worth about fifteen lines.
+//
+// The kinds mirror the scopes GitHub's own `source.json` grammar assigns, so the
+// output matches a GitHub blob: a key is `entity.name.tag.key.json` (.pl-ent),
+// a string value `string.quoted.double.json` (.pl-s), and numbers plus
+// true/false/null are `constant.*` (.pl-c1). Structural punctuation is
+// deliberately left unstyled — GitHub's theme maps no class for it either.
+// Escape sequences inside a string stay part of the string: they are scoped
+// `constant.character.escape`, but .pl-cce is only ever styled nested inside a
+// regexp, so in JSON they inherit the string colour.
+type JsonToken = { text: string; kind: 'key' | 'string' | 'constant' | 'plain' };
+
+// One alternation, ordered so a quoted string followed by ':' is claimed as a
+// key before the plain-string branch can match it.
+const jsonGrammar = /("(?:\\.|[^"\\])*")(?=\s*:)|("(?:\\.|[^"\\])*")|(-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)|\b(?:true|false|null)\b/g;
+
+function tokenizeJson(source: string): JsonToken[] {
+  const tokens: JsonToken[] = [];
+  let cursor = 0;
+  for (let match = jsonGrammar.exec(source); match; match = jsonGrammar.exec(source)) {
+    if (match.index > cursor) tokens.push({ text: source.slice(cursor, match.index), kind: 'plain' });
+    tokens.push({ text: match[0], kind: match[1] ? 'key' : match[2] ? 'string' : 'constant' });
+    cursor = match.index + match[0].length;
+  }
+  jsonGrammar.lastIndex = 0;
+  if (cursor < source.length) tokens.push({ text: source.slice(cursor), kind: 'plain' });
+  return tokens;
+}
+
+function HighlightedJson({ source }: { source: string }) {
+  return <code>{tokenizeJson(source).map((token, index) =>
+    token.kind === 'plain'
+      ? token.text
+      : <span key={index} className={`tok-${token.kind}`}>{token.text}</span>
+  )}</code>;
+}
+
+// Any JSON the UI shows — a TD, an action result, an event payload, a worked
+// example — goes through the same highlighter, so JSON looks like JSON wherever
+// it appears rather than only in the source tab.
+function JsonBlock({ source, className }: { source: string; className: string }) {
+  return <pre className={className}><HighlightedJson source={source} /></pre>;
 }
 
 // --- Provenance + type helpers -----------------------------------------
@@ -154,13 +364,25 @@ function InlineCode({ children }: { children: React.ReactNode }) {
   return <code className="inline-code">{children}</code>;
 }
 
-const typeColor: Record<string, LabelColorOptions> = { boolean: 'done', integer: 'accent', number: 'accent', string: 'success', object: 'attention', array: 'severe' };
+// A datatype is data, not status, so it reads as a tinted monospace word rather
+// than a filled pill — the same language as the syntax-highlighted Thing
+// Description, and it keeps the categorical hue without a column of blue
+// lozenges. (`accent` covers number *and* integer, so a sensor Thing used to
+// render an unbroken blue stack here.)
+const typeColor: Record<string, string> = { boolean: 'done', integer: 'accent', number: 'accent', string: 'success', object: 'attention', array: 'severe' };
+
+function TypeName({ type }: { type: string }) {
+  return <Text as="span" className={`type-name type-${typeColor[type] ?? 'neutral'}`}>{type}</Text>;
+}
 
 // Consistent datatype rendering used by properties, action input/output and event data.
 function TypeBadge({ schema }: { schema?: Schema }) {
   if (!schema || !schema.type) return <Text className="muted">—</Text>;
-  const label = `${schema.type}${schema.unit ? ` · ${schema.unit}` : ''}${schema.enum ? ' · enum' : ''}`;
-  return <Label variant={typeColor[schema.type] ?? 'secondary'}>{label}</Label>;
+  return <Stack direction="horizontal" gap="condensed" align="baseline" wrap="wrap">
+    <TypeName type={schema.type} />
+    {schema.unit && <Text size="small" className="muted">{schema.unit}</Text>}
+    {schema.enum && <Text size="small" className="muted">enum</Text>}
+  </Stack>;
 }
 
 // Affordance name cell: the TD key (monospace, the addressable identifier) plus
@@ -172,6 +394,144 @@ function AffordanceName({ name, title, description, id }: { name: string; title?
     {showTitle && <Text size="small">{title}</Text>}
     {description && <Text as="p" size="small" className="muted">{description}</Text>}
   </Stack>;
+}
+
+// --- Detail panel: everything the row itself has no column for ----------
+
+// The terms each kind of node renders through a dedicated control. Anything
+// outside these sets reaches <ExtraTerms> verbatim — that is the mechanism that
+// keeps the inspector lossless as TDs grow terms this code has never seen.
+const renderedTerms = {
+  property: new Set(['title', 'description', 'type', 'unit', 'readOnly', 'writeOnly', 'observable', 'forms', '@type', 'properties', 'items', 'required',
+    'default', 'const', 'enum', 'format', 'pattern', 'minimum', 'maximum', 'exclusiveMinimum', 'exclusiveMaximum', 'multipleOf', 'minLength', 'maxLength', 'minItems', 'maxItems']),
+  // `vre:effects` is wot-lab's own term and gets its own section, so it is
+  // listed here to keep it out of the generic "other terms" fallback.
+  action: new Set(['title', 'description', 'input', 'output', 'forms', '@type', 'safe', 'idempotent', 'synchronous', 'vre:effects']),
+  event: new Set(['title', 'description', 'data', 'subscription', 'cancellation', 'dataResponse', 'forms', '@type'])
+};
+
+// Validation keywords, formatted for reading rather than for a form control:
+// a paired minimum/maximum becomes one range, the rest stay individual facts.
+function constraintList(schema: Schema): string[] {
+  const out: string[] = [];
+  const { minimum, maximum, exclusiveMinimum, exclusiveMaximum } = schema;
+  if (minimum !== undefined && maximum !== undefined) out.push(`${minimum} – ${maximum}`);
+  else if (minimum !== undefined) out.push(`≥ ${minimum}`);
+  else if (maximum !== undefined) out.push(`≤ ${maximum}`);
+  if (exclusiveMinimum !== undefined) out.push(`> ${exclusiveMinimum}`);
+  if (exclusiveMaximum !== undefined) out.push(`< ${exclusiveMaximum}`);
+  if (schema.multipleOf !== undefined) out.push(`multiple of ${schema.multipleOf}`);
+  if (schema.minLength !== undefined) out.push(`min length ${schema.minLength}`);
+  if (schema.maxLength !== undefined) out.push(`max length ${schema.maxLength}`);
+  if (schema.minItems !== undefined) out.push(`min items ${schema.minItems}`);
+  if (schema.maxItems !== undefined) out.push(`max items ${schema.maxItems}`);
+  if (schema.pattern) out.push(`pattern ${schema.pattern}`);
+  if (schema.format) out.push(`format ${schema.format}`);
+  if (schema.const !== undefined) out.push(`const ${formatValue(schema.const)}`);
+  if (schema.default !== undefined) out.push(`default ${formatValue(schema.default)}`);
+  return out;
+}
+
+// Booleans read badly as pills. Half of them say "not safe" / "not observable"
+// in grey — a lot of chrome to communicate an absence — and a row of filled
+// shapes reads as more important than the value it sits next to. An icon column
+// carries the state instead: the eye scans the ticks, and the words stay words.
+function FlagList({ flags }: { flags: { label: string; on: boolean; hint?: string }[] }) {
+  return <Stack direction="horizontal" gap="normal" wrap="wrap">
+    {flags.map(flag => <Stack key={flag.label} direction="horizontal" gap="condensed" align="center"
+      className={`flag${flag.on ? ' flag-on' : ''}`} title={flag.hint}>
+      {flag.on ? <CheckIcon size={14} /> : <DashIcon size={14} />}
+      <Text size="small">{flag.label}</Text>
+    </Stack>)}
+  </Stack>;
+}
+
+function DetailSection({ title, children }: { title: string; children: React.ReactNode }) {
+  return <Stack gap="condensed" className="detail-section">
+    <Text className="eyebrow" as="div">{title}</Text>
+    {children}
+  </Stack>;
+}
+
+// A labelled row of small facts (flags, constraints, enum members).
+function ChipRow({ items }: { items: React.ReactNode[] }) {
+  return <Stack direction="horizontal" gap="condensed" wrap="wrap" align="center">
+    {items.map((item, index) => <span key={index}>{item}</span>)}
+  </Stack>;
+}
+
+// The forms of one affordance, collapsed by summarizeForms. This is the part of
+// the TD that says how to actually talk to the Thing — the operation, the HTTP
+// method, the media types on offer and any subprotocol (longpoll) — and it had
+// no representation at all in the previous inspector.
+function FormsTable({ forms }: { forms?: Form[] }) {
+  const summaries = summarizeForms(forms);
+  if (!summaries.length) return <Text size="small" className="muted">No forms declared.</Text>;
+  return <div className="table-scroll">
+    <table className="detail-table">
+      <thead><tr><th>Operation</th><th>Endpoint</th><th>Content types</th></tr></thead>
+      <tbody>
+        {summaries.map((summary, index) => <tr key={index}>
+          <td><Stack gap="none">
+            <Text className="mono op-name" size="small">{summary.ops.join(' · ')}</Text>
+            {summary.subprotocol && <Text size="small" className="muted">via {summary.subprotocol}</Text>}
+          </Stack></td>
+          <td><Stack gap="none">
+            <Text className="mono" size="small">{summary.method && <Text as="span" weight="semibold">{summary.method} </Text>}{summary.path}</Text>
+            {summary.hosts.length > 0 && <Text size="small" className="muted" title={summary.hosts.join('\n')}>
+              advertised on {summary.hosts.length === 1 ? summary.hosts[0] : `${summary.hosts.length} interfaces`}
+            </Text>}
+          </Stack></td>
+          <td><ChipRow items={summary.contentTypes.map(contentType => <Text key={contentType} className="mono" size="small">{contentType}</Text>)} /></td>
+        </tr>)}
+      </tbody>
+    </table>
+  </div>;
+}
+
+// Renders one value of an unrecognised term. Multi-statement strings (a
+// `vre:effects` body) read as code; structured values fall back to JSON, which
+// is lossless even when this code has no idea what the term means.
+function TermValue({ value }: { value: unknown }) {
+  if (typeof value === 'string') {
+    if (value.includes(';') || value.includes('\n')) return <pre className="term-code"><code>{value}</code></pre>;
+    return <SemanticTerm term={value} />;
+  }
+  if (value === null || typeof value !== 'object') return <Text className="mono">{formatValue(value)}</Text>;
+  return <JsonBlock className="term-code" source={JSON.stringify(value, null, 2)} />;
+}
+
+// The safety net: every term of the node that no dedicated control claimed.
+function ExtraTerms({ node, rendered }: { node: TdNode; rendered: Set<string> }) {
+  const extras = Object.entries(node).filter(([term]) => !rendered.has(term));
+  if (!extras.length) return null;
+  return <DetailSection title="Other Thing Description terms">
+    <Stack gap="condensed">
+      {extras.map(([term, value]) => <Stack key={term} gap="none" className="term-row">
+        <FieldLabel>{term}</FieldLabel>
+        <TermValue value={value} />
+      </Stack>)}
+    </Stack>
+  </DetailSection>;
+}
+
+// Semantic @type annotations on an affordance, each resolved through @context.
+function TypeAnnotations({ node }: { node: TdNode }) {
+  const raw = node['@type'];
+  const types = (Array.isArray(raw) ? raw : raw ? [raw] : []).filter((value): value is string => typeof value === 'string');
+  if (!types.length) return null;
+  return <DetailSection title="Semantic type">
+    <ChipRow items={types.map(type => <SemanticTerm key={type} term={type} />)} />
+  </DetailSection>;
+}
+
+function DetailPanel({ children }: { children: React.ReactNode }) {
+  return <div className="detail-panel"><Stack gap="normal">{children}</Stack></div>;
+}
+
+function ExpandButton({ expanded, onToggle, label }: { expanded: boolean; onToggle: () => void; label: string }) {
+  return <IconButton icon={expanded ? ChevronDownIcon : ChevronRightIcon} variant="invisible" size="small"
+    aria-label={`${expanded ? 'Hide' : 'Show'} Thing Description detail for ${label}`} aria-expanded={expanded} onClick={onToggle} />;
 }
 
 // --- Schema-driven inputs & outputs (recursive over object/array) -------
@@ -254,7 +614,11 @@ function GroupHeader({ label, required, schema }: { label?: string; required?: b
   </Stack>;
 }
 
-function SchemaInput({ schema, raw, onChange, label, required }: { schema: Schema; raw: RawValue; onChange: (next: RawValue) => void; label?: string; required?: boolean }) {
+// `name` is an accessible-name fallback for the control itself: when a scalar
+// input has no visible `label` (e.g. a top-level action input or a scalar
+// property edit, where the affordance name already sits in an adjacent cell),
+// it still needs an aria-label so screen readers can announce it.
+function SchemaInput({ schema, raw, onChange, label, required, name }: { schema: Schema; raw: RawValue; onChange: (next: RawValue) => void; label?: string; required?: boolean; name?: string }) {
   if (schema.type === 'object') {
     const requiredSet = new Set(schema.required || []);
     const object = (raw && typeof raw === 'object' && !Array.isArray(raw)) ? raw as Record<string, RawValue> : {};
@@ -290,7 +654,7 @@ function SchemaInput({ schema, raw, onChange, label, required }: { schema: Schem
       {label && <Stack direction="horizontal" gap="condensed" align="center"><FieldLabel>{label}{required ? ' *' : ''}</FieldLabel><TypeBadge schema={schema} /></Stack>}
       {schema.description && <Text size="small" className="muted">{schema.description}</Text>}
     </Stack>}
-    <LeafInput schema={schema} raw={raw} onChange={onChange} label={label} />
+    <LeafInput schema={schema} raw={raw} onChange={onChange} label={label ?? name} />
   </Stack>;
 }
 
@@ -316,15 +680,65 @@ function SchemaValue({ schema, value }: { schema?: Schema; value: unknown }) {
   return <Text className="mono prop-value">{formatValue(value)}</Text>;
 }
 
+// A schema rendered as the tree of members the TD *declares* — type, unit,
+// semantic annotations, constraints and descriptions at every level. SchemaValue
+// shows what a nested object currently contains; this shows what it may contain,
+// which is where nested titles, units and descriptions live (they previously
+// survived only as a title= tooltip, if at all).
+// `showDescription` is off at the root of a *property's* tree: there the root
+// node is the property itself, whose description the row already carries, so
+// repeating it here would just echo the line directly above. Nested members and
+// action/event schemas keep theirs — those descriptions appear nowhere else.
+function SchemaTree({ schema, name, required, showDescription = true }: { schema?: Schema; name?: string; required?: boolean; showDescription?: boolean }) {
+  if (!schema) return null;
+  const constraints = constraintList(schema);
+  const children = schema.type === 'object' ? Object.entries(schema.properties || {}) : [];
+  const requiredSet = new Set(schema.required || []);
+  return <Stack gap="none" className="schema-tree-node">
+    <Stack direction="horizontal" gap="condensed" align="center" wrap="wrap">
+      {name && <Text className="mono" weight="semibold" size="small">{name}{required ? ' *' : ''}</Text>}
+      {schema.type && <TypeName type={schema.type} />}
+      {typeof schema.unit === 'string' && <Stack direction="horizontal" gap="condensed" align="center">
+        <FieldLabel>unit</FieldLabel><SemanticTerm term={schema.unit} />
+      </Stack>}
+      {constraints.map(constraint => <Text key={constraint} size="small" className="muted constraint">{constraint}</Text>)}
+    </Stack>
+    {showDescription && schema.description && <Text size="small" className="muted">{schema.description}</Text>}
+    {schema.enum && <ChipRow items={schema.enum.map(value => <InlineCode key={String(value)}>{formatValue(value)}</InlineCode>)} />}
+    {(children.length > 0 || schema.items) && <div className="schema-tree-children">
+      {children.map(([key, child]) => <SchemaTree key={key} schema={child} name={key} required={requiredSet.has(key)} />)}
+      {schema.items && <SchemaTree schema={schema.items} name="items" />}
+    </div>}
+  </Stack>;
+}
+
 // --- Properties: live state rows ---------------------------------------
 
 type ValueState = { status: 'loading' | 'ready' | 'error'; value?: unknown; error?: string; updatedAt?: number };
+type EventLogEntry = { at: number; data: string; json: boolean };
+
+function PropertyDetail({ property }: { property: Property }) {
+  const flags = [
+    { label: 'writable', on: property.writable, hint: 'Declares a writeproperty operation' },
+    { label: 'readable', on: property.node.writeOnly !== true, hint: 'Declares a readproperty operation' },
+    { label: 'observable', on: property.observable, hint: 'Pushes updates instead of needing a re-read' }
+  ];
+  return <DetailPanel>
+    <DetailSection title="Access"><FlagList flags={flags} /></DetailSection>
+    <DetailSection title="Schema"><SchemaTree schema={property.schema} showDescription={false} /></DetailSection>
+    <TypeAnnotations node={property.node} />
+    <DetailSection title="Forms"><FormsTable forms={property.schema.forms} /></DetailSection>
+    <ExtraTerms node={property.node} rendered={renderedTerms.property} />
+  </DetailPanel>;
+}
 
 function PropertyRow({ property, state, onWrite }: { property: Property; state: ValueState; onWrite: (value: unknown) => Promise<void> }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState<RawValue>('');
   const [saving, setSaving] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const structured = property.type === 'object' || property.type === 'array';
+  const constraints = constraintList(property.schema);
 
   function startEditing() {
     setDraft(valueToRaw(property.schema, state.value));
@@ -337,60 +751,117 @@ function PropertyRow({ property, state, onWrite }: { property: Property; state: 
     finally { setSaving(false); }
   }
 
-  return <tr>
-    <td><AffordanceName name={property.name} title={property.title} description={property.description} /></td>
-    <td>
-      {editing ? <Stack gap="condensed" align="start">
-        <SchemaInput schema={property.schema} raw={draft} onChange={setDraft} label={structured ? property.name : undefined} />
-        <Stack direction="horizontal" gap="condensed">
-          <Button size="small" variant="primary" loading={saving} onClick={() => void save()}>Set</Button>
-          <Button size="small" variant="invisible" onClick={() => setEditing(false)}>Cancel</Button>
-        </Stack>
-      </Stack> : <Stack gap="none">
-        <Stack direction="horizontal" gap="condensed" align="center" wrap="wrap">
-          {state.status === 'loading'
-            ? <Spinner size="small" />
-            : state.status === 'error'
-              ? <Text className="mono value-error">{state.error}</Text>
-              : structured
-                ? <div key={state.updatedAt} className={property.observable ? 'prop-value-flash' : undefined}><SchemaValue schema={property.schema} value={state.value} /></div>
-                : <Text key={state.updatedAt} className={`prop-value${property.observable ? ' prop-value-flash' : ''}`}>{formatValue(state.value)}</Text>}
-          {property.writable && state.status !== 'loading' && <Button size="small" variant="invisible" onClick={startEditing}>Edit</Button>}
-        </Stack>
-        {property.observable && state.status === 'ready' && <Stack direction="horizontal" gap="condensed" align="center">
-          <span className="live-dot" aria-hidden="true" title="Observable — this value updates live, no manual read needed" />
-          <Text size="small" className="muted">live · updated {state.updatedAt ? <RelativeTime date={new Date(state.updatedAt)} /> : 'now'}</Text>
+  return <>
+    <tr className={expanded ? 'has-subrow' : undefined}>
+      <td><Stack direction="horizontal" gap="condensed" align="start">
+        <ExpandButton expanded={expanded} onToggle={() => setExpanded(value => !value)} label={property.name} />
+        <AffordanceName name={property.name} title={property.title} description={property.description} />
+      </Stack></td>
+      <td>
+        {editing ? <Stack gap="condensed" align="start">
+          <SchemaInput schema={property.schema} raw={draft} onChange={setDraft} label={structured ? property.name : undefined} name={property.name} />
+          <Stack direction="horizontal" gap="condensed">
+            <Button size="small" variant="primary" loading={saving} onClick={() => void save()}>Set</Button>
+            <Button size="small" variant="invisible" onClick={() => setEditing(false)}>Cancel</Button>
+          </Stack>
+        </Stack> : <Stack gap="none">
+          <Stack direction="horizontal" gap="condensed" align="center" wrap="wrap">
+            {state.status === 'loading'
+              ? <Spinner size="small" />
+              : state.status === 'error'
+                ? <Text className="mono value-error">{state.error}</Text>
+                : structured
+                  ? <div key={state.updatedAt} className={property.observable ? 'prop-value-flash' : undefined}><SchemaValue schema={property.schema} value={state.value} /></div>
+                  : <Text key={state.updatedAt} className={`prop-value${property.observable ? ' prop-value-flash' : ''}`}>{formatValue(state.value)}</Text>}
+            {property.writable && state.status !== 'loading' && <Button size="small" variant="invisible" onClick={startEditing}>Edit</Button>}
+          </Stack>
+          {property.observable && state.status === 'ready' && <Stack direction="horizontal" gap="condensed" align="center">
+            <span className="live-dot" aria-hidden="true" title="Observable — this value updates live, no manual read needed" />
+            <Text size="small" className="muted">live · updated {state.updatedAt ? <RelativeTime date={new Date(state.updatedAt)} /> : 'now'}</Text>
+          </Stack>}
         </Stack>}
-      </Stack>}
-    </td>
-    <td>
-      <Stack direction="horizontal" gap="condensed" align="center" wrap="wrap">
-        <TypeBadge schema={property.schema} />
-        <Text as="span" size="small" className="muted" title={property.writable ? 'Writable — you can set a new value' : 'Read-only — this property cannot be written from here'}>
-          {property.writable ? 'writable' : 'read-only'}
-        </Text>
-      </Stack>
-    </td>
-  </tr>;
+      </td>
+      <td>
+        <Stack gap="none">
+          <Stack direction="horizontal" gap="condensed" align="center" wrap="wrap">
+            <TypeBadge schema={property.schema} />
+            <Text as="span" size="small" className="muted" title={property.writable ? 'Writable — you can set a new value' : 'Read-only — this property cannot be written from here'}>
+              {property.writable ? 'writable' : 'read-only'}
+            </Text>
+          </Stack>
+          {/* Constraints belong next to the value, not only inside an input's
+              placeholder — they describe the property whether or not it's being
+              edited. Enum members are listed rather than reduced to "enum". */}
+          {constraints.length > 0 && <Text size="small" className="muted">{constraints.join(' · ')}</Text>}
+          {property.schema.enum && <Text size="small" className="muted">{property.schema.enum.map(formatValue).join(' | ')}</Text>}
+        </Stack>
+      </td>
+    </tr>
+    {expanded && <tr className="subrow"><td colSpan={3}><PropertyDetail property={property} /></td></tr>}
+  </>;
 }
 
 // --- Actions: invocation rows (main row + optional result subrow) -------
 
 type ActionResult = { status: number; text: string; value?: unknown; hasValue: boolean } | null;
 
+function ActionDetail({ action, invocation }: { action: Action; invocation: Resolved }) {
+  const flags = [
+    { label: 'safe', on: action.node.safe === true, hint: 'Invoking it does not change the Thing’s state' },
+    { label: 'idempotent', on: action.node.idempotent === true, hint: 'Invoking it repeatedly has the same effect as once' },
+    ...(action.node.synchronous === undefined ? [] : [{ label: 'synchronous', on: action.node.synchronous === true, hint: 'The response carries the result' }])
+  ];
+  const effects = action.node['vre:effects'];
+  return <DetailPanel>
+    {/* An action's declared behavior leads the panel: for a VRE-driven Thing this
+        *is* the action, the whole implementation, with no logic.js behind it. */}
+    {typeof effects === 'string' && <DetailSection title="Effects">
+      <Text size="small" className="muted">
+        Declared in the Thing Description as <InlineCode>vre:effects</InlineCode>. Each primed assignment
+        (<InlineCode>{'prop′ = …'}</InlineCode>) writes the property and emits a property change, so the
+        effect is observable rather than only readable.
+      </Text>
+      <pre className="term-code"><code>{effects}</code></pre>
+    </DetailSection>}
+    <DetailSection title="Invocation semantics">
+      <FlagList flags={flags} />
+      <Text size="small" className="muted">
+        {action.node.safe ? 'Declared safe: invoking it does not change the Thing’s state.' : 'Not declared safe: invoking it may change the Thing’s state.'}
+        {action.node.idempotent ? ' Invoking it repeatedly has the same effect as invoking it once.' : ''}
+      </Text>
+    </DetailSection>
+    {action.input && <DetailSection title="Input schema"><SchemaTree schema={action.input} /></DetailSection>}
+    {action.output && <DetailSection title="Output schema"><SchemaTree schema={action.output} /></DetailSection>}
+    <TypeAnnotations node={action.node} />
+    <DetailSection title="Forms">
+      <FormsTable forms={action.node.forms} />
+      {!invocation.declared && <Text size="small" className="muted">
+        No <InlineCode>invokeaction</InlineCode> form declared — Invoke falls back to the conventional wot-lab path.
+      </Text>}
+    </DetailSection>
+    <ExtraTerms node={action.node} rendered={renderedTerms.action} />
+  </DetailPanel>;
+}
+
 function ActionRows({ thingId, action }: { thingId: string; action: Action }) {
   const [raw, setRaw] = useState<RawValue>(() => defaultRaw(action.input));
   const [result, setResult] = useState<ActionResult>(null);
   const [pending, setPending] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+
+  // Method, path and media type come from the TD's own invokeaction form rather
+  // than from a path template this client invents.
+  const invocation = resolveOp(action.node.forms, 'invokeaction',
+    `/${encodeURIComponent(thingId)}/actions/${encodeURIComponent(action.name)}`, 'POST');
 
   async function invoke() {
     setPending(true);
     setResult(null);
     try {
       const body = action.input ? coerceTree(action.input, raw) : undefined;
-      const response = await fetch(apiUrl(`/${encodeURIComponent(thingId)}/actions/${encodeURIComponent(action.name)}`), {
-        method: 'POST',
-        headers: body === undefined ? {} : { 'Content-Type': 'application/json' },
+      const response = await fetch(invocation.url, {
+        method: invocation.method,
+        headers: body === undefined ? {} : { 'Content-Type': invocation.contentType },
         body: body === undefined ? undefined : JSON.stringify(body)
       });
       const text = await response.text();
@@ -411,12 +882,15 @@ function ActionRows({ thingId, action }: { thingId: string; action: Action }) {
   const showBody = result !== null && !(ok && !structuredValue && (result.text === 'Completed.' || result.text === 'null' || result.text === ''));
 
   return <>
-    <tr className={showBody ? 'has-subrow' : undefined}>
-      <td><AffordanceName name={action.name} title={action.title} description={action.description} /></td>
+    <tr className={showBody || expanded ? 'has-subrow' : undefined}>
+      <td><Stack direction="horizontal" gap="condensed" align="start">
+        <ExpandButton expanded={expanded} onToggle={() => setExpanded(value => !value)} label={action.name} />
+        <AffordanceName name={action.name} title={action.title} description={action.description} />
+      </Stack></td>
       <td>{action.input
         ? <Stack gap="condensed" align="start" className="action-input">
             <TypeBadge schema={action.input} />
-            <SchemaInput schema={action.input} raw={raw} onChange={setRaw} />
+            <SchemaInput schema={action.input} raw={raw} onChange={setRaw} name={action.name} />
           </Stack>
         : <Text className="muted">—</Text>}</td>
       <td><TypeBadge schema={action.output} /></td>
@@ -427,75 +901,190 @@ function ActionRows({ thingId, action }: { thingId: string; action: Action }) {
         </Stack>
       </td>
     </tr>
-    {showBody && <tr className="subrow"><td colSpan={4}>
-      {structuredValue
-        ? <div className="result"><SchemaValue schema={action.output} value={result?.value} /></div>
-        : <Text as="pre" className="result">{result?.text}</Text>}
+    {/* One subrow carries both the detail panel and the invocation result, so an
+        expanded row with a result still reads as a single bordered group. */}
+    {(showBody || expanded) && <tr className="subrow"><td colSpan={4}>
+      <Stack gap="normal">
+        {expanded && <ActionDetail action={action} invocation={invocation} />}
+        {showBody && (structuredValue
+          ? <div className="result"><SchemaValue schema={action.output} value={result?.value} /></div>
+          : result?.hasValue
+            ? <JsonBlock className="result" source={result.text} />
+            : <Text as="pre" className="result">{result?.text}</Text>)}
+      </Stack>
     </td></tr>}
   </>;
 }
 
 // --- Events: subscription rows (main row + streaming log subrow) --------
 
-function EventRows({ thingId, event }: { thingId: string; event: EventAffordance }) {
-  const [subscribed, setSubscribed] = useState(false);
-  const [log, setLog] = useState<{ at: number; data: string }[]>([]);
+function EventDetail({ event, subscription }: { event: EventAffordance; subscription: Resolved }) {
+  return <DetailPanel>
+    <DetailSection title="Delivery">
+      <Stack direction="horizontal" gap="condensed" align="center" wrap="wrap">
+        <Text className="mono op-name" size="small">{subscription.subprotocol ?? 'http'}</Text>
+        <Text className="mono muted" size="small">{subscription.contentType}</Text>
+      </Stack>
+      {subscription.subprotocol === 'longpoll' && <Text size="small" className="muted">
+        Delivered by long polling: each request stays open until the Thing emits, then the client re-subscribes.
+      </Text>}
+    </DetailSection>
+    {event.data && <DetailSection title="Data schema"><SchemaTree schema={event.data} /></DetailSection>}
+    {event.node.subscription && <DetailSection title="Subscription schema"><SchemaTree schema={event.node.subscription} /></DetailSection>}
+    {event.node.cancellation && <DetailSection title="Cancellation schema"><SchemaTree schema={event.node.cancellation} /></DetailSection>}
+    {event.node.dataResponse && <DetailSection title="Data response schema"><SchemaTree schema={event.node.dataResponse} /></DetailSection>}
+    <TypeAnnotations node={event.node} />
+    <DetailSection title="Forms"><FormsTable forms={event.node.forms} /></DetailSection>
+    <ExtraTerms node={event.node} rendered={renderedTerms.event} />
+  </DetailPanel>;
+}
 
-  useEffect(() => {
-    if (!subscribed) return;
-    const controller = new AbortController();
-    (async () => {
-      while (!controller.signal.aborted) {
-        try {
-          const response = await fetch(apiUrl(`/${encodeURIComponent(thingId)}/events/${encodeURIComponent(event.name)}`), { headers: { Accept: 'application/json' }, signal: controller.signal });
-          const text = await response.text();
-          let data = text;
-          try { data = JSON.stringify(JSON.parse(text)); } catch { /* plain text */ }
-          setLog(current => [{ at: Date.now(), data: data || '(no payload)' }, ...current].slice(0, 50));
-        } catch (cause) {
-          if (controller.signal.aborted) return;
-          try { await delay(1000, controller.signal); } catch { return; }
-        }
-      }
-    })();
-    return () => controller.abort();
-  }, [subscribed, thingId, event.name]);
+// The row is presentational: its subscription state and streaming log live in
+// ThingInspector, above the tab switch, so neither is lost when the Events table
+// unmounts (see `streamEvent` there).
+function EventRows({ event, subscription, subscribed, log, onSubscribedChange }: {
+  event: EventAffordance;
+  subscription: Resolved;
+  subscribed: boolean;
+  log: EventLogEntry[];
+  onSubscribedChange: (next: boolean) => void;
+}) {
+  const [expanded, setExpanded] = useState(false);
 
   return <>
     <tr className="has-subrow">
-      <td><AffordanceName name={event.name} title={event.title} description={event.description} id={`event-${event.name}`} /></td>
+      <td><Stack direction="horizontal" gap="condensed" align="start">
+        <ExpandButton expanded={expanded} onToggle={() => setExpanded(value => !value)} label={event.name} />
+        <AffordanceName name={event.name} title={event.title} description={event.description} id={`event-${event.name}`} />
+      </Stack></td>
       <td><TypeBadge schema={event.data} /></td>
       <td className="cell-shrink">
         <Stack direction="horizontal" align="center">
-          <ToggleSwitch size="small" checked={subscribed} onClick={() => setSubscribed(value => !value)} aria-labelledby={`event-${event.name}`} />
+          <ToggleSwitch size="small" checked={subscribed} onChange={onSubscribedChange} aria-labelledby={`event-${event.name}`} />
         </Stack>
       </td>
     </tr>
-    <tr className="subrow"><td colSpan={3}><pre className="event-log">{log.length
-      ? log.map(entry => `${new Date(entry.at).toLocaleTimeString()}  ${entry.data}`).join('\n')
-      : <span className="event-log-empty">{subscribed ? 'Waiting for events…' : 'Subscribe to stream events.'}</span>}</pre></td></tr>
+    <tr className="subrow"><td colSpan={3}>
+      <Stack gap="normal">
+        {expanded && <EventDetail event={event} subscription={subscription} />}
+        <pre className="event-log">{log.length
+          ? log.map((entry, index) => <span className="event-log-row" key={index}>
+              <span className="event-log-time">{new Date(entry.at).toLocaleTimeString()}</span>
+              {entry.json ? <HighlightedJson source={entry.data} /> : entry.data}
+            </span>)
+          : <span className="event-log-empty">{subscribed ? 'Waiting for events…' : 'Subscribe to stream events.'}</span>}</pre>
+      </Stack>
+    </td></tr>
   </>;
 }
 
-// --- Thing inspector ----------------------------------------------------
+// --- Thing Description source ------------------------------------------
 
-function AffordanceTable({ caption, headers, modifier, children }: { caption: string; headers: string[]; modifier?: 'grow' | 'actions'; children: React.ReactNode }) {
-  return <Stack gap="condensed">
-    <Text size="small" className="muted">{caption}</Text>
-    <div className="table-scroll">
-      <table className={`aff-table${modifier ? ` aff-table--${modifier}` : ''}`}>
-        <thead><tr>{headers.map(header => <th key={header}>{header}</th>)}</tr></thead>
-        <tbody>{children}</tbody>
-      </table>
+// The whole document, verbatim. The affordance tabs are an interpretation of the
+// TD; this is the TD — the ground truth to check that interpretation against,
+// and the only view guaranteed complete no matter what terms a Thing carries.
+function ThingDescriptionSource({ thing }: { thing: ThingModel }) {
+  const [copied, setCopied] = useState(false);
+  const source = JSON.stringify(thing.td, null, 2);
+  const lineCount = source.split('\n').length;
+
+  async function copy() {
+    try {
+      await navigator.clipboard.writeText(source);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch { /* clipboard unavailable (insecure origin) — the text is selectable */ }
+  }
+
+  return <Stack gap="normal">
+    <Stack direction="horizontal" align="center" justify="space-between" gap="normal" wrap="wrap">
+      <Text size="small" className="muted">
+        The complete Thing Description as served, including every term the tabs above interpret.
+      </Text>
+      <Stack direction="horizontal" align="center" gap="condensed">
+        <Button size="small" leadingVisual={copied ? CheckIcon : CopyIcon} onClick={() => void copy()}>
+          {copied ? 'Copied' : 'Copy'}
+        </Button>
+        <Button size="small" leadingVisual={LinkExternalIcon} onClick={() => void openThingDescription(thing.id)}>Raw</Button>
+      </Stack>
+    </Stack>
+    <div className="code-example">
+      <div className="code-example-head">
+        <Stack direction="horizontal" align="center" justify="space-between" gap="normal">
+          <Text className="mono" size="small" weight="semibold">{thing.id}.td.json</Text>
+          <Text size="small" className="muted">{lineCount} lines · application/td+json</Text>
+        </Stack>
+      </div>
+      {/* Line numbers come from a CSS counter on each row rather than a gutter
+          column, so selecting the code copies the JSON without them. */}
+      <pre className="code-example-body td-source">
+        {source.split('\n').map((line, index) => (
+          <span className="td-line" key={index}><HighlightedJson source={line} />{'\n'}</span>
+        ))}
+      </pre>
     </div>
   </Stack>;
 }
 
+// The Thing's identifying facts, as a labelled strip under its title.
+//
+// These lived in the app bar, which had three costs: the chrome reshaped itself
+// on every navigation, the title and id were printed twice under inconsistent
+// rules (the bar always showed the id, the body hid it when it echoed the
+// title), and `@type` rendered as flat text when it is a semantic annotation
+// that @context can resolve. Here they sit with the Thing, wrap freely, and the
+// strip has room to carry the document-level facts — security, base — that
+// otherwise appear only in the raw source.
+function ThingMeta({ thing }: { thing: ThingModel }) {
+  const { td } = thing;
+  const applied = Array.isArray(td.security) ? td.security : td.security ? [td.security] : [];
+  // An applied name points at a definition; the scheme it names is the fact
+  // worth showing ("nosec"), not the key someone happened to file it under.
+  const schemes = [...new Set(applied.map(name => td.securityDefinitions?.[name]?.scheme ?? name))];
+  const types = (thing.atType ?? '').split(', ').filter(Boolean);
+
+  const items: [string, React.ReactNode][] = [['id', <Text className="mono">{thing.id}</Text>]];
+  if (types.length) items.push(['@type', <ChipRow items={types.map(type => <SemanticTerm key={type} term={type} />)} />]);
+  if (schemes.length) items.push(['security', <Text className="mono" title={schemes.includes('nosec') ? 'nosec — no security applied; every affordance is open to any caller' : undefined}>{schemes.join(', ')}</Text>]);
+  if (typeof td.base === 'string') items.push(['base', <Text className="mono">{td.base}</Text>]);
+
+  return <Stack direction="horizontal" gap="normal" wrap="wrap" className="thing-meta">
+    {items.map(([label, value]) => <Stack key={label} direction="horizontal" gap="condensed" align="center">
+      <FieldLabel>{label}</FieldLabel>{value}
+    </Stack>)}
+  </Stack>;
+}
+
+// --- Thing inspector ----------------------------------------------------
+
+// A native <table> rather than Primer's DataTable (@primer/react/experimental):
+// DataTable is still experimental and models flat, cell-per-column rows, whereas
+// these affordance tables need recursive schema-driven form cells, expandable
+// result/log subrows and live-flash values — patterns it doesn't support. The
+// markup below is plain <table> tokened with Primer Primitives in styles.css.
+function AffordanceTable({ caption, headers, modifier, children }: { caption: string; headers: string[]; modifier?: 'grow' | 'actions'; children: React.ReactNode }) {
+  return <div className="table-scroll">
+    <table className={`aff-table${modifier ? ` aff-table--${modifier}` : ''}`}>
+      <caption className="aff-caption">{caption}</caption>
+      <thead><tr>{headers.map(header => <th key={header}>{header}</th>)}</tr></thead>
+      <tbody>{children}</tbody>
+    </table>
+  </div>;
+}
+
 function ThingInspector({ thing, section, onSection }: { thing: ThingModel; section: Section | null; onSection: (section: Section, options?: { replace?: boolean }) => void }) {
   const [values, setValues] = useState<Record<string, ValueState>>({});
+  const [subscribed, setSubscribed] = useState<Record<string, boolean>>({});
+  const [logs, setLogs] = useState<Record<string, EventLogEntry[]>>({});
+  const streamsRef = useRef(new Map<string, AbortController>());
 
-  const kinds = ([['properties', thing.properties.length], ['actions', thing.actions.length], ['events', thing.events.length]] as [Section, number][])
-    .filter(([, count]) => count > 0);
+  // Affordance tabs appear only when the Thing has that kind; the source tab
+  // always does, since every Thing has a Thing Description.
+  const kinds: [Section, number | undefined][] = [
+    ...([['properties', thing.properties.length], ['actions', thing.actions.length], ['events', thing.events.length]] as [Section, number][])
+      .filter(([, count]) => count > 0),
+    ['td', undefined]
+  ];
   const active: Section | undefined = (section && kinds.some(([kind]) => kind === section)) ? section : kinds[0]?.[0];
 
   // The Thing URL (/counter) or an unknown kind resolves to the first sub-page;
@@ -511,9 +1100,15 @@ function ThingInspector({ thing, section, onSection }: { thing: ThingModel; sect
     setValues(Object.fromEntries(thing.properties.map(p => [p.name, { status: 'loading' } as ValueState])));
     const controller = new AbortController();
 
+    // Endpoints come from each property's own forms — `readproperty` and
+    // `observeproperty` — instead of a path template this client guesses. The
+    // conventional wot-lab paths remain as the fallback for a TD without forms.
+    const base = `/${encodeURIComponent(thing.id)}/properties/`;
+
     const readOnce = async (property: Property) => {
       try {
-        const value = await requestJson<unknown>(apiUrl(`/${encodeURIComponent(thing.id)}/properties/${encodeURIComponent(property.name)}`), controller.signal);
+        const target = resolveOp(property.schema.forms, 'readproperty', `${base}${encodeURIComponent(property.name)}`, 'GET');
+        const value = await requestJson<unknown>(target.url, controller.signal);
         setValue(property.name, { status: 'ready', value, updatedAt: Date.now() });
       } catch (cause) {
         if (controller.signal.aborted) return;
@@ -522,9 +1117,10 @@ function ThingInspector({ thing, section, onSection }: { thing: ThingModel; sect
     };
 
     const observe = async (property: Property) => {
+      const target = resolveOp(property.schema.forms, 'observeproperty', `${base}${encodeURIComponent(property.name)}/observable`, 'GET');
       while (!controller.signal.aborted) {
         try {
-          const value = await requestJson<unknown>(apiUrl(`/${encodeURIComponent(thing.id)}/properties/${encodeURIComponent(property.name)}/observable`), controller.signal);
+          const value = await requestJson<unknown>(target.url, controller.signal);
           setValue(property.name, { status: 'ready', value, updatedAt: Date.now() });
         } catch (cause) {
           if (controller.signal.aborted) return;
@@ -539,28 +1135,77 @@ function ThingInspector({ thing, section, onSection }: { thing: ThingModel; sect
     return () => controller.abort();
   }, [thing]);
 
+  // --- Event streams -----------------------------------------------------
+  // These live here, above the tab switch, rather than inside EventRows: the
+  // Events table unmounts the moment you look at Properties, which would abort
+  // every open long poll and drop its log. Held here, a subscription keeps
+  // streaming and keeps accumulating while you're on another tab. Switching
+  // Things still resets them — <ThingInspector> is keyed by Thing id.
+  const eventSubscription = useCallback((event: EventAffordance) => resolveOp(event.node.forms, 'subscribeevent',
+    `/${encodeURIComponent(thing.id)}/events/${encodeURIComponent(event.name)}`, 'GET'), [thing.id]);
+
+  useEffect(() => {
+    const streams = streamsRef.current;
+    const stream = async (event: EventAffordance, signal: AbortSignal) => {
+      const target = eventSubscription(event);
+      while (!signal.aborted) {
+        try {
+          const response = await fetch(target.url, { headers: { Accept: 'application/json' }, signal });
+          const text = await response.text();
+          let data = text;
+          let json = false;
+          try { data = JSON.stringify(JSON.parse(text)); json = true; } catch { /* plain text */ }
+          setLogs(current => ({ ...current, [event.name]: [{ at: Date.now(), data: data || '(no payload)', json }, ...(current[event.name] || [])].slice(0, 50) }));
+        } catch {
+          if (signal.aborted) return;
+          try { await delay(1000, signal); } catch { return; }
+        }
+      }
+    };
+
+    // Reconcile rather than restart: an already-running stream is left alone, so
+    // subscribing to a second event doesn't interrupt the first one's long poll.
+    for (const event of thing.events) {
+      if (subscribed[event.name] && !streams.has(event.name)) {
+        const controller = new AbortController();
+        streams.set(event.name, controller);
+        void stream(event, controller.signal);
+      }
+    }
+    for (const [name, controller] of [...streams]) {
+      if (!subscribed[name]) { controller.abort(); streams.delete(name); }
+    }
+  }, [subscribed, thing, eventSubscription]);
+
+  // Close every open stream when the inspector itself goes away.
+  useEffect(() => {
+    const streams = streamsRef.current;
+    return () => { for (const controller of streams.values()) controller.abort(); streams.clear(); };
+  }, []);
+
   async function writeProperty(property: Property, value: unknown) {
-    await fetch(apiUrl(`/${encodeURIComponent(thing.id)}/properties/${encodeURIComponent(property.name)}`), {
-      method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(value)
-    });
+    const path = `/${encodeURIComponent(thing.id)}/properties/${encodeURIComponent(property.name)}`;
+    const target = resolveOp(property.schema.forms, 'writeproperty', path, 'PUT');
+    await fetch(target.url, { method: target.method, headers: { 'Content-Type': target.contentType }, body: JSON.stringify(value) });
     if (!property.observable) {
       try {
-        const fresh = await requestJson<unknown>(apiUrl(`/${encodeURIComponent(thing.id)}/properties/${encodeURIComponent(property.name)}`));
+        const fresh = await requestJson<unknown>(resolveOp(property.schema.forms, 'readproperty', path, 'GET').url);
         setValue(property.name, { status: 'ready', value: fresh, updatedAt: Date.now() });
       } catch { /* leave prior value */ }
     }
   }
 
-  return <Stack gap="spacious">
+  return <TdContext.Provider value={thing.context}><Stack gap="spacious">
     <Stack gap="condensed">
-      <Text className="mono field-label" as="div">{thing.id}</Text>
       <Heading as="h2">{thing.title}</Heading>
-      {thing.description && <Text className="muted" style={{ maxWidth: '60ch' }}>{thing.description}</Text>}
+      <ThingMeta thing={thing} />
+      {thing.description && <Text className="muted">{thing.description}</Text>}
     </Stack>
 
     <Stack gap="normal">
-      <Text className="eyebrow" as="div">Interaction Affordances</Text>
-      <UnderlineNav aria-label="Interaction affordances">
+      {/* No eyebrow here: one of the tabs is now itself labelled "Thing
+          Description", and a heading repeating it would read as a clash. */}
+      <UnderlineNav aria-label="Thing sections">
         {kinds.map(([kind, count]) => (
           <UnderlineNav.Item key={kind} href={`/${encodeURIComponent(thing.id)}/${kind}`} counter={count}
             aria-current={kind === active ? 'page' : undefined}
@@ -571,7 +1216,7 @@ function ThingInspector({ thing, section, onSection }: { thing: ThingModel; sect
       </UnderlineNav>
 
       {active === 'properties' && <AffordanceTable
-        caption="Readable state. Values marked live (●) update on their own; read-only properties can't be written from here."
+        caption="Readable state. Values marked live (●) update on their own; read-only properties can't be written from here. Expand a row for its schema, constraints and protocol forms."
         headers={['Property', 'Value', 'Type']}>
         {thing.properties.map(property => (
           <PropertyRow key={property.name} property={property}
@@ -581,18 +1226,24 @@ function ThingInspector({ thing, section, onSection }: { thing: ThingModel; sect
       </AffordanceTable>}
 
       {active === 'actions' && <AffordanceTable modifier="actions"
-        caption="Operations you invoke. Provide any input, then Invoke; the returned output (if any) appears below the row."
+        caption="Operations you invoke. Provide any input, then Invoke; the returned output (if any) appears below the row. Expand a row for its safe/idempotent semantics and protocol forms."
         headers={['Action', 'Input', 'Output', 'Invoke']}>
         {thing.actions.map(action => <ActionRows key={action.name} thingId={thing.id} action={action} />)}
       </AffordanceTable>}
 
       {active === 'events' && <AffordanceTable modifier="grow"
-        caption="Notifications the Thing pushes. Toggle Subscribe to open a live stream; emitted events appear in the log below."
+        caption="Notifications the Thing pushes. Toggle Subscribe to open a live stream; emitted events appear in the log below. Expand a row for its data schema and delivery protocol."
         headers={['Event', 'Data', 'Subscribe']}>
-        {thing.events.map(event => <EventRows key={event.name} thingId={thing.id} event={event} />)}
+        {thing.events.map(event => <EventRows key={event.name} event={event}
+          subscription={eventSubscription(event)}
+          subscribed={subscribed[event.name] === true}
+          log={logs[event.name] ?? []}
+          onSubscribedChange={next => setSubscribed(current => ({ ...current, [event.name]: next }))} />)}
       </AffordanceTable>}
+
+      {active === 'td' && <ThingDescriptionSource thing={thing} />}
     </Stack>
-  </Stack>;
+  </Stack></TdContext.Provider>;
 }
 
 // --- Landing page -------------------------------------------------------
@@ -602,7 +1253,7 @@ function Landing({ things, loading, onOpen }: { things: ThingEntry[]; loading: b
     <Stack gap="condensed">
       <Text className="eyebrow eyebrow-accent" as="div">Overview</Text>
       <Heading as="h2"><Stack direction="horizontal" align="center" gap="condensed"><BeakerIcon size={28} />WoT Lab</Stack></Heading>
-      <Text className="muted" style={{ maxWidth: '52ch' }}>
+      <Text className="muted">
         A framework for prototyping virtual W3C Web of Things devices. Each Thing is exposed over the
         WoT HTTP protocol. Click on a Thing below, to inspect and interact with its properties, actions and events.
       </Text>
@@ -620,7 +1271,11 @@ function Landing({ things, loading, onOpen }: { things: ThingEntry[]; loading: b
               {things.map(entry => (
                 <button key={entry.id} type="button" className="thing-card" onClick={() => onOpen(entry.id)}>
                   <Text weight="semibold">{entry.title}</Text>
-                  <Text className="mono field-label">{entry.id}</Text>
+                  {/* Only show the id when it adds something the title doesn't — for a
+                      single-instance Thing the id is just the lowercased title, so it
+                      would only be noise (same convention as AffordanceName). */}
+                  {!idEchoesTitle(entry.id, entry.title) && <Text className="mono field-label">{entry.id}</Text>}
+                  {entry.description && <Text size="small" className="muted thing-card-desc">{entry.description}</Text>}
                 </button>
               ))}
             </div>
@@ -636,7 +1291,7 @@ function Landing({ things, loading, onOpen }: { things: ThingEntry[]; loading: b
 // behavior declaratively as `vre:effects` right in the Thing Description.
 const counterTd = `{
   "title": "Counter",
-  "description": "Counter example Thing",
+  "description": "A simple integer counter you can increment, decrement, or reset. It emits a change event on every update.",
   "@context": [
     "https://www.w3.org/2019/wot/td/v1",
     "https://www.w3.org/2022/wot/td/v1.1"
@@ -645,7 +1300,7 @@ const counterTd = `{
     "count": {
       "title": "Count",
       "type": "integer",
-      "description": "Current counter value",
+      "description": "The counter's current value; updates live as actions run.",
       "observable": true,
       "readOnly": true
     }
@@ -653,17 +1308,17 @@ const counterTd = `{
   "actions": {
     "increment": {
       "title": "Increment",
-      "description": "Increment counter value",
+      "description": "Increase the count by one and emit a change event.",
       "vre:effects": "count' = count + 1; emitEvent(\\"change\\", count);"
     },
     "reset": {
       "title": "Reset",
-      "description": "Resetting counter value",
+      "description": "Set the count back to zero and emit a change event.",
       "vre:effects": "count' = 0; emitEvent(\\"change\\", count);"
     }
   },
   "events": {
-    "change": { "title": "Changed", "description": "Change event" }
+    "change": { "title": "Changed", "description": "Fires whenever the count changes, carrying the new value." }
   }
 }`;
 
@@ -675,7 +1330,7 @@ const counterState = `{
 function CodeExample({ filename, code }: { filename: string; code: string }) {
   return <div className="code-example">
     <div className="code-example-head"><Text className="mono" size="small" weight="semibold">{filename}</Text></div>
-    <pre className="code-example-body"><code>{code}</code></pre>
+    <JsonBlock className="code-example-body" source={code} />
   </div>;
 }
 
@@ -692,7 +1347,7 @@ function CreateThingGuide() {
     <Stack direction="horizontal" align="center" gap="condensed">
       <Heading as="h3" style={{ fontSize: 18 }}>Creating new Things</Heading>
     </Stack>
-    <Text className="muted" style={{ maxWidth: '60ch' }}>
+    <Text className="muted">
       Add a directory under <InlineCode>src/things/&lt;name&gt;/</InlineCode> and the Thing is
       auto-discovered on the next start. A Thing needs a Thing Description with VRE effect annotations (<InlineCode>vre:effects</InlineCode>) and an initial
       state; logic.js is optional.
@@ -712,7 +1367,7 @@ function CreateThingGuide() {
 
     <Stack gap="condensed">
       <Text weight="semibold">Example: the Counter Thing</Text>
-      <Text size="small" className="muted" style={{ maxWidth: '60ch' }}>
+      <Text size="small" className="muted">
         Counter needs no <InlineCode>logic.js</InlineCode>. Its state is a single
         integer, and each action declares its behavior declaratively via <InlineCode>vre:effects</InlineCode>
         {' '} annotations in the Thing Description 
@@ -766,7 +1421,7 @@ function App() {
   return <ThemeProvider colorMode={colorMode} nightScheme="dark_dimmed">
     <BaseStyles className="app-root">
       <PageLayout containerWidth="full" padding="none" rowGap="none">
-        <PageLayout.Header padding="condensed" divider="line">
+        <PageLayout.Header padding="condensed" divider="line" className="app-header">
           <Stack direction="horizontal" align="center" justify="space-between" gap="normal" wrap="wrap">
             <Stack direction="horizontal" align="center" gap="condensed">
               <button type="button" className="brand" onClick={() => navigate(null)}>
@@ -775,18 +1430,15 @@ function App() {
                   <Heading as="h1" style={{ fontSize: 20 }}>WoT Lab <Text className="muted" weight="normal">Dashboard</Text></Heading>
                 </Stack>
               </button>
+              {/* A breadcrumb, not a heading: it says where you are, while the
+                  Thing's own <h2> lives once in the content column. Two <h2>s for
+                  one Thing also made a confusing heading outline under the h1. */}
               {currentThing && <>
-                <span className="header-divider" aria-hidden="true" />
-                <Heading as="h2" style={{ fontSize: 18 }}>{currentThing.title}</Heading>
+                <Text className="muted" aria-hidden="true">/</Text>
+                <Text weight="semibold">{currentThing.title}</Text>
               </>}
             </Stack>
             <Stack direction="horizontal" align="center" gap="normal" wrap="wrap">
-              {currentThing && <Stack direction="horizontal" align="center" gap="normal" wrap="wrap">
-                <Stack direction="horizontal" align="center" gap="condensed"><FieldLabel>id</FieldLabel><Text className="mono">{currentThing.id}</Text></Stack>
-                {currentThing.atType && <Stack direction="horizontal" align="center" gap="condensed"><FieldLabel>@type</FieldLabel><Text className="mono">{currentThing.atType}</Text></Stack>}
-                <Link as="button" type="button" onClick={() => void openThingDescription(currentThing.id)} muted>Thing Description ↗</Link>
-                <span className="header-divider" aria-hidden="true" />
-              </Stack>}
               <IconButton icon={ColorModeIcon} aria-label={`Color mode: ${colorMode}. Switch to ${nextColorMode[colorMode]}.`} variant="invisible" onClick={() => setColorMode(mode => nextColorMode[mode])} />
               <Button leadingVisual={SyncIcon} onClick={() => void loadThings()}>Refresh</Button>
             </Stack>
@@ -800,7 +1452,8 @@ function App() {
             : things.length
               ? <NavList>
                   {things.map(entry => (
-                    <NavList.Item key={entry.id} aria-current={entry.id === route.thingId} onClick={() => navigate(entry.id)}>
+                    <NavList.Item key={entry.id} href={`/${encodeURIComponent(entry.id)}`} aria-current={entry.id === route.thingId}
+                      onClick={event => { event.preventDefault(); navigate(entry.id); }}>
                       {entry.title}
                     </NavList.Item>
                   ))}

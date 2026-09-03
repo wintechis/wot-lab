@@ -2,11 +2,11 @@
   "@context": "https://www.w3.org/2019/wot/td/v1",
   "@type": "Thing",
   "title": "Thermostat",
-  "description": "Smart thermostat with temperature control",
+  "description": "A thermostat that reports the current ambient temperature.",
   "properties": {
     "temperature": {
       "type": "number",
-      "description": "Current temperature",
+      "description": "Current ambient temperature in degrees Celsius (0–40).",
       "unit": "celsius",
       "minimum": 0,
       "maximum": 40,
@@ -16,7 +16,7 @@
     "lastUpdated": {
       "type": "string",
       "format": "date-time",
-      "description": "Timestamp of last brightness update",
+      "description": "Timestamp of the most recent temperature reading.",
       "observable": true,
       "readOnly": true
     }

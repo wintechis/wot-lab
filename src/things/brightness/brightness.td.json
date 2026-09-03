@@ -2,11 +2,11 @@
   "@context": "https://www.w3.org/2019/wot/td/v1",
   "@type": "Thing",
   "title": "Brightness Sensor",
-  "description": "Environmental brightness/light level sensor",
+  "description": "An ambient light sensor reporting the current illuminance in lux.",
   "properties": {
     "brightness": {
       "type": "number",
-      "description": "Current brightness level in lux",
+      "description": "Current ambient light level in lux (0–100,000).",
       "unit": "lux",
       "minimum": 0,
       "maximum": 100000,
@@ -16,7 +16,7 @@
     "lastUpdated": {
       "type": "string",
       "format": "date-time",
-      "description": "Timestamp of last brightness update",
+      "description": "Timestamp of the most recent brightness reading.",
       "observable": true,
       "readOnly": true
     }

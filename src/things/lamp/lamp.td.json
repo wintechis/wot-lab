@@ -1,6 +1,6 @@
 {
     "title": "Lamp",
-    "description": "Lamp Thing",
+    "description": "A dimmable lamp with on/off and brightness control.",
     "@context": [
         "https://www.w3.org/2019/wot/td/v1",
         "https://www.w3.org/2022/wot/td/v1.1"
@@ -9,14 +9,14 @@
         "on": {
             "title": "On",
             "type": "boolean",
-            "description": "Lamp is on or off",
+            "description": "Whether the lamp is currently on (true) or off (false).",
             "observable": true,
             "readOnly": true
         },
         "brightness": {
             "title": "Brightness",
             "type": "number",
-            "description": "Brightness level of the lamp",
+            "description": "Brightness level from 0 to 100 percent.",
             "minimum": 0,
             "maximum": 100,
             "unit": "percent",
@@ -27,16 +27,16 @@
     "actions": {
         "toggle": {
             "title": "Toggle",
-            "description": "Toggle the lamp state",
+            "description": "Toggle the lamp between on and off.",
             "vre:effects": "on' = !on;"
         },
         "setBrightness": {
             "title": "Set Brightness",
-            "description": "Set the brightness of the lamp",
+            "description": "Set the brightness (0–100%); ignored while the lamp is off.",
             "vre:effects": "brightness' = on ? input : brightness;",
             "input": {
                 "type": "number",
-                "description": "Brightness level to set",
+                "description": "Target brightness from 0 to 100 percent.",
                 "minimum": 0,
                 "maximum": 100,
                 "default": 100
