@@ -1,18 +1,21 @@
 name: Deploy
 
-# Controls when the action will run.
+# Only main deploys, so only main needs to build a release. Every other branch
+# is covered by CI, which runs the same lint/type-check/smoke gates — building
+# and uploading a tarball that can never be deployed was pure duplication.
 on:
   push:
     branches:
-      - '**'
-      - '!gh-pages'
-  pull_request:
-    branches:
-      - '**'
-      - '!gh-pages'
+      - main
+
+# Deploys queue rather than cancel: interrupting one mid-ssh could leave the
+# server between releases.
+concurrency:
+  group: deploy
+  cancel-in-progress: false
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
@@ -20,31 +23,26 @@ jobs:
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
+
+      # Bun's global cache makes the install a restore rather than a download.
+      - uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+          restore-keys: bun-${{ runner.os }}-
+
       - run: bun install --frozen-lockfile
       - run: bun run build
       - run: bun run frontend:build
+
+      # The release is code only. Authored Thing Models are data and live in
+      # the shared directory on the server, so they are never in here and never
+      # overwritten by a deploy.
       - name: Package release
         run: |
           tar -czf wot-lab-release.tar.gz \
-            --exclude='./.git' \
-            --exclude='./node_modules' \
-            --exclude='./.github' \
             src frontend/dist package.json bun.lock tsconfig.json eslint.config.js
-      - uses: actions/upload-artifact@v4
-        with:
-          name: build
-          path: wot-lab-release.tar.gz
-  deploy:
-    runs-on: ubuntu-latest
-    needs: build
-    if: github.ref == 'refs/heads/main'
 
-    steps:
-      - name: Download release
-        uses: actions/download-artifact@v4
-        with:
-          name: build
-          path: .
       - name: Upload release
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -53,17 +51,35 @@ jobs:
           password: ${{ secrets.SSH_PASSWORD }}
           source: "wot-lab-release.tar.gz"
           target: "./"
+
+      # Releases are unpacked side by side and switched with one symlink, so a
+      # deploy is not a window in which the app directory is half-replaced, and
+      # rolling back is repointing `current` at the previous release.
       - name: Install and restart service
         uses: appleboy/ssh-action@v1.2.2
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           password: ${{ secrets.SSH_PASSWORD }}
+          envs: GITHUB_SHA
           script: |
-            rm -rf "$HOME/wot-lab"
-            mkdir -p "$HOME/wot-lab"
-            tar -xzf "$HOME/wot-lab-release.tar.gz" -C "$HOME/wot-lab"
-            rm "$HOME/wot-lab-release.tar.gz"
-            cd "$HOME/wot-lab"
+            set -euo pipefail
+            ROOT="$HOME/wot-lab"
+            RELEASE="$ROOT/releases/$GITHUB_SHA"
+
+            mkdir -p "$RELEASE" "$ROOT/shared/thing-models" "$ROOT/shared/node_modules"
+            tar -xzf "$HOME/wot-lab-release.tar.gz" -C "$RELEASE"
+            rm -f "$HOME/wot-lab-release.tar.gz"
+
+            # One node_modules shared by every release: dependencies rarely
+            # change, so this turns a cold install into a no-op most deploys.
+            ln -sfn "$ROOT/shared/node_modules" "$RELEASE/node_modules"
+            cd "$RELEASE"
             bun install --frozen-lockfile
+
+            ln -sfn "$RELEASE" "$ROOT/current"
             sudo systemctl restart wotlab.service
+
+            # Keep the last five releases so a rollback has somewhere to go.
+            cd "$ROOT/releases"
+            ls -1dt */ 2>/dev/null | tail -n +6 | xargs -r rm -rf || true

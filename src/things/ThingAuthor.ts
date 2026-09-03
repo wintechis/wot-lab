@@ -2,7 +2,7 @@ import * as WoT from 'wot-typescript-definitions';
 import { mkdir, mkdtemp, rename, rm } from 'fs/promises';
 import { dirname, join } from 'path';
 import { createLoggers } from '../utils/debug.js';
-import { thingsDirectory } from './ThingHandler.js';
+import { authoringDirectory, readThingModel } from './ThingHandler.js';
 import { vreEffectsToHandlers } from './vre.js';
 
 const { debug } = createLoggers('things');
@@ -329,7 +329,10 @@ export async function validateDraft(draft: ThingDraft): Promise<string[]> {
     errors.push('Name must be 63 characters or fewer.');
   } else if (reservedNames.includes(name)) {
     errors.push(`'${name}' is reserved.`);
-  } else if (await Bun.file(join(thingsDirectory, name, `${name}.td.json`)).exists()) {
+  } else if (await readThingModel(name)) {
+    // Checked across every catalog root, not just where this one would land:
+    // a name that already resolves would be shadowed or would shadow, and
+    // either way two models would answer to one name.
     errors.push(`A Thing Model named '${name}' already exists.`);
   }
 
@@ -400,8 +403,12 @@ export async function validateDraft(draft: ThingDraft): Promise<string[]> {
  * single rename, so a half-written Thing is never visible to the catalog.
  */
 export async function writeDraft(draft: ThingDraft): Promise<string> {
-  const target = join(thingsDirectory, draft.name);
-  const staging = await mkdtemp(join(dirname(thingsDirectory), '.thing-'));
+  const root = authoringDirectory();
+  const target = join(root, draft.name);
+  // Staged as a sibling of the catalog root so the move is a rename within one
+  // filesystem, and so the half-written directory is never inside the catalog.
+  await mkdir(root, { recursive: true });
+  const staging = await mkdtemp(join(dirname(root), '.thing-'));
 
   try {
     await Bun.write(
@@ -423,11 +430,21 @@ export async function writeDraft(draft: ThingDraft): Promise<string> {
   return target;
 }
 
-/** Remove a Thing Model's directory from disk. */
+/**
+ * Remove a Thing Model's directory from disk.
+ *
+ * Only a model in the authoring directory can be deleted. A model that ships
+ * with the lab is part of the release, not data: deleting it would be undone by
+ * the next deploy, and would look like data loss until then.
+ */
 export async function deleteThingModel(name: string): Promise<void> {
   if (!typeName.test(name) || reservedNames.includes(name)) {
     throw new Error(`Refusing to delete '${name}'`);
   }
-  await rm(join(thingsDirectory, name), { recursive: true, force: true });
+  const model = await readThingModel(name);
+  if (model && !model.writable) {
+    throw new Error(`'${name}' ships with the lab and cannot be deleted`);
+  }
+  await rm(join(authoringDirectory(), name), { recursive: true, force: true });
   debug(`Deleted Thing Model '${name}'`);
 }

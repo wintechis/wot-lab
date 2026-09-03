@@ -20,7 +20,6 @@ A Thing needs only its TD and state; behavior can come from `logic.js`, `vre:eff
 - [Creating Things](#creating-things)
 - [API Reference](#api-reference)
 - [Examples](#examples)
-- [Debug Logging](#debug-logging)
 
 ## Overview
 
@@ -73,6 +72,9 @@ bun run dev -- --port 9000                # or WOT_LAB_PORT=9000
   are built from. The count is optional and defaults to 1. Omit the flag entirely
   to start empty.
 - `--port <number>` — HTTP port. Defaults to `8081`, or `WOT_LAB_PORT`.
+- `--models-dir <path>` — where Thing Models authored in the dashboard are
+  written (or `WOT_LAB_MODELS_DIR`). Unset, they are written alongside the
+  bundled ones in `src/things/`. 
 
 
 ## Creating Things
@@ -283,3 +285,39 @@ WoT Lab comes with example Things:
 - **Events**: `colorChanged`, `powerChanged`, `effectChanged` (with timestamps and command data)
 - **Actions**: `setColor`, `setPower`, `setEffect`, `setBrightness` (full LED control)
 - **Features**: RGB LED control with BLE command simulation, brightness adjustment
+
+## Deployment
+
+`.github/workflows/cd.yml` deploys `main`. It packages **code only** — `src`,
+`frontend/dist`, and the manifests — and unpacks each release side by side on
+the server, switching between them with one symlink:
+
+```
+~/wot-lab/
+├── current -> releases/<commit sha>
+├── releases/<commit sha>/        # code, replaced every deploy
+└── shared/
+    ├── node_modules/             # one install, symlinked into each release
+    └── thing-models/             # Thing Models authored in the dashboard
+```
+
+### The service
+
+```ini
+[Unit]
+Description=WoT Lab
+After=network.target
+
+[Service]
+WorkingDirectory=/home/wotlab/wot-lab/current
+Environment="DEBUG=wot-lab:*"
+Environment="WOT_LAB_ALLOW_REMOTE_WRITE=1"
+ExecStart=/usr/local/bin/bun src/main.ts --port 8043 --things blergb:2 --models-dir /home/wotlab/wot-lab/shared/thing-models
+User=wotlab
+Restart=always
+RestartSec=30
+Type=simple
+
+[Install]
+WantedBy=multi-user.target
+```

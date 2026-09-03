@@ -2,6 +2,7 @@ import { Servient } from '@node-wot/core';
 import httpBinding from '@node-wot/binding-http';
 import { enable } from 'debug';
 import { ThingRegistry } from './things/ThingRegistry.js';
+import { setUserModelsDirectory } from './things/ThingHandler.js';
 import { parseArgs } from './config/options.js';
 import { createLoggers } from './utils/debug.js';
 import { createEndpointMiddleware, LabRequestHandler } from './http/endpointMiddleware.js';
@@ -19,6 +20,8 @@ const usage = `wot-lab
 
   --things <spec>   Things to start, named by Thing Model, e.g. counter:2,lamp
   --port <number>   HTTP port (default 8081, or WOT_LAB_PORT)
+  --models-dir <p>  Where authored Thing Models are written
+                    (default: alongside the bundled ones, or WOT_LAB_MODELS_DIR)
 
 Starting without --things is normal: Things are created from the dashboard.`;
 
@@ -29,6 +32,10 @@ try {
   console.error(`ERROR: ${(error as Error).message}\n\n${usage}`);
   process.exit(1);
 }
+
+// Set before anything reads the catalog: it decides which roots a Thing Model
+// can be found in, and where a newly authored one is written.
+setUserModelsDirectory(options.modelsDir);
 
 const servient = new Servient();
 const serverRef: { current?: InstanceType<typeof HttpServer> } = {};
@@ -78,6 +85,9 @@ debug('\nAvailable endpoints:');
 debug(`- Dashboard:           http://localhost:${options.port}/`);
 debug(`- Thing Descriptions:  http://localhost:${options.port}/{thingId}`);
 debug(`- Lab API:             http://localhost:${options.port}/_lab/thing-models`);
+if (options.modelsDir) {
+  debug(`- Authored models:     ${options.modelsDir}`);
+}
 
 // Graceful shutdown
 process.on('SIGINT', () => {

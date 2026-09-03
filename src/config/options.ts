@@ -18,6 +18,12 @@ export interface LabOptions {
   /** Things to create at startup. Empty is the default and is not an error. */
   things: ThingRequest[];
   port: number;
+  /**
+   * Where Thing Models authored in the dashboard are written. Unset means
+   * alongside the bundled ones, which is right for a checkout; a deployment
+   * points it outside the release directory so authored models survive it.
+   */
+  modelsDir?: string;
 }
 
 /**
@@ -82,6 +88,7 @@ function flagValue(argv: string[], flag: string): string | undefined {
 export function parseArgs(argv: string[] = process.argv): LabOptions {
   const things = flagValue(argv, '--things');
   const portFlag = flagValue(argv, '--port') ?? process.env.WOT_LAB_PORT;
+  const modelsDir = flagValue(argv, '--models-dir') ?? process.env.WOT_LAB_MODELS_DIR;
 
   const port = portFlag === undefined ? DEFAULT_PORT : Number.parseInt(portFlag, 10);
   if (!Number.isInteger(port) || port < 1 || port > 65535) {
@@ -95,5 +102,9 @@ export function parseArgs(argv: string[] = process.argv): LabOptions {
       : 'No --things given; starting with an empty lab'
   );
 
-  return { things: requested, port };
+  if (modelsDir) {
+    debug(`Authored Thing Models are stored in ${modelsDir}`);
+  }
+
+  return { things: requested, port, modelsDir };
 }

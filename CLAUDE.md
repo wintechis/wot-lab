@@ -35,7 +35,9 @@ Debug logging uses the `debug` package with hierarchical namespaces `wot-lab:<ar
 
 ## Thing Model layout (TD + state required; logic.js / VRE optional)
 
-A **Thing Model** is a directory in `src/things/<name>/` — the Thing Description and initial state a Thing is built from. Things are created *from* a model; the model itself never runs.
+A **Thing Model** is a directory named after itself — the Thing Description and initial state a Thing is built from. Things are created *from* a model; the model itself never runs.
+
+The catalog has up to two roots (`modelRoots()` in `ThingHandler.ts`): the **bundled** models in `src/things/` and, when `--models-dir` / `WOT_LAB_MODELS_DIR` is set, a **user** directory that is searched first and is where the dashboard writes. Bundled models report `writable: false` and cannot be deleted through the API — they are part of the release, so deleting one would only last until the next deploy. In a checkout the flag is unset and authoring writes to `src/things/`, unchanged.
 - `<name>.td.json` — W3C Thing Description (capabilities: properties/actions/events). **Required.**
 - `state.json` — initial state object. Any string value ending in `T00:00:00.000Z` is replaced with the current timestamp at load time (see `loadStateFile`). **Required.**
 - `logic.js` — imperative behavior. **Optional.** Read as text and `eval`'d inside an async wrapper (`ThingHandler.ts` → `evaluateLogicFile`). The wrapper injects these locals, available with no import: `thing` (the WoT `ExposedThing`), `state` (a Valtio proxy of `state.json`), `http`, `URL`, `createLoggers`.
@@ -81,6 +83,8 @@ Examples in the tree: `src/things/counter/counter.td.json` (`"vre:effects": "cou
 - **The dashboard** (`frontend/`, React + Primer) is built by `bun run frontend:build` into `frontend/dist/` and served by `endpointMiddleware`. It talks to `/_lab/*` for anything that changes what is running; `frontend/src/api.ts` holds those calls. The lab API has two collections: `/_lab/thing-models` (the catalog on disk; `POST` writes a new one) and `/_lab/things` (what is running; `GET` also returns the `--things` flag that reproduces it, `POST` creates more from a model, `DELETE /_lab/things/{id}` takes one offline).
 - **Vocabulary**: a *Thing Model* is the directory on disk; a *Thing* is a running instance of one. `frontend/src/App.tsx` keeps a separate local type `InspectedThing` for the parsed TD it renders — deliberately not called `ThingModel`, which is imported from `./api` in the W3C sense.
 - **The built frontend is revalidated by mtime** (`loadFrontendAsset`), so `bun run frontend:build` is picked up by a running lab without a restart.
+- **Deploys** (`.github/workflows/cd.yml`, main only) ship code as a release directory and switch `~/wot-lab/current` with a symlink; `~/wot-lab/shared/` holds one `node_modules` and the authored `thing-models/`, so neither is touched by a release. CI gates every branch; CD no longer duplicates that build.
+- **Lab API writes are loopback-only** unless `WOT_LAB_ALLOW_REMOTE_WRITE=1` — a dashboard reached over the network cannot create Things without it.
 - **`_lab` and `assets` are reserved** path segments (`reservedNames` in `ThingAuthor.ts`) — a Thing Model may not take either name. `_lab` is additionally unspellable as a model name, since names must match `/^[a-z][a-z0-9-]*$/`.
 - **ESM throughout** (`"type": "module"`, `module: nodenext`). Relative imports in `.ts` source must use the `.js` extension (e.g. `./globalState.js`). `strict` is on.
 - `logic.js` is executed via `eval` with injected globals — it has no `import`/`require` and no type checking; treat it as sandboxed script text, not a module.
