@@ -238,6 +238,38 @@ function acceptsHtml(req: IncomingMessage): boolean {
   });
 }
 
+function frontendContentType(pathname: string): string {
+  const extension = pathname.split('.').pop()?.toLowerCase();
+  const types: Record<string, string> = {
+    css: 'text/css; charset=utf-8',
+    html: 'text/html; charset=utf-8',
+    js: 'text/javascript; charset=utf-8',
+    json: 'application/json; charset=utf-8',
+    png: 'image/png',
+    svg: 'image/svg+xml',
+    webp: 'image/webp',
+    woff: 'font/woff',
+    woff2: 'font/woff2'
+  };
+  return types[extension || ''] || 'application/octet-stream';
+}
+
+async function serveFrontend(pathname: string, res: ServerResponse): Promise<boolean> {
+  const relativePath = pathname === '/' ? 'index.html' : pathname.slice(1);
+  if (relativePath.includes('..') || relativePath.includes('\\')) {
+    return false;
+  }
+
+  const file = Bun.file(`${process.cwd()}/frontend/dist/${relativePath}`);
+  if (!(await file.exists())) {
+    return false;
+  }
+
+  res.writeHead(200, { 'Content-Type': frontendContentType(relativePath) });
+  res.end(await file.arrayBuffer());
+  return true;
+}
+
 function renderIndex(things: ThingMap, html: boolean, port: number, res: ServerResponse): void {
   const entries = [...things.values()].map(thing => ({
     id: thingId(thing),
@@ -338,12 +370,22 @@ export function createEndpointMiddleware(getThings: () => ThingMap, port: number
     const things = getThings();
 
     if (pathParts.length === 0) {
+      if (acceptsHtml(req) && await serveFrontend('/', res)) {
+        return;
+      }
       renderIndex(things, acceptsHtml(req), port, res);
+      return;
+    }
+
+    if (pathParts[0] === 'assets' && await serveFrontend(requestUrl.pathname, res)) {
       return;
     }
 
     const thing = [...things.values()].find(candidate => thingId(candidate) === decodeURIComponent(pathParts[0]));
     if (thing && acceptsHtml(req)) {
+      if (await serveFrontend('/', res)) {
+        return;
+      }
       renderThing(thing, true, res);
       return;
     }

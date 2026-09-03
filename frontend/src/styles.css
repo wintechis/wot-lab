@@ -1,0 +1,28 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+:root { font-family: 'Space Grotesk', sans-serif; background: #f6f8fa; color: #1f2328; }
+body { margin: 0; }
+.topbar { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 18px 28px; box-sizing: border-box; background: #0d1117; color: #f0f6fc; }
+.topbar h1 { color: #f0f6fc; }
+.brand { display: flex; align-items: center; gap: 8px; }
+.brand h1 { font-size: 20px; }
+.brand-muted, .muted { color: #656d76; font-weight: normal; }
+.eyebrow { display: block; color: #656d76; font-size: 12px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; }
+.eyebrow.accent { color: #0969da; }
+.console-grid { display: grid; grid-template-columns: 260px minmax(0, 1fr); min-height: calc(100vh - 68px); }
+.sidebar { padding: 32px 18px; border-right: 1px solid #d0d7de; background: #fff; }
+.workspace { max-width: 940px; width: 100%; box-sizing: border-box; padding: 44px clamp(24px, 6vw, 80px) 80px; }
+.hero { padding: 0 0 32px; margin-bottom: 30px; border-bottom: 1px solid #d8dee4; }
+.hero h2 { font-size: clamp(28px, 4vw, 44px); letter-spacing: 0; }
+.operations { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; }
+.operation { padding: 18px; border: 1px solid #d0d7de; border-radius: 6px; background: #fff; box-shadow: 0 1px 2px #1f23280d; }
+.operation-name { display: block; font-weight: 600; }
+.operation-description { display: block; margin: 4px 0 0; font-size: 13px; }
+.field { margin-top: 16px; }
+.thing-id { display: block; color: #656d76; font: 11px 'DM Mono', monospace; }
+.section-heading { margin: 0 0 12px; font-size: 18px; }
+.actions-heading { margin-top: 40px; }
+.result { padding: 10px; border-radius: 4px; background: #f6f8fa; }
+.result pre { max-height: 160px; overflow: auto; margin: 8px 0 0; font: 12px 'DM Mono', monospace; white-space: pre-wrap; }
+.empty { display: grid; justify-items: center; align-content: center; min-height: 50vh; text-align: center; }
+@media (max-width: 700px) { .console-grid { grid-template-columns: 1fr; } .sidebar { border-right: 0; border-bottom: 1px solid #d0d7de; padding: 20px; } .workspace { padding: 30px 20px 60px; } .topbar { padding: 16px 20px; } }

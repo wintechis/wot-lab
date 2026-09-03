@@ -3,6 +3,7 @@ node_modules/
 
 # Compiled output
 dist/
+frontend/dist/
 
 # TypeScript build cache
 *.tsbuildinfo
