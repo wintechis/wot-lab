@@ -48,7 +48,7 @@ function generateEffectCommand(effect) {
 
 // Action handlers
 thing.setActionHandler("setColor", async (input) => {
-  const { R, G, B } = input;
+  const { R, G, B } = await input.value();
   
   if (!validateRGB(R, G, B)) {
     throw new Error(`Invalid RGB values: R=${R}, G=${G}, B=${B}. Values must be integers 0-255.`);
@@ -85,7 +85,7 @@ thing.setActionHandler("setColor", async (input) => {
 });
 
 thing.setActionHandler("setPower", async (input) => {
-  const { state: powerState } = input;
+  const { state: powerState } = await input.value();
   
   if (typeof powerState !== 'boolean') {
     throw new Error(`Invalid power state: ${powerState}. Must be boolean.`);
@@ -122,7 +122,7 @@ thing.setActionHandler("setPower", async (input) => {
 });
 
 thing.setActionHandler("setEffect", async (input) => {
-  const { effect } = input;
+  const { effect } = await input.value();
   
   if (!validateEffect(effect)) {
     throw new Error(`Invalid effect: ${effect}. Must be integer 128-156.`);
@@ -159,7 +159,7 @@ thing.setActionHandler("setEffect", async (input) => {
 });
 
 thing.setActionHandler("setBrightness", async (input) => {
-  const { brightness } = input;
+  const { brightness } = await input.value();
   
   if (!validateBrightness(brightness)) {
     throw new Error(`Invalid brightness: ${brightness}. Must be integer 0-100.`);
