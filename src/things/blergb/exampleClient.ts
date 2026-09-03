@@ -190,7 +190,7 @@ async function testBLERGBController() {
       console.log('   HTTP Response:', effectResponse);
       
     } catch (error) {
-      console.log(`   ⚠️  HTTP endpoints not available (port ${centralizedHttpPort}):`, (error as Error).message);
+      console.log(`   HTTP endpoints not available (port ${centralizedHttpPort}):`, (error as Error).message);
       console.log('   This is normal if the Thing hasn\'t fully initialized yet.');
     }
 
@@ -208,7 +208,7 @@ async function testBLERGBController() {
     console.log(`   Final brightness: ${await finalBrightness.value()}%`);
     console.log(`   Final effect: ${await finalEffect.value()}`);
 
-    console.log('\n✅ Test completed!');
+    console.log('\nTest completed!');
     console.log('\nYou can also test manually:');
     console.log(`   curl http://localhost:${centralizedHttpPort}/${thingId}/status`);
     console.log(`   curl -X POST http://localhost:${centralizedHttpPort}/${thingId}/color -H "Content-Type: application/json" -d '{"R": 255, "G": 128, "B": 0}'`);
@@ -217,11 +217,11 @@ async function testBLERGBController() {
     console.log(`   curl -X POST http://localhost:${centralizedHttpPort}/${thingId}/effect -H "Content-Type: application/json" -d '{"effect": 140}'`);
     console.log(`   curl http://localhost:${centralizedHttpPort}/${thingId}/color/255/0/255  # Purple via URL`);
 
-    console.log('\n🔄 Keep this running to see real-time events...');
+    console.log('\nKeep this running to see real-time events...');
 
   } catch (error) {
-    console.error('❌ Error:', error instanceof Error ? error.message : String(error));
-    console.log('\n💡 Make sure WoT Lab is running with:');
+    console.error('Error:', error instanceof Error ? error.message : String(error));
+    console.log('\nMake sure WoT Lab is running with:');
     console.log('   npm run dev');
   }
 }

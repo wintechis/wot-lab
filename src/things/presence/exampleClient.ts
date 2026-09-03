@@ -47,12 +47,12 @@ async function testPresenceSensor() {
     console.log(`   Initial presence: ${await initialPresence.value()}`);
     console.log(`   Initial count: ${await initialCount.value()}`);
 
-    console.log('\n✅ Test completed!');
-    console.log('\n🔄 Keep this running to see real-time events...');
+    console.log('\nTest completed!');
+    console.log('\nKeep this running to see real-time events...');
 
   } catch (error) {
-    console.error('❌ Error:', error instanceof Error ? error.message : String(error));
-    console.log('\n💡 Make sure WoT Lab is running with:');
+    console.error('Error:', error instanceof Error ? error.message : String(error));
+    console.log('\nMake sure WoT Lab is running with:');
     console.log('   bun run dev');
   }
 }

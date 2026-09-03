@@ -64,7 +64,7 @@ function updateSensorData(newData = {}, triggerMovement = false) {
       timestamp: sensorData.timestamp
     });
     
-    debug(`📱 RuuviTag movement detected (#${state.movementCounter})`);
+    debug(`RuuviTag movement detected (#${state.movementCounter})`);
   }
   
   // Emit property changes
@@ -88,7 +88,7 @@ function updateSensorData(newData = {}, triggerMovement = false) {
   });
   
     
-  debug(`📊 RuuviTag data: ${state.temperature}°C, ${state.humidity}%, ${state.pressure}Pa`);
+  debug(`RuuviTag data: ${state.temperature}°C, ${state.humidity}%, ${state.pressure}Pa`);
   
   // Emit the sensor data event
   
@@ -127,4 +127,4 @@ setInterval(() => {
   updateSensorData({}, randomMovement);
 }, 10000);
 
-debug("📱 RuuviTag initialized with automatic sensor simulation!");
+debug("RuuviTag initialized with automatic sensor simulation!");

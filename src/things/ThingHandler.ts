@@ -166,7 +166,7 @@ export async function loadThing(
       }
     })();
   } catch (error) {
-    console.error(`❌ Error loading thing '${thingName}':`, error);
+    console.error(`ERROR: Error loading thing '${thingName}':`, error);
     throw error;
   }
 }
@@ -189,7 +189,7 @@ export async function loadThingInstances(
       handlers.push(handler);
       debug(`✓ Created instance: ${instanceId}`);
     } catch (e) {
-      error(`❌ Failed to create instance ${instanceId}:`, e);
+      error(`ERROR: Failed to create instance ${instanceId}:`, e);
     }
   }
 
@@ -245,7 +245,7 @@ export async function loadConfiguredThings(
 ): Promise<ThingHandler[]> {
   const handlers: ThingHandler[] = [];
 
-  debug('📦 Loading Things based on configuration...');
+  debug('Loading Things based on configuration...');
 
   for (const [thingName, thingConfig] of Object.entries(config.things)) {
     const { instances, idPrefix } = thingConfig as {
@@ -253,7 +253,7 @@ export async function loadConfiguredThings(
       idPrefix?: string;
     };
 
-    debug(`🔧 Creating ${instances} instance(s) of '${thingName}'`);
+    debug(`Creating ${instances} instance(s) of '${thingName}'`);
 
     try {
       const thingHandlers = await loadThingInstances(
@@ -263,7 +263,7 @@ export async function loadConfiguredThings(
       );
       handlers.push(...thingHandlers);
     } catch (e) {
-      error(`❌ Failed to load thing type '${thingName}':`, e);
+      error(`ERROR: Failed to load thing type '${thingName}':`, e);
     }
   }
 
