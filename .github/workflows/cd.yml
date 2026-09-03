@@ -22,38 +22,48 @@ jobs:
           bun-version: latest
       - run: bun install --frozen-lockfile
       - run: bun run build
+      - run: bun run frontend:build
+      - name: Package release
+        run: |
+          tar -czf wot-lab-release.tar.gz \
+            --exclude='./.git' \
+            --exclude='./node_modules' \
+            --exclude='./.github' \
+            src frontend/dist package.json bun.lock wot-config.json tsconfig.json eslint.config.js
       - uses: actions/upload-artifact@v4
         with:
           name: build
-          path: .
+          path: wot-lab-release.tar.gz
   deploy:
     runs-on: ubuntu-latest
     needs: build
     if: github.ref == 'refs/heads/main'
 
     steps:
-      - uses: actions/checkout@v4
-        with:
-          # This allows yarn workspaces --since to compare with origin/main branch
-          fetch-depth: 0
-      - name: download build files
+      - name: Download release
         uses: actions/download-artifact@v4
         with:
           name: build
           path: .
-      - name: copy file via ssh password
-        uses: appleboy/scp-action@master
+      - name: Upload release
+        uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           password: ${{ secrets.SSH_PASSWORD }}
-          rm: true
-          source: "."
-          target: "./wot-lab/"
-      - name: Restart service manually via SSH
-        uses: appleboy/ssh-action@master
+          source: "wot-lab-release.tar.gz"
+          target: "./"
+      - name: Install and restart service
+        uses: appleboy/ssh-action@v1.2.2
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           password: ${{ secrets.SSH_PASSWORD }}
-          script: "sudo systemctl restart wotlab.service"
+          script: |
+            rm -rf "$HOME/wot-lab"
+            mkdir -p "$HOME/wot-lab"
+            tar -xzf "$HOME/wot-lab-release.tar.gz" -C "$HOME/wot-lab"
+            rm "$HOME/wot-lab-release.tar.gz"
+            cd "$HOME/wot-lab"
+            bun install --frozen-lockfile
+            sudo systemctl restart wotlab.service
