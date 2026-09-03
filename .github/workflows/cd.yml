@@ -29,7 +29,7 @@ jobs:
             --exclude='./.git' \
             --exclude='./node_modules' \
             --exclude='./.github' \
-            src frontend/dist package.json bun.lock wot-config.json tsconfig.json eslint.config.js
+            src frontend/dist package.json bun.lock tsconfig.json eslint.config.js
       - uses: actions/upload-artifact@v4
         with:
           name: build

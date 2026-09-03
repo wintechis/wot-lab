@@ -1,5 +1,6 @@
 import { IncomingMessage, ServerResponse } from 'http';
 import { URL } from 'url';
+import { labPrefix } from './labApi.js';
 import { brotliCompressSync, constants as zlibConstants, gzipSync } from 'zlib';
 import * as WoT from 'wot-typescript-definitions';
 
@@ -261,11 +262,17 @@ const compressibleTypes = /^(text\/|application\/(javascript|json|xml)|image\/sv
 // Below about a kilobyte the framing costs more than the compression saves.
 const compressionThreshold = 1024;
 
-type FrontendAsset = { contentType: string; identity: Buffer; gzip?: Buffer; brotli?: Buffer };
+type FrontendAsset = { contentType: string; identity: Buffer; gzip?: Buffer; brotli?: Buffer; mtime: number; size: number };
 
-// The built frontend is immutable for the lifetime of the process, so each file
-// is read — and compressed — at most once, and every later request is answered
-// from this map. Without it, Brotli would run on every page load.
+// Each file is read — and compressed — at most once per version, and every
+// later request is answered from this map. Without it, Brotli would run on
+// every page load.
+//
+// The entry is stamped with the file's mtime and size, because the build is not
+// immutable during development: `bun run frontend:build` rewrites dist while the
+// lab is running, and a cache with no revalidation would keep serving the
+// previous index.html — and therefore the previous, now-deleted asset hashes —
+// until the process was restarted.
 const frontendCache = new Map<string, FrontendAsset>();
 
 function negotiateEncoding(req: IncomingMessage): 'br' | 'gzip' | null {
@@ -289,19 +296,24 @@ function cacheControlFor(relativePath: string): string {
 }
 
 async function loadFrontendAsset(relativePath: string): Promise<FrontendAsset | null> {
-  const cached = frontendCache.get(relativePath);
-  if (cached) {
-    return cached;
-  }
-
   const file = Bun.file(`${process.cwd()}/frontend/dist/${relativePath}`);
   if (!(await file.exists())) {
     return null;
   }
 
+  const cached = frontendCache.get(relativePath);
+  if (cached && cached.mtime === file.lastModified && cached.size === file.size) {
+    return cached;
+  }
+
   const identity = Buffer.from(await file.arrayBuffer());
   const contentType = frontendContentType(relativePath);
-  const asset: FrontendAsset = { contentType, identity };
+  const asset: FrontendAsset = {
+    contentType,
+    identity,
+    mtime: file.lastModified,
+    size: file.size
+  };
 
   if (compressibleTypes.test(contentType) && identity.byteLength >= compressionThreshold) {
     asset.gzip = gzipSync(identity);
@@ -436,15 +448,45 @@ function renderThing(thing: WoT.ExposedThing, html: boolean, res: ServerResponse
     `<table><thead><tr><th>Method</th><th>Endpoint</th><th>Operation</th><th>Description</th></tr></thead><tbody>${rows}</tbody></table>`);
 }
 
-export function createEndpointMiddleware(getThings: () => ThingMap, port: number) {
+// The lab API handles its own routes for every method; `false` means it did not
+// claim the request. It is passed as a getter because the HTTP server has to
+// exist before the servient starts, and the registry only exists after.
+export type LabRequestHandler = (
+  // eslint-disable-next-line no-unused-vars
+  req: IncomingMessage,
+  // eslint-disable-next-line no-unused-vars
+  res: ServerResponse,
+  // eslint-disable-next-line no-unused-vars
+  segments: string[],
+  // eslint-disable-next-line no-unused-vars
+  url: URL
+) => Promise<boolean>;
+
+export function createEndpointMiddleware(
+  getThings: () => ThingMap,
+  port: number,
+  getLabHandler: () => LabRequestHandler | undefined = () => undefined
+) {
   return async (req: IncomingMessage, res: ServerResponse, next: () => void): Promise<void> => {
+    const requestUrl = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`);
+    const pathParts = requestUrl.pathname.split('/').filter(Boolean);
+
+    // Checked before the method filter and before any Thing lookup: this prefix
+    // is reserved (see reservedNames), so it can never shadow a Thing.
+    if (pathParts[0] === labPrefix) {
+      const handleLab = getLabHandler();
+      if (handleLab && await handleLab(req, res, pathParts.slice(1), requestUrl)) {
+        return;
+      }
+      next();
+      return;
+    }
+
     if (req.method !== 'GET') {
       next();
       return;
     }
 
-    const requestUrl = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`);
-    const pathParts = requestUrl.pathname.split('/').filter(Boolean);
     const things = getThings();
 
     if (pathParts.length === 0) {

@@ -7,7 +7,9 @@ export default defineConfig({
   server: {
     proxy: {
       '/wot': {
-        target: 'http://localhost:8043',
+        // The lab's default port. There is no config file that can move it any
+        // more, so this and src/main.ts agree by construction.
+        target: 'http://localhost:8081',
         changeOrigin: true,
         rewrite: path => path.replace(/^\/wot/, '') || '/'
       }

@@ -1,4 +1,0 @@
-const vswitch = <urn:wot:vswitch>;
-
-// setLevel(value):
-vswitch.level' = value;

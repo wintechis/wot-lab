@@ -3,6 +3,7 @@ import {
   BaseStyles,
   Button,
   Checkbox,
+  ConfirmationDialog,
   CounterLabel,
   Flash,
   Heading,
@@ -29,7 +30,6 @@ import {
   CopyIcon,
   DashIcon,
   DeviceDesktopIcon,
-  FileDirectoryIcon,
   LinkExternalIcon,
   MoonIcon,
   PlayIcon,
@@ -39,7 +39,18 @@ import {
   TrashIcon
 } from '@primer/octicons-react';
 
-const repositoryUrl = 'https://github.com/wintechis/wot-lab';
+import {
+  LabThing,
+  ThingModel,
+  apiBase,
+  apiUrl,
+  labThingModels,
+  labThings,
+  removeThing,
+  requestJson
+} from './api';
+import { HighlightedJson, JsonBlock } from './Json';
+import { CreateThingDialog } from './CreateThing';
 
 type ThingEntry = { id: string; title: string; href: string; description?: string };
 
@@ -84,13 +95,12 @@ type ThingDescription = {
 type Property = { name: string; title?: string; description?: string; schema: Schema; type: string; writable: boolean; observable: boolean; node: Schema };
 type Action = { name: string; title?: string; description?: string; input?: Schema; output?: Schema; node: ActionNode };
 type EventAffordance = { name: string; title?: string; description?: string; data?: Schema; node: EventNode };
-type ThingModel = { id: string; title: string; description?: string; atType?: string; properties: Property[]; actions: Action[]; events: EventAffordance[]; context: TdContextValue; td: ThingDescription };
+// The parsed Thing Description an inspector renders. Distinct from a `ThingModel`
+// in the W3C sense (the on-disk template a Thing is built from), which this app
+// imports from ./api — hence the deliberately different name.
+type InspectedThing = { id: string; title: string; description?: string; atType?: string; properties: Property[]; actions: Action[]; events: EventAffordance[]; context: TdContextValue; td: ThingDescription };
 
 type ColorMode = 'auto' | 'light' | 'dark';
-
-const apiBase = import.meta.env.DEV ? '/wot' : '';
-
-const apiUrl = (path: string) => `${apiBase}${path}`;
 
 // --- Client-side routing -----------------------------------------------
 // Real paths, not hashes: a Thing is /counter, and each affordance kind is its
@@ -125,12 +135,6 @@ function useRoute() {
   return { route, navigate };
 }
 
-async function requestJson<T>(path: string, signal?: AbortSignal): Promise<T> {
-  const response = await fetch(path, { headers: { Accept: 'application/json' }, signal });
-  if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
-  return response.json() as Promise<T>;
-}
-
 function delay(ms: number, signal: AbortSignal): Promise<void> {
   return new Promise((resolve, reject) => {
     const timer = setTimeout(resolve, ms);
@@ -138,7 +142,7 @@ function delay(ms: number, signal: AbortSignal): Promise<void> {
   });
 }
 
-function modelFromDescription(description: ThingDescription, fallbackId: string): ThingModel {
+function modelFromDescription(description: ThingDescription, fallbackId: string): InspectedThing {
   const id = (description.id || fallbackId).replace('urn:wot:', '');
   const atTypeRaw = description['@type'];
   const properties: Property[] = Object.entries(description.properties || {}).map(([name, schema]) => ({
@@ -304,53 +308,6 @@ function formatValue(value: unknown): string {
   return JSON.stringify(value);
 }
 
-// Primer ships GitHub's syntax palette as Primitives tokens
-// (--color-prettylights-syntax-*, themed for light and dark_dimmed alike) but no
-// highlighter component, so tokenize here rather than take a dependency — JSON
-// is a small enough grammar to be worth about fifteen lines.
-//
-// The kinds mirror the scopes GitHub's own `source.json` grammar assigns, so the
-// output matches a GitHub blob: a key is `entity.name.tag.key.json` (.pl-ent),
-// a string value `string.quoted.double.json` (.pl-s), and numbers plus
-// true/false/null are `constant.*` (.pl-c1). Structural punctuation is
-// deliberately left unstyled — GitHub's theme maps no class for it either.
-// Escape sequences inside a string stay part of the string: they are scoped
-// `constant.character.escape`, but .pl-cce is only ever styled nested inside a
-// regexp, so in JSON they inherit the string colour.
-type JsonToken = { text: string; kind: 'key' | 'string' | 'constant' | 'plain' };
-
-// One alternation, ordered so a quoted string followed by ':' is claimed as a
-// key before the plain-string branch can match it.
-const jsonGrammar = /("(?:\\.|[^"\\])*")(?=\s*:)|("(?:\\.|[^"\\])*")|(-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)|\b(?:true|false|null)\b/g;
-
-function tokenizeJson(source: string): JsonToken[] {
-  const tokens: JsonToken[] = [];
-  let cursor = 0;
-  for (let match = jsonGrammar.exec(source); match; match = jsonGrammar.exec(source)) {
-    if (match.index > cursor) tokens.push({ text: source.slice(cursor, match.index), kind: 'plain' });
-    tokens.push({ text: match[0], kind: match[1] ? 'key' : match[2] ? 'string' : 'constant' });
-    cursor = match.index + match[0].length;
-  }
-  jsonGrammar.lastIndex = 0;
-  if (cursor < source.length) tokens.push({ text: source.slice(cursor), kind: 'plain' });
-  return tokens;
-}
-
-function HighlightedJson({ source }: { source: string }) {
-  return <code>{tokenizeJson(source).map((token, index) =>
-    token.kind === 'plain'
-      ? token.text
-      : <span key={index} className={`tok-${token.kind}`}>{token.text}</span>
-  )}</code>;
-}
-
-// Any JSON the UI shows — a TD, an action result, an event payload, a worked
-// example — goes through the same highlighter, so JSON looks like JSON wherever
-// it appears rather than only in the source tab.
-function JsonBlock({ source, className }: { source: string; className: string }) {
-  return <pre className={className}><HighlightedJson source={source} /></pre>;
-}
-
 // --- Provenance + type helpers -----------------------------------------
 
 // A small monospace tag naming the Thing Description field a value comes from.
@@ -360,8 +317,21 @@ function FieldLabel({ children }: { children: React.ReactNode }) {
 
 // GitHub-style inline code — Primer ships no such component, so this is a
 // <code> tinted with Primer Primitives tokens, for code within prose.
-function InlineCode({ children }: { children: React.ReactNode }) {
-  return <code className="inline-code">{children}</code>;
+function InlineCode({ children, className }: { children: React.ReactNode; className?: string }) {
+  return <code className={`inline-code${className ? ` ${className}` : ''}`}>{children}</code>;
+}
+
+// A runtime value, rendered in the same tinted code chip the landing page uses
+// for paths and TD terms. Values are data, and this is the one place the app
+// says "this is data" — so a property reading, a nested member and an action's
+// output all look the same wherever they appear.
+// Absence is not a value: null/undefined stays a plain muted dash rather than an
+// empty chip, which would read as a value that happens to be blank.
+function ValueCode({ value, className }: { value: unknown; className?: string }) {
+  if (value === undefined || value === null) {
+    return <Text className={className ? `muted ${className}` : 'muted'}>{formatValue(value)}</Text>;
+  }
+  return <InlineCode className={className}>{formatValue(value)}</InlineCode>;
 }
 
 // A datatype is data, not status, so it reads as a tinted monospace word rather
@@ -677,7 +647,7 @@ function SchemaValue({ schema, value }: { schema?: Schema; value: unknown }) {
       </Stack>)}
     </Stack>;
   }
-  return <Text className="mono prop-value">{formatValue(value)}</Text>;
+  return <ValueCode value={value} />;
 }
 
 // A schema rendered as the tree of members the TD *declares* — type, unit,
@@ -772,7 +742,7 @@ function PropertyRow({ property, state, onWrite }: { property: Property; state: 
                 ? <Text className="mono value-error">{state.error}</Text>
                 : structured
                   ? <div key={state.updatedAt} className={property.observable ? 'prop-value-flash' : undefined}><SchemaValue schema={property.schema} value={state.value} /></div>
-                  : <Text key={state.updatedAt} className={`prop-value${property.observable ? ' prop-value-flash' : ''}`}>{formatValue(state.value)}</Text>}
+                  : <ValueCode key={state.updatedAt} value={state.value} className={property.observable ? 'prop-value-flash' : undefined} />}
             {property.writable && state.status !== 'loading' && <Button size="small" variant="invisible" onClick={startEditing}>Edit</Button>}
           </Stack>
           {property.observable && state.status === 'ready' && <Stack direction="horizontal" gap="condensed" align="center">
@@ -983,7 +953,7 @@ function EventRows({ event, subscription, subscribed, log, onSubscribedChange }:
 // The whole document, verbatim. The affordance tabs are an interpretation of the
 // TD; this is the TD — the ground truth to check that interpretation against,
 // and the only view guaranteed complete no matter what terms a Thing carries.
-function ThingDescriptionSource({ thing }: { thing: ThingModel }) {
+function ThingDescriptionSource({ thing }: { thing: InspectedThing }) {
   const [copied, setCopied] = useState(false);
   const source = JSON.stringify(thing.td, null, 2);
   const lineCount = source.split('\n').length;
@@ -1035,7 +1005,7 @@ function ThingDescriptionSource({ thing }: { thing: ThingModel }) {
 // that @context can resolve. Here they sit with the Thing, wrap freely, and the
 // strip has room to carry the document-level facts — security, base — that
 // otherwise appear only in the raw source.
-function ThingMeta({ thing }: { thing: ThingModel }) {
+function ThingMeta({ thing }: { thing: InspectedThing }) {
   const { td } = thing;
   const applied = Array.isArray(td.security) ? td.security : td.security ? [td.security] : [];
   // An applied name points at a definition; the scheme it names is the fact
@@ -1072,7 +1042,7 @@ function AffordanceTable({ caption, headers, modifier, children }: { caption: st
   </div>;
 }
 
-function ThingInspector({ thing, section, onSection }: { thing: ThingModel; section: Section | null; onSection: (section: Section, options?: { replace?: boolean }) => void }) {
+function ThingInspector({ thing, section, onSection, onRemove }: { thing: InspectedThing; section: Section | null; onSection: (section: Section, options?: { replace?: boolean }) => void; onRemove: () => void }) {
   const [values, setValues] = useState<Record<string, ValueState>>({});
   const [subscribed, setSubscribed] = useState<Record<string, boolean>>({});
   const [logs, setLogs] = useState<Record<string, EventLogEntry[]>>({});
@@ -1197,7 +1167,10 @@ function ThingInspector({ thing, section, onSection }: { thing: ThingModel; sect
 
   return <TdContext.Provider value={thing.context}><Stack gap="spacious">
     <Stack gap="condensed">
-      <Heading as="h2">{thing.title}</Heading>
+      <Stack direction="horizontal" align="center" justify="space-between" gap="normal" wrap="wrap">
+        <Heading as="h2">{thing.title}</Heading>
+        <IconButton icon={TrashIcon} variant="invisible" aria-label={`Remove ${thing.title}`} onClick={onRemove} />
+      </Stack>
       <ThingMeta thing={thing} />
       {thing.description && <Text className="muted">{thing.description}</Text>}
     </Stack>
@@ -1248,7 +1221,9 @@ function ThingInspector({ thing, section, onSection }: { thing: ThingModel; sect
 
 // --- Landing page -------------------------------------------------------
 
-function Landing({ things, loading, onOpen }: { things: ThingEntry[]; loading: boolean; onOpen: (id: string) => void }) {
+function Landing({ things, models, loading, onOpen, onAdd }: {
+  things: ThingEntry[]; models: ThingModel[]; loading: boolean; onOpen: (id: string) => void; onAdd: () => void;
+}) {
   return <Stack gap="spacious">
     <Stack gap="condensed">
       <Text className="eyebrow eyebrow-accent" as="div">Overview</Text>
@@ -1279,106 +1254,21 @@ function Landing({ things, loading, onOpen }: { things: ThingEntry[]; loading: b
                 </button>
               ))}
             </div>
-          : <Text className="muted">No Things are currently exposed.</Text>}
+          /* Nothing runs unless it was asked for, so an empty lab is the normal
+             starting state rather than a fault — it says what is available and
+             offers the one action that changes it. */
+          : <div className="empty-state">
+              <Stack gap="condensed" align="start">
+                <Text weight="semibold">Nothing is running yet.</Text>
+                <Text className="muted">
+                  {models.length
+                    ? `${models.length} Thing ${models.length === 1 ? 'Model is' : 'Models are'} available on disk. Create a Thing from one, or write a new model.`
+                    : 'No Thing Models were found on disk. Write one to get started.'}
+                </Text>
+                <Button variant="primary" leadingVisual={PlusIcon} onClick={onAdd}>Add a Thing</Button>
+              </Stack>
+            </div>}
     </Stack>
-
-    <CreateThingGuide />
-  </Stack>;
-}
-
-// Real, abridged source of the bundled Counter Thing (src/things/counter/),
-// shown as worked examples. Counter needs no logic.js: its actions carry their
-// behavior declaratively as `vre:effects` right in the Thing Description.
-const counterTd = `{
-  "title": "Counter",
-  "description": "A simple integer counter you can increment, decrement, or reset. It emits a change event on every update.",
-  "@context": [
-    "https://www.w3.org/2019/wot/td/v1",
-    "https://www.w3.org/2022/wot/td/v1.1"
-  ],
-  "properties": {
-    "count": {
-      "title": "Count",
-      "type": "integer",
-      "description": "The counter's current value; updates live as actions run.",
-      "observable": true,
-      "readOnly": true
-    }
-  },
-  "actions": {
-    "increment": {
-      "title": "Increment",
-      "description": "Increase the count by one and emit a change event.",
-      "vre:effects": "count' = count + 1; emitEvent(\\"change\\", count);"
-    },
-    "reset": {
-      "title": "Reset",
-      "description": "Set the count back to zero and emit a change event.",
-      "vre:effects": "count' = 0; emitEvent(\\"change\\", count);"
-    }
-  },
-  "events": {
-    "change": { "title": "Changed", "description": "Fires whenever the count changes, carrying the new value." }
-  }
-}`;
-
-const counterState = `{
-  "count": 0
-}`;
-
-// A filename-headed code panel, tokened to match the action/event result panels.
-function CodeExample({ filename, code }: { filename: string; code: string }) {
-  return <div className="code-example">
-    <div className="code-example-head"><Text className="mono" size="small" weight="semibold">{filename}</Text></div>
-    <JsonBlock className="code-example-body" source={code} />
-  </div>;
-}
-
-// A brief, tokened walk-through of the file layout that defines a new Thing,
-// with the bundled Counter Thing as worked examples: TD + state required,
-// logic.js optional (behavior can also be declared inline via vre:effects).
-function CreateThingGuide() {
-  const files: { name: string; required: boolean; description: React.ReactNode }[] = [
-    { name: '<name>.td.json', required: true, description: 'W3C Thing Description — the properties, actions and events the Thing exposes.' },
-    { name: 'state.json', required: true, description: 'Initial state object — Keys map to TD properties.' },
-    { name: 'logic.js', required: false, description: <>Imperative behavior — wires read/action handlers and event emitters declared in JavaScript.</> }
-  ];
-  return <Stack gap="normal">
-    <Stack direction="horizontal" align="center" gap="condensed">
-      <Heading as="h3" style={{ fontSize: 18 }}>Creating new Things</Heading>
-    </Stack>
-    <Text className="muted">
-      Add a directory under <InlineCode>src/things/&lt;name&gt;/</InlineCode> and the Thing is
-      auto-discovered on the next start. A Thing needs a Thing Description with VRE effect annotations (<InlineCode>vre:effects</InlineCode>) and an initial
-      state; logic.js is optional.
-    </Text>
-    <div className="file-tree">
-      <div className="file-tree-root"><FileDirectoryIcon /> <Text className="mono" weight="semibold">src/things/&lt;name&gt;/</Text></div>
-      <Stack gap="condensed">
-        {files.map(file => (
-          <Stack key={file.name} direction="horizontal" gap="condensed" align="start" className="file-tree-row">
-            <Text className="mono" weight="semibold">{file.name}</Text>
-            <Label variant={file.required ? 'accent' : 'secondary'}>{file.required ? 'required' : 'optional'}</Label>
-            <Text size="small" className="muted file-tree-desc">{file.description}</Text>
-          </Stack>
-        ))}
-      </Stack>
-    </div>
-
-    <Stack gap="condensed">
-      <Text weight="semibold">Example: the Counter Thing</Text>
-      <Text size="small" className="muted">
-        Counter needs no <InlineCode>logic.js</InlineCode>. Its state is a single
-        integer, and each action declares its behavior declaratively via <InlineCode>vre:effects</InlineCode>
-        {' '} annotations in the Thing Description 
-      </Text>
-      <CodeExample filename="src/things/counter/counter.td.json" code={counterTd} />
-      <CodeExample filename="src/things/counter/state.json" code={counterState} />
-    </Stack>
-
-    <Text size="small" className="muted">
-      <Link href={`${repositoryUrl}/tree/master/src/things`} target="_blank" rel="noopener noreferrer">Browse all the example Things on GitHub ↗</Link>
-    </Text>
   </Stack>;
 }
 
@@ -1391,15 +1281,32 @@ function App() {
   const { route, navigate } = useRoute();
   const [colorMode, setColorMode] = useState<ColorMode>('auto');
   const [things, setThings] = useState<ThingEntry[]>([]);
-  const [thing, setThing] = useState<ThingModel | null>(null);
+  const [models, setModels] = useState<ThingModel[]>([]);
+  const [live, setLive] = useState<LabThing[]>([]);
+  const [startCommand, setStartCommand] = useState('');
+  const [thing, setThing] = useState<InspectedThing | null>(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
+  const [adding, setAdding] = useState(false);
+  const [removing, setRemoving] = useState<ThingEntry | null>(null);
+  const [removeFiles, setRemoveFiles] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   async function loadThings() {
     setLoading(true); setError('');
     try {
-      const data = await requestJson<{ things: ThingEntry[] }>(`${apiBase}/`);
-      setThings(data.things);
+      // The exposed Things, the Thing Models on disk and the lab's own view of
+      // what is running are three views of the same lab; loading them together
+      // keeps the sidebar, the add dialog and the start command from disagreeing.
+      const [index, catalog, running] = await Promise.all([
+        requestJson<{ things: ThingEntry[] }>(`${apiBase}/`),
+        labThingModels(),
+        labThings()
+      ]);
+      setThings(index.things);
+      setModels(catalog.thingModels);
+      setLive(running.things);
+      setStartCommand(running.startCommand);
     } catch (cause) { setError(cause instanceof Error ? cause.message : 'Unable to reach WoT Lab.'); }
     finally { setLoading(false); }
   }
@@ -1415,8 +1322,33 @@ function App() {
     return () => controller.abort();
   }, [route.thingId]);
 
+  async function confirmRemoval(gesture: string) {
+    const target = removing;
+    setRemoving(null);
+    if (!target || gesture !== 'confirm') { setRemoveFiles(false); return; }
+    const model = live.find(thing => thing.id === target.id)?.model;
+    const result = await removeThing(target.id, { deleteFiles: removeFiles, model });
+    setRemoveFiles(false);
+    if (!result.ok) { setError(result.body.error || 'Unable to remove the Thing.'); return; }
+    if (route.thingId === target.id) navigate(null);
+    void loadThings();
+  }
+
+  async function copyStartCommand() {
+    try {
+      await navigator.clipboard.writeText(startCommand);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch { /* clipboard unavailable — the command is visible in the tooltip */ }
+  }
+
   const ColorModeIcon = colorModeIcon[colorMode];
   const currentThing = thing && thing.id === route.thingId ? thing : null;
+  const removingModel = removing ? live.find(thing => thing.id === removing.id)?.model : undefined;
+  // Deleting the files is only meaningful for the last Thing built from a
+  // model; while siblings are still running the model is still in use.
+  const removingIsLastOfModel = Boolean(removingModel) &&
+    live.filter(thing => thing.model === removingModel).length === 1;
 
   return <ThemeProvider colorMode={colorMode} nightScheme="dark_dimmed">
     <BaseStyles className="app-root">
@@ -1441,6 +1373,7 @@ function App() {
             <Stack direction="horizontal" align="center" gap="normal" wrap="wrap">
               <IconButton icon={ColorModeIcon} aria-label={`Color mode: ${colorMode}. Switch to ${nextColorMode[colorMode]}.`} variant="invisible" onClick={() => setColorMode(mode => nextColorMode[mode])} />
               <Button leadingVisual={SyncIcon} onClick={() => void loadThings()}>Refresh</Button>
+              <Button variant="primary" leadingVisual={PlusIcon} onClick={() => setAdding(true)}>Add Thing</Button>
             </Stack>
           </Stack>
         </PageLayout.Header>
@@ -1459,6 +1392,19 @@ function App() {
                   ))}
                 </NavList>
               : <Text className="muted">No Things exposed.</Text>}
+
+          {/* Instances live only as long as the process. Rather than persist
+              them behind your back, the lab hands back the command that
+              recreates exactly this set — the flags and this UI are the same
+              operation, so the round trip is exact. */}
+          {things.length > 0 && startCommand && <Stack gap="condensed" className="start-command">
+            <Text className="eyebrow" as="div">This session</Text>
+            <Text size="small" className="muted">Things run until the lab restarts. Reproduce this set with:</Text>
+            <code className="start-command-code">{startCommand}</code>
+            <Button size="small" leadingVisual={copied ? CheckIcon : CopyIcon} onClick={() => void copyStartCommand()}>
+              {copied ? 'Copied' : 'Copy start command'}
+            </Button>
+          </Stack>}
         </PageLayout.Pane>
 
         <PageLayout.Content padding="normal">
@@ -1466,12 +1412,35 @@ function App() {
             {error && <Flash variant="danger">{error}</Flash>}
             {route.thingId
               ? thing && thing.id === route.thingId
-                ? <ThingInspector key={thing.id} thing={thing} section={route.section} onSection={(s, options) => navigate(thing.id, s, options)} />
+                ? <ThingInspector key={thing.id} thing={thing} section={route.section}
+                    onSection={(s, options) => navigate(thing.id, s, options)}
+                    onRemove={() => setRemoving(things.find(entry => entry.id === thing.id) ?? { id: thing.id, title: thing.title, href: '' })} />
                 : !error && <Stack align="center" padding="spacious"><Spinner /></Stack>
-              : <Landing things={things} loading={loading} onOpen={id => navigate(id)} />}
+              : <Landing things={things} models={models} loading={loading} onOpen={id => navigate(id)} onAdd={() => setAdding(true)} />}
           </div>
         </PageLayout.Content>
       </PageLayout>
+
+      {adding && <CreateThingDialog models={models}
+        onClose={() => setAdding(false)}
+        onCreated={id => { setAdding(false); void loadThings(); if (id) navigate(id); }} />}
+
+      {removing && <ConfirmationDialog title={`Remove ${removing.title}?`} confirmButtonType="danger"
+        confirmButtonContent="Remove" onClose={gesture => void confirmRemoval(gesture)}>
+        <Stack gap="condensed">
+          <Text>
+            Takes <Text as="span" className="mono">{removing.id}</Text> offline. Its Thing Model stays on
+            disk, so a new Thing can be created from it at any time.
+          </Text>
+          {removingIsLastOfModel && <Stack direction="horizontal" gap="condensed" align="center">
+            <Checkbox checked={removeFiles} aria-label="Also delete the files"
+              onChange={event => setRemoveFiles(event.target.checked)} />
+            <Text size="small">
+              Also delete the Thing Model <Text as="span" className="mono">src/things/{removingModel}/</Text> — this cannot be undone.
+            </Text>
+          </Stack>}
+        </Stack>
+      </ConfirmationDialog>}
     </BaseStyles>
   </ThemeProvider>;
 }
