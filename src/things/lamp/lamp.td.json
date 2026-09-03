@@ -27,11 +27,13 @@
     "actions": {
         "toggle": {
             "title": "Toggle",
-            "description": "Toggle the lamp state"
+            "description": "Toggle the lamp state",
+            "vre:effects": "on' = !on;"
         },
         "setBrightness": {
             "title": "Set Brightness",
             "description": "Set the brightness of the lamp",
+            "vre:effects": "brightness' = on ? input : brightness;",
             "input": {
                 "type": "number",
                 "description": "Brightness level to set",

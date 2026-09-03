@@ -7,7 +7,7 @@ WoT Lab creates a new Thing from a folder of convention-named files:
 - **Thing Description** (`.td.json`) — capabilities in W3C WoT format. **Required.**
 - **State** (`state.json`) — initial property values / device state. **Required.**
 - **Logic** (`logic.js`) — imperative behavior and interaction handlers. **Optional.**
-- **Effects** (`<name>.vre`) — declarative action effects in the VRE language. **Optional.**
+- **Effects** (`vre:effects` in action affordances) — declarative action effects in the VRE language. **Optional.**
 
 A Thing needs only its TD and state; behavior can come from `logic.js`, a `.vre` file, or both. With neither, default property read handlers are generated from the TD so the Thing is still observable. See [Creating Things](#creating-things) for detailed examples.
 
@@ -183,20 +183,21 @@ console.log("mydevice logic initialized");
 
 #### 4. Effects (`mydevice.vre`) — optional
 
-Instead of (or alongside) hand-written action handlers, action behavior can be declared in a `.vre` file using **VRE**, a small effect language. Each rule binds to an action and sets property post-state (`property' = expr`), with optional `guard` preconditions:
+Instead of (or alongside) hand-written action handlers, action behavior can be declared in a `.vre` file using **VRE**, the V-Realm effect language. A VRE program contains optional `const name = <URI>;` bindings followed by primed property assignments (`property' = expr`). VRE does not declare actions or contain permission guards. WoT Lab associates each effect section with an action using a comment header:
 
 ```
 // mydevice.vre
-on toggle() {
-  status' = !status;
-}
+const myDevice = <urn:wot:mydevice>;
+
+// toggle():
+myDevice.status' = !myDevice.status;
 ```
 
 - **Effects** `property' = expr` compile to a state assignment plus a property-change notification (so the change is observable). The right-hand side supports arithmetic, boolean/comparison operators, and `[]`/`append`/`remove`.
-- **Guards** `guard <expr>;` reject the action (throw) when the expression is false — e.g. `guard status == true;`.
+- **Action sections** use `// action(param1, param2):` headers. A file without section headers is supported when the TD declares exactly one action.
 - **References**: a bare identifier that names one of the action's input parameters resolves to that input value; otherwise it resolves to a Thing property. Effect targets (left of `'`) must be Thing properties.
 
-A Thing declared with only a TD, `state.json`, and a `.vre` file needs no `logic.js` at all — see [`src/things/vswitch/`](./src/things/vswitch/) for a complete example, and [`src/things/lamp/lamp.vre`](./src/things/lamp/lamp.vre) for a guard.
+A Thing declared with only a TD, `state.json`, and a `.vre` file needs no `logic.js` at all — see [`src/things/vswitch/`](./src/things/vswitch/) and [`src/things/lamp/`](./src/things/lamp/) for complete examples.
 
 ## API Reference
 
@@ -229,7 +230,7 @@ This is the endpoint inventory for the Things shipped in `src/things/`. Every li
 |----------|------------|---------|--------|
 | `blergb` | `currentColor`, `power`, `currentEffect`, `brightness`, `lastUpdated` | `setColor`, `setPower`, `setEffect`, `setBrightness` | `colorChanged`, `powerChanged`, `effectChanged` |
 | `brightness` | `brightness`, `lastUpdated` | None | None |
-| `counter` | `count`, `lastChange` | `increment`, `decrement`, `reset` | `change` |
+| `counter` | `count` | `increment`, `decrement`, `reset` | `change` |
 | `door` | `locked`, `lockState`, `batteryLevel`, `lastAction` | `lock`, `unlock` | `lockStateChanged`, `unauthorizedAccess` |
 | `lamp` | `on`, `brightness` | `toggle`, `setBrightness` | None |
 | `motion` | `motionDetected`, `lastMotion`, `activityLevel` | None | `motion`, `noMotion` |
@@ -259,7 +260,7 @@ WoT Lab comes with example Things:
 - **Features**: Environmental light level monitoring in lux (0-100,000), read-only sensor
 
 #### Counter
-- **Properties**: `count`, `lastChange`
+- **Properties**: `count`
 - **Actions**: `increment`, `decrement`, `reset`
 - **Features**: Supports step parameter via URI variables
 

@@ -1,5 +1,4 @@
-// Behavior for the Virtual Switch, in VRE.
-// setLevel(value): set the `level` property to the request input value.
-on setLevel(value) {
-  level' = value;
-}
+const vswitch = <urn:wot:vswitch>;
+
+// setLevel(value):
+vswitch.level' = value;

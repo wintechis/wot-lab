@@ -5,7 +5,7 @@ import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { readdir } from 'fs/promises';
 import { createLoggers } from '../utils/debug.js';
-import { vreToHandlers } from './vre.js';
+import { vreEffectsToHandlers, vreToHandlers } from './vre.js';
 
 const { debug, warn, error } = createLoggers('things');
 
@@ -103,6 +103,7 @@ async function evaluateLogicFile(
   if (await vreFile.exists()) {
     content += `\n${vreToHandlers(await vreFile.text(), td)}`;
   }
+  content += `\n${vreEffectsToHandlers(td)}`;
 
   // Import Node.js built-in modules that Things might need
   const http = await import('http');

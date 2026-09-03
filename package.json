@@ -26,7 +26,11 @@
   "dependencies": {
     "@node-wot/binding-http": "^0.9.1",
     "@node-wot/core": "^0.9.1",
+    "@primer/octicons-react": "^19.33.0",
+    "@primer/react": "^38.37.0",
     "debug": "^4.4.1",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
     "valtio": "^2.1.5",
     "wot-typescript-definitions": "^0.8.0-SNAPSHOT.31"
   },
@@ -34,10 +38,14 @@
     "@types/bun": "^1.2.0",
     "@types/debug": "^4.1.12",
     "@types/node": "^24.0.14",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.6",
     "@typescript-eslint/eslint-plugin": "^8.39.0",
     "@typescript-eslint/parser": "^8.39.0",
+    "@vitejs/plugin-react": "^6.1.1",
     "eslint": "^9.32.0",
-    "typescript": "^5.8.3"
+    "typescript": "^7.0.2",
+    "vite": "^8.2.2"
   },
   "repository": {
     "type": "git",
