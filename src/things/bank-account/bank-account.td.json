@@ -1,0 +1,89 @@
+{
+    "title": "Bank Account",
+    "description": "A bank account you can deposit to, withdraw from, and transfer from to another account. Transfers are cross-Thing effects. Balances may go negative; actions never refuse.",
+    "@context": [
+        "https://www.w3.org/2019/wot/td/v1",
+        "https://www.w3.org/2022/wot/td/v1.1"
+    ],
+    "properties": {
+        "balance": {
+            "title": "Balance",
+            "type": "number",
+            "description": "Current account balance.",
+            "observable": true,
+            "readOnly": true
+        },
+        "accountNumber": {
+            "title": "Account Number",
+            "type": "string",
+            "description": "Identifier of this account.",
+            "observable": true,
+            "readOnly": true
+        }
+    },
+    "actions": {
+        "deposit": {
+            "title": "Deposit",
+            "description": "Deposit an amount into this account.",
+            "input": {
+                "type": "object",
+                "properties": { "amount": { "type": "number", "minimum": 0 } },
+                "required": ["amount"]
+            },
+            "output": {
+                "type": "object",
+                "properties": {
+                    "success": { "type": "boolean" },
+                    "balance": { "type": "number" },
+                    "credited": { "type": "number" }
+                }
+            },
+            "vre:effects": "balance' = balance + amount; output.success = true; output.balance = balance'; output.credited = amount;"
+        },
+        "withdraw": {
+            "title": "Withdraw",
+            "description": "Withdraw an amount from this account.",
+            "input": {
+                "type": "object",
+                "properties": { "amount": { "type": "number", "minimum": 0 } },
+                "required": ["amount"]
+            },
+            "output": {
+                "type": "object",
+                "properties": {
+                    "success": { "type": "boolean" },
+                    "balance": { "type": "number" },
+                    "debited": { "type": "number" }
+                }
+            },
+            "vre:effects": "balance' = balance - amount; output.success = true; output.balance = balance'; output.debited = amount;"
+        },
+        "transfer": {
+            "title": "Transfer",
+            "description": "Transfer an amount from this account to another account.",
+            "input": {
+                "type": "object",
+                "properties": {
+                    "amount": { "type": "number", "minimum": 0 },
+                    "bankAccount": { "type": "string", "description": "Target account id." }
+                },
+                "required": ["amount", "bankAccount"]
+            },
+            "output": {
+                "type": "object",
+                "properties": {
+                    "amount": { "type": "number" },
+                    "from": {
+                        "type": "object",
+                        "properties": { "balance": { "type": "number" }, "accountNumber": { "type": "string" } }
+                    },
+                    "to": {
+                        "type": "object",
+                        "properties": { "balance": { "type": "number" }, "accountNumber": { "type": "string" } }
+                    }
+                }
+            },
+            "vre:effects": "balance' = balance - amount; bankAccount.balance' = bankAccount.balance + amount; output.amount = amount; output.from.balance = balance'; output.from.accountNumber = accountNumber; output.to.balance = bankAccount.balance'; output.to.accountNumber = bankAccount.accountNumber;"
+        }
+    }
+}
