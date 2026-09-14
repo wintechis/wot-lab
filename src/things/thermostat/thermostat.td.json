@@ -1,0 +1,28 @@
+{
+    "title": "Thermostat",
+    "description": "A thermostat with a target temperature (bounded by min/max) and a mode. Setting a temperature outside the bounds leaves the target unchanged.",
+    "@context": ["https://www.w3.org/2019/wot/td/v1", "https://www.w3.org/2022/wot/td/v1.1"],
+    "properties": {
+        "targetTemp": { "title": "Target Temp", "type": "number", "observable": true, "readOnly": true },
+        "currentTemp": { "title": "Current Temp", "type": "number", "observable": true, "readOnly": true },
+        "mode": { "title": "Mode", "type": "string", "observable": true, "readOnly": true },
+        "maxTemp": { "title": "Max Temp", "type": "number", "observable": true, "readOnly": true },
+        "minTemp": { "title": "Min Temp", "type": "number", "observable": true, "readOnly": true }
+    },
+    "actions": {
+        "setTemperature": {
+            "title": "Set Temperature",
+            "description": "Set the target temperature, if within [minTemp, maxTemp]; otherwise no change.",
+            "input": { "type": "object", "properties": { "temp": { "type": "number" } }, "required": ["temp"] },
+            "output": { "type": "object", "properties": { "success": { "type": "boolean" }, "targetTemp": { "type": "number" } } },
+            "vre:effects": "targetTemp' = (temp <= maxTemp && temp >= minTemp) ? temp : targetTemp; output.success = (temp <= maxTemp && temp >= minTemp); output.targetTemp = targetTemp';"
+        },
+        "setMode": {
+            "title": "Set Mode",
+            "description": "Set the operating mode (e.g. auto, heat, cool).",
+            "input": { "type": "object", "properties": { "mode": { "type": "string" } }, "required": ["mode"] },
+            "output": { "type": "object", "properties": { "success": { "type": "boolean" }, "mode": { "type": "string" } } },
+            "vre:effects": "mode' = mode; output.success = true; output.mode = mode';"
+        }
+    }
+}

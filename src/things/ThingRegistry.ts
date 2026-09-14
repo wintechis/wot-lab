@@ -15,6 +15,7 @@ import {
   unregisterExposedThing
 } from './crossThing.js';
 import { EnvManifest } from './environments.js';
+import { setVirtualTime } from './clock.js';
 import {
   ThingModelInfo,
   listThingModels,
@@ -176,6 +177,9 @@ export class ThingRegistry {
     clearUriAliases();
     for (const [uri, target] of Object.entries(manifest.uriAliases ?? {})) {
       setUriAlias(uri, target);
+    }
+    if (manifest.clock) {
+      setVirtualTime(manifest.clock);
     }
 
     const created: LabThing[] = [];

@@ -38,6 +38,11 @@ export interface EnvManifest {
    * it, so cross-Thing VRE effects resolve without any remote call.
    */
   uriAliases?: Record<string, string>;
+  /**
+   * An ISO time to pin the virtual clock to when the environment starts, so
+   * time-dependent behaviour (peak hours) is deterministic from the first run.
+   */
+  clock?: string;
 }
 
 export interface EnvSummary {
