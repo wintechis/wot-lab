@@ -23,7 +23,13 @@ bun run build                        # tsc --noEmit (type-check only; alias: typ
 bun start                            # build the dashboard, then run src/main.ts
 bun run lint                         # eslint src/**/*.ts
 bun run lint:fix
+
+# Dashboard (frontend/, its own tsconfig + Vite config)
+bun run frontend:build               # tsc -p frontend/tsconfig.json && vite build -> frontend/dist/
+bun run frontend:dev                 # Vite dev server for the dashboard alone
 ```
+
+`dev`/`start` run `frontend:build` first, so the dashboard is rebuilt on launch; the running lab re-serves it on mtime change (`loadFrontendAsset`), so a standalone `frontend:build` is picked up without restarting the server. `frontend/` type-checks separately from `src/` (`bun run build` only covers `src/`).
 
 There is **no test runner configured**. The `*client` scripts (e.g. `bun run counterclient`, `bun run lampclient`) run per-Thing WoT clients in `src/things/<name>/exampleClient.ts` and serve as manual/integration checks.
 

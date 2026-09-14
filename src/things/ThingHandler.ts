@@ -6,6 +6,7 @@ import { dirname, join } from 'path';
 import { readdir } from 'fs/promises';
 import { createLoggers } from '../utils/debug.js';
 import { vreEffectsToHandlers } from './vre.js';
+import { resolveThing } from './crossThing.js';
 
 const { debug, warn } = createLoggers('things');
 
@@ -111,7 +112,8 @@ async function loadStateFile(
 // Helper function to evaluate a logic file (function body)
 async function evaluateLogicFile(
   td: WoT.ThingDescription,
-  filePath: string
+  filePath: string,
+  instanceId: string
 ): Promise<
   (_thing: WoT.ExposedThing, _state: Record<string, unknown>) => Promise<void>
 > {
@@ -160,8 +162,10 @@ async function evaluateLogicFile(
   const url = await import('url');
   const { createLoggers } = await import('../utils/debug.js');
 
-  // Wrap the content in an async function with built-in modules available
-  const wrappedContent = `(async function(thing, state, http, URL, createLoggers) { ${content} })`;
+  // Wrap the content in an async function with built-in modules available.
+  // `resolveThing` and `__thingId` back VRE's cross-Thing effects and `this.id`;
+  // a hand-written logic.js may use them too but does not have to.
+  const wrappedContent = `(async function(thing, state, http, URL, createLoggers, resolveThing, __thingId) { ${content} })`;
   const logicFunction = eval(wrappedContent) as Function;
 
   return (thing: WoT.ExposedThing, state: Record<string, unknown>) =>
@@ -170,7 +174,9 @@ async function evaluateLogicFile(
       state,
       http,
       url.URL,
-      createLoggers
+      createLoggers,
+      resolveThing,
+      instanceId
     );
 }
 
@@ -205,7 +211,7 @@ export async function loadThing(
     // Load TD, state, and behavior (logic.js and/or `vre:effects`)
     const [stateObject, logicFunction] = await Promise.all([
       loadStateFile(join(basePath, 'state.json')),
-      evaluateLogicFile(td, join(basePath, 'logic.js'))
+      evaluateLogicFile(td, join(basePath, 'logic.js'), instanceId)
     ]);
 
     return new (class extends ThingHandler {

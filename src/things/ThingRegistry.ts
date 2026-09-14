@@ -8,6 +8,7 @@ import {
 import { ThingRequest } from '../config/options.js';
 import { createLoggers } from '../utils/debug.js';
 import { ThingFactory } from './ThingFactory.js';
+import { unregisterExposedThing } from './crossThing.js';
 import {
   ThingModelInfo,
   listThingModels,
@@ -160,6 +161,7 @@ export class ThingRegistry {
 
     await this.servient.destroyThing(`urn:wot:${normalized}`);
     removeThingFromGlobalState(normalized);
+    unregisterExposedThing(normalized);
     this.things.delete(normalized);
     info(`Removed Thing '${normalized}'`);
     return true;
