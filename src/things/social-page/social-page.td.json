@@ -1,0 +1,110 @@
+{
+    "title": "Social Page",
+    "description": "A user-hosted page in a decentralized social network. Post to your own page; following, unfollowing and liking are cross-Thing effects that update both your page and the other person's page through a page-id parameter.",
+    "@context": [
+        "https://www.w3.org/2019/wot/td/v1",
+        "https://www.w3.org/2022/wot/td/v1.1"
+    ],
+    "properties": {
+        "posts": {
+            "title": "Posts",
+            "type": "array",
+            "description": "Posts on this page, each with an id and content.",
+            "observable": true,
+            "readOnly": true
+        },
+        "followers": {
+            "title": "Followers",
+            "type": "array",
+            "description": "Page ids that follow this page.",
+            "items": { "type": "string" },
+            "observable": true,
+            "readOnly": true
+        },
+        "following": {
+            "title": "Following",
+            "type": "array",
+            "description": "Page ids this page follows.",
+            "items": { "type": "string" },
+            "observable": true,
+            "readOnly": true
+        },
+        "likesReceived": {
+            "title": "Likes Received",
+            "type": "number",
+            "observable": true,
+            "readOnly": true
+        },
+        "likedPosts": {
+            "title": "Liked Posts",
+            "type": "array",
+            "description": "Post ids this page has liked.",
+            "items": { "type": "string" },
+            "observable": true,
+            "readOnly": true
+        },
+        "postCount": { "title": "Post Count", "type": "number", "observable": true, "readOnly": true },
+        "followerCount": { "title": "Follower Count", "type": "number", "observable": true, "readOnly": true },
+        "followingCount": { "title": "Following Count", "type": "number", "observable": true, "readOnly": true }
+    },
+    "actions": {
+        "createPost": {
+            "title": "Create Post",
+            "description": "Publish a post on this page. Post ids are assigned from a counter.",
+            "input": {
+                "type": "object",
+                "properties": { "content": { "type": "string" } },
+                "required": ["content"]
+            },
+            "output": {
+                "type": "object",
+                "properties": { "postId": { "type": "string" }, "postCount": { "type": "number" } }
+            }
+        },
+        "followUser": {
+            "title": "Follow User",
+            "description": "Follow another page: add it to this page's following and add this page to its followers.",
+            "input": {
+                "type": "object",
+                "properties": { "pageUri": { "type": "string", "description": "Page id to follow." } },
+                "required": ["pageUri"]
+            },
+            "output": {
+                "type": "object",
+                "properties": { "success": { "type": "boolean" }, "followed": { "type": "string" } }
+            },
+            "vre:effects": "following' = following.append(pageUri); pageUri.followers' = pageUri.followers.append(this.id); output.success = true; output.followed = pageUri;"
+        },
+        "unfollowUser": {
+            "title": "Unfollow User",
+            "description": "Unfollow another page: remove it from this page's following and remove this page from its followers.",
+            "input": {
+                "type": "object",
+                "properties": { "pageUri": { "type": "string", "description": "Page id to unfollow." } },
+                "required": ["pageUri"]
+            },
+            "output": {
+                "type": "object",
+                "properties": { "success": { "type": "boolean" }, "unfollowed": { "type": "string" } }
+            },
+            "vre:effects": "following' = following.remove(pageUri); pageUri.followers' = pageUri.followers.remove(this.id); output.success = true; output.unfollowed = pageUri;"
+        },
+        "likePost": {
+            "title": "Like Post",
+            "description": "Like a post on another page: record the post id here and raise that page's likesReceived.",
+            "input": {
+                "type": "object",
+                "properties": {
+                    "pageUri": { "type": "string", "description": "Page id whose post is liked." },
+                    "postId": { "type": "string" }
+                },
+                "required": ["pageUri", "postId"]
+            },
+            "output": {
+                "type": "object",
+                "properties": { "success": { "type": "boolean" }, "liked": { "type": "string" } }
+            },
+            "vre:effects": "likedPosts' = likedPosts.append(postId); pageUri.likesReceived' = pageUri.likesReceived + 1; output.success = true; output.liked = postId;"
+        }
+    }
+}
