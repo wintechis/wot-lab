@@ -1,0 +1,29 @@
+{
+    "title": "Company Budget",
+    "description": "The company's monthly procurement budget. Spending is driven by warehouse orders (a cross-Thing effect); remaining budget is derived.",
+    "@context": [
+        "https://www.w3.org/2019/wot/td/v1",
+        "https://www.w3.org/2022/wot/td/v1.1"
+    ],
+    "properties": {
+        "monthlyBudget": {
+            "title": "Monthly Budget",
+            "type": "number",
+            "observable": true,
+            "readOnly": true
+        },
+        "monthlySpent": {
+            "title": "Monthly Spent",
+            "type": "number",
+            "observable": true,
+            "readOnly": true
+        },
+        "remainingBudget": {
+            "title": "Remaining Budget",
+            "type": "number",
+            "description": "monthlyBudget minus monthlySpent.",
+            "observable": true,
+            "readOnly": true
+        }
+    }
+}

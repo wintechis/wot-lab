@@ -1,0 +1,6 @@
+{
+    "currentStock": 0,
+    "capacity": 1000,
+    "utilizationPercent": 0,
+    "orderCounter": 0
+}

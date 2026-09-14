@@ -1,0 +1,8 @@
+{
+    "title": "Supplier",
+    "description": "Supplies stock at a fixed unit price. Warehouses read the unit price to compute an order's cost (a cross-Thing read).",
+    "@context": ["https://www.w3.org/2019/wot/td/v1", "https://www.w3.org/2022/wot/td/v1.1"],
+    "properties": {
+        "unitPrice": { "title": "Unit Price", "type": "number", "description": "Price per unit ordered.", "observable": true, "readOnly": true }
+    }
+}
