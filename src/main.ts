@@ -3,6 +3,7 @@ import httpBinding from '@node-wot/binding-http';
 import { enable } from 'debug';
 import { ThingRegistry } from './things/ThingRegistry.js';
 import { setUserModelsDirectory } from './things/ThingHandler.js';
+import { loadEnvironmentManifest } from './things/environments.js';
 import { parseArgs } from './config/options.js';
 import { createLoggers } from './utils/debug.js';
 import { createEndpointMiddleware, LabRequestHandler } from './http/endpointMiddleware.js';
@@ -19,6 +20,7 @@ const { HttpServer } = httpBinding;
 const usage = `wot-lab
 
   --things <spec>   Things to start, named by Thing Model, e.g. counter:2,lamp
+  --env <name>      An environment (a named bundle of fixed-id Things) to start
   --port <number>   HTTP port (default 8081, or WOT_LAB_PORT)
   --models-dir <p>  Where authored Thing Models are written
                     (default: alongside the bundled ones, or WOT_LAB_MODELS_DIR)
@@ -59,8 +61,18 @@ labRef.current = createLabApi(registry);
 
 // Nothing is created implicitly. A Thing exists because the command line asked
 // for it or because someone created it in the dashboard — one way in, through
-// the registry, so every Thing gets its id from the same allocator.
+// the registry. An environment is the same registry driven from a manifest,
+// pinning ids instead of allocating them so a scenario's cross-Thing references
+// resolve the same way every run.
 const things = await registry.instantiateAll(options.things);
+if (options.env) {
+  try {
+    const manifest = await loadEnvironmentManifest(options.env);
+    things.push(...(await registry.instantiateEnvironment(manifest)));
+  } catch (cause) {
+    debug(`Failed to start environment '${options.env}':`, cause);
+  }
+}
 
 if (things.length > 0) {
   const headers = ['Thing ID', 'Thing Model', 'Title'];

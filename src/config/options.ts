@@ -17,6 +17,8 @@ export interface ThingRequest {
 export interface LabOptions {
   /** Things to create at startup. Empty is the default and is not an error. */
   things: ThingRequest[];
+  /** An environment to bring online at startup (a named bundle of fixed-id Things). */
+  env?: string;
   port: number;
   /**
    * Where Thing Models authored in the dashboard are written. Unset means
@@ -87,6 +89,7 @@ function flagValue(argv: string[], flag: string): string | undefined {
  */
 export function parseArgs(argv: string[] = process.argv): LabOptions {
   const things = flagValue(argv, '--things');
+  const env = flagValue(argv, '--env') ?? process.env.WOT_LAB_ENV;
   const portFlag = flagValue(argv, '--port') ?? process.env.WOT_LAB_PORT;
   const modelsDir = flagValue(argv, '--models-dir') ?? process.env.WOT_LAB_MODELS_DIR;
 
@@ -106,5 +109,9 @@ export function parseArgs(argv: string[] = process.argv): LabOptions {
     debug(`Authored Thing Models are stored in ${modelsDir}`);
   }
 
-  return { things: requested, port, modelsDir };
+  if (env) {
+    debug(`Startup environment: ${env}`);
+  }
+
+  return { things: requested, env, port, modelsDir };
 }

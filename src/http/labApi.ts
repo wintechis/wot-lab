@@ -3,6 +3,8 @@ import { URL } from 'url';
 import { formatThingsFlag } from '../config/options.js';
 import { createLoggers } from '../utils/debug.js';
 import { ThingRegistry } from '../things/ThingRegistry.js';
+import { listEnvironments, loadEnvironmentManifest } from '../things/environments.js';
+import { advanceClock, clockStatus, setVirtualTime, useRealClock } from '../things/clock.js';
 import {
   ThingDraft,
   ThingSpec,
@@ -186,6 +188,80 @@ export function createLabApi(registry: ThingRegistry) {
           }
         }
         sendJson(res, 200, { removed: true });
+        return true;
+      }
+
+      // Environments: named bundles of Things with fixed ids. GET lists what is
+      // on disk; POST brings one online (the benchmark's start command).
+      if (method === 'GET' && resource === 'environments') {
+        sendJson(res, 200, { environments: await listEnvironments() });
+        return true;
+      }
+
+      if (method === 'POST' && resource === 'environments') {
+        const body = await readJsonBody(req);
+        const name = String(body.name ?? '');
+        if (!name) {
+          sendJson(res, 400, { error: 'An environment name is required' });
+          return true;
+        }
+        const manifest = await loadEnvironmentManifest(name);
+        const things = await registry.instantiateEnvironment(manifest);
+        sendJson(res, 201, { environment: manifest.name, things });
+        return true;
+      }
+
+      // Reset every running Thing (or one, with {"id": ...}) to its initial
+      // state — the between-runs reset a benchmark needs.
+      if (method === 'POST' && resource === 'reset') {
+        const body = await readJsonBody(req);
+        if (body.id) {
+          const ok = registry.resetThing(String(body.id));
+          sendJson(res, ok ? 200 : 404, ok ? { reset: [String(body.id)] } : { error: `No Thing '${body.id}'` });
+          return true;
+        }
+        sendJson(res, 200, { reset: registry.resetAll() });
+        return true;
+      }
+
+      // The controllable clock. GET reports it; POST sets a virtual time
+      // ({"iso": ...} or {"millis": ...}), advances it ({"advanceMs": ...}), or
+      // returns to real time ({"real": true}).
+      if (method === 'GET' && resource === 'clock') {
+        sendJson(res, 200, clockStatus());
+        return true;
+      }
+
+      if (method === 'POST' && resource === 'clock') {
+        const body = await readJsonBody(req);
+        if (body.real === true) {
+          useRealClock();
+        } else if (body.iso !== undefined) {
+          setVirtualTime(String(body.iso));
+        } else if (body.millis !== undefined) {
+          setVirtualTime(Number(body.millis));
+        } else if (body.advanceMs !== undefined) {
+          advanceClock(Number(body.advanceMs));
+        } else {
+          sendJson(res, 400, { error: 'Expected {"iso"|"millis"|"advanceMs": ...} or {"real": true}' });
+          return true;
+        }
+        sendJson(res, 200, clockStatus());
+        return true;
+      }
+
+      // Set property values directly, bypassing TD writability — for
+      // constructing initial conditions.
+      if (method === 'POST' && resource === 'state') {
+        const body = await readJsonBody(req);
+        const id = String(body.id ?? '');
+        const values = body.values;
+        if (!id || !values || typeof values !== 'object' || Array.isArray(values)) {
+          sendJson(res, 400, { error: 'Expected {"id": ..., "values": { property: value, ... }}' });
+          return true;
+        }
+        const ok = registry.setProperties(id, values as Record<string, unknown>);
+        sendJson(res, ok ? 200 : 404, ok ? { id, set: Object.keys(values) } : { error: `No Thing '${id}'` });
         return true;
       }
 

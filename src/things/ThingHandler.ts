@@ -7,6 +7,7 @@ import { readdir } from 'fs/promises';
 import { createLoggers } from '../utils/debug.js';
 import { vreEffectsToHandlers } from './vre.js';
 import { resolveThing } from './crossThing.js';
+import { nowHour, nowIso } from './clock.js';
 
 const { debug, warn } = createLoggers('things');
 
@@ -164,8 +165,9 @@ async function evaluateLogicFile(
 
   // Wrap the content in an async function with built-in modules available.
   // `resolveThing` and `__thingId` back VRE's cross-Thing effects and `this.id`;
-  // a hand-written logic.js may use them too but does not have to.
-  const wrappedContent = `(async function(thing, state, http, URL, createLoggers, resolveThing, __thingId) { ${content} })`;
+  // `__clockNow`/`__clockHour` back the controllable clock. A hand-written
+  // logic.js may use them too but does not have to.
+  const wrappedContent = `(async function(thing, state, http, URL, createLoggers, resolveThing, __thingId, __clockNow, __clockHour) { ${content} })`;
   const logicFunction = eval(wrappedContent) as Function;
 
   return (thing: WoT.ExposedThing, state: Record<string, unknown>) =>
@@ -176,7 +178,9 @@ async function evaluateLogicFile(
       url.URL,
       createLoggers,
       resolveThing,
-      instanceId
+      instanceId,
+      nowIso,
+      nowHour
     );
 }
 
@@ -195,7 +199,8 @@ async function evaluateLogicFile(
 export async function loadThing(
   modelName: string,
   instanceId: string,
-  title?: string
+  title?: string,
+  stateOverride?: Record<string, unknown>
 ): Promise<ThingHandler> {
   try {
     const basePath = await resolveModelDirectory(modelName);
@@ -209,10 +214,15 @@ export async function loadThing(
     ).json();
 
     // Load TD, state, and behavior (logic.js and/or `vre:effects`)
-    const [stateObject, logicFunction] = await Promise.all([
+    const [loadedState, logicFunction] = await Promise.all([
       loadStateFile(join(basePath, 'state.json')),
       evaluateLogicFile(td, join(basePath, 'logic.js'), instanceId)
     ]);
+
+    // An environment can pin a Thing's starting values (initial conditions for a
+    // benchmark run); a shallow merge over the model's own state.json is enough,
+    // since properties are top-level.
+    const stateObject = stateOverride ? { ...loadedState, ...stateOverride } : loadedState;
 
     return new (class extends ThingHandler {
       protected state = proxy(stateObject);

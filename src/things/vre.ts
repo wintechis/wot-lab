@@ -71,10 +71,15 @@ function genExpr(expr: VREExpr, ctx: Ctx): string {
     )} : ${genExpr(expr.whenFalse, ctx)})`;
   }
   if (expr.kind === 'functionCall') {
-    if (expr.name !== 'now' || expr.args.length !== 0) {
-      throw new Error(`VRE: unsupported function '${expr.name}'`);
+    // Time reads go through the controllable clock so time-dependent behaviour
+    // is reproducible. `now()` is an ISO string; `hour()` is the UTC hour 0-23.
+    if (expr.name === 'now' && expr.args.length === 0) {
+      return '__clockNow()';
     }
-    return 'new Date().toISOString()';
+    if (expr.name === 'hour' && expr.args.length === 0) {
+      return '__clockHour()';
+    }
+    throw new Error(`VRE: unsupported function '${expr.name}'`);
   }
   if (expr.kind === 'binary') {
     const op = expr.op === '==' ? '===' : expr.op === '!=' ? '!==' : expr.op;
