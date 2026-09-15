@@ -72,7 +72,7 @@
         },
         "checkout": {
             "title": "Checkout",
-            "description": "Empty the cart and charge its total to the given bank account.",
+            "description": "Empty the cart and charge its total to the given bank account. A checkout of an empty cart (total 0) changes nothing and reports success false.",
             "input": {
                 "type": "object",
                 "properties": { "bankAccount": { "type": "string", "description": "Bank account id to charge." } },
@@ -87,7 +87,7 @@
                     "amount": { "type": "number" }
                 }
             },
-            "vre:effects": "items' = []; totalAmount' = 0; bankAccount.balance' = bankAccount.balance - totalAmount; output.success = true; output.userId = this.id; output.charged = bankAccount; output.amount = totalAmount;"
+            "vre:effects": "items' = totalAmount > 0 ? [] : items; totalAmount' = totalAmount > 0 ? 0 : totalAmount; bankAccount.balance' = totalAmount > 0 ? bankAccount.balance - totalAmount : bankAccount.balance; output.success = totalAmount > 0; output.userId = this.id; output.charged = bankAccount; output.amount = totalAmount;"
         }
     }
 }

@@ -151,6 +151,16 @@
             "identifier": "small-30",
             "name": "Small Item 30",
             "price": 1
+        },
+        {
+            "identifier": "grinder",
+            "name": "Espresso Grinder",
+            "price": 120
+        },
+        {
+            "identifier": "beans",
+            "name": "Coffee Beans",
+            "price": 15
         }
     ]
 }
