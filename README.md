@@ -208,9 +208,11 @@ be declared on the affordance itself with a `vre:effects` annotation, written in
   instance's own id.
 - **Cross-Thing effects**: a dotted `handle.prop` (as a target or a value) names
   a property on *another* Thing, where `handle` is a static binding
-  (`const bank = <bank-id>`) or an action input parameter carrying a Thing
-  reference. Everything is in-process — the write lands on the other Thing's
-  state and fires its change notification, no remote call. Used for the bank
+  (`const bank = <bank-id>`), an action input parameter carrying a Thing
+  reference, or a Thing property whose value is a Thing reference (so one shared
+  model can target a per-instance device — a plug's `device.powered'`).
+  Everything is in-process — the write lands on the other Thing's state and fires
+  its change notification, no remote call. Used for the bank
   `transfer`, cart `checkout`, warehouse `orderStock`/`transferStock`, and the
   social follow/like effects (see [Environments](#environments)).
 - **Outputs**: `output.<path> = expr` (nested paths allowed) builds the action's
@@ -272,8 +274,10 @@ more from a Thing Model.
 ## Environments
 
 An **environment** is a named bundle of Thing Models with **fixed instance ids**,
-optional per-Thing state overrides, optional URI→id aliases, and an optional
-`clock` to pin — one JSON manifest in `src/environments/<name>.json`. It is the
+optional per-Thing `state` overrides and per-instance `links` (one shared model
+can point at a different related Thing per instance), optional URI→id aliases,
+and an optional `clock` to pin — one JSON manifest in
+`src/environments/<name>.json`. It is the
 reproducible unit a benchmark runs against: the same Things, ids and initial
 state, started by one command. (Unlike `--things` and the dashboard, which
 *allocate* ids, an environment *pins* them, so a scenario's cross-Thing

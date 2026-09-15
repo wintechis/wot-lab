@@ -26,6 +26,12 @@ export interface EnvThingSpec {
   title?: string;
   /** Shallow overrides merged over the model's state.json initial values. */
   state?: Record<string, unknown>;
+  /**
+   * Per-instance `links` for the served Thing Description (replaces the model's).
+   * Lets one shared model point at a different related Thing per instance — e.g.
+   * a lamp linking to the plug that powers it.
+   */
+  links?: Record<string, unknown>[];
 }
 
 export interface EnvManifest {

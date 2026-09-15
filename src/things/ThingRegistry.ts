@@ -143,10 +143,11 @@ export class ThingRegistry {
     model: string,
     id: string,
     title: string,
-    stateOverride?: Record<string, unknown>
+    stateOverride?: Record<string, unknown>,
+    linksOverride?: Record<string, unknown>[]
   ): Promise<LabThing> {
     try {
-      const handler = await loadThing(model, id, title, stateOverride);
+      const handler = await loadThing(model, id, title, stateOverride, linksOverride);
       this.initialStates.set(id, clone(handler.currentState as Record<string, unknown>));
       const result = await this.factory.createThing(handler);
       if (!result.success) {
@@ -192,7 +193,7 @@ export class ThingRegistry {
       if (!modelInfo) {
         throw new Error(`Environment '${manifest.name}': unknown Thing Model '${spec.model}'`);
       }
-      created.push(await this.bringOnline(spec.model, id, spec.title ?? modelInfo.title, spec.state));
+      created.push(await this.bringOnline(spec.model, id, spec.title ?? modelInfo.title, spec.state, spec.links));
     }
     this.currentEnvironment = manifest.name;
     info(`Environment '${manifest.name}' online: ${created.map((t) => t.id).join(', ')}`);

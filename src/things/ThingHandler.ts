@@ -200,7 +200,8 @@ export async function loadThing(
   modelName: string,
   instanceId: string,
   title?: string,
-  stateOverride?: Record<string, unknown>
+  stateOverride?: Record<string, unknown>,
+  linksOverride?: Record<string, unknown>[]
 ): Promise<ThingHandler> {
   try {
     const basePath = await resolveModelDirectory(modelName);
@@ -231,6 +232,11 @@ export async function loadThing(
         const instanceTd = { ...td, id: `urn:wot:${instanceId}` };
         if (title) {
           instanceTd.title = title;
+        }
+        // Per-instance links let one shared model point at a different related
+        // Thing per instance (a lamp -> its plug).
+        if (linksOverride) {
+          (instanceTd as { links?: unknown[] }).links = linksOverride;
         }
 
         super(instanceTd);

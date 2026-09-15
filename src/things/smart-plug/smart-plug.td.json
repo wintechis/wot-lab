@@ -1,0 +1,38 @@
+{
+    "title": "Smart Plug",
+    "description": "A switchable plug that powers one connected device. Turning the plug on or off also powers or unpowers the device it is connected to — a cross-Thing effect. The device is named by the `device` property, set per instance, so one annotation serves every plug.",
+    "@context": [
+        "https://www.w3.org/2019/wot/td/v1",
+        "https://www.w3.org/2022/wot/td/v1.1"
+    ],
+    "properties": {
+        "on": {
+            "title": "On",
+            "type": "boolean",
+            "description": "Whether the plug is switched on.",
+            "observable": true,
+            "readOnly": true
+        },
+        "device": {
+            "title": "Connected Device",
+            "type": "string",
+            "description": "Id of the device this plug powers; set per instance.",
+            "observable": false,
+            "readOnly": true
+        }
+    },
+    "actions": {
+        "turnOn": {
+            "title": "Turn On",
+            "description": "Switch the plug on and power the connected device.",
+            "output": { "type": "object", "properties": { "success": { "type": "boolean" }, "on": { "type": "boolean" } } },
+            "vre:effects": "on' = true; device.powered' = true; output.success = true; output.on = on';"
+        },
+        "turnOff": {
+            "title": "Turn Off",
+            "description": "Switch the plug off and unpower the connected device.",
+            "output": { "type": "object", "properties": { "success": { "type": "boolean" }, "on": { "type": "boolean" } } },
+            "vre:effects": "on' = false; device.powered' = false; output.success = true; output.on = on';"
+        }
+    }
+}

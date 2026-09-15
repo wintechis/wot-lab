@@ -13,9 +13,11 @@ import { parseVre, VREExpr, VreProgram, VreOutput } from './vre-parser.js';
  * Reference resolution is TD-informed. A bare identifier naming an action input
  * parameter resolves to that input value; a bare identifier naming a Thing
  * property resolves to that property. A dotted identifier `handle.prop` names a
- * property on ANOTHER Thing, where `handle` is either a static binding
- * (`const bank = <uri>`) or an action input parameter carrying a Thing
- * reference. `this.id` is the running instance's own id.
+ * property on ANOTHER Thing, where `handle` is a static binding
+ * (`const bank = <uri>`), an action input parameter carrying a Thing reference,
+ * or a Thing property whose value is a Thing reference (so a shared annotation
+ * can target a per-instance device set in the manifest). `this.id` is the
+ * running instance's own id.
  *
  * Semantics follow V-Realm's flat effects: every effect's right-hand side is
  * evaluated against the PRE-state snapshot, then all effects are applied at
@@ -34,7 +36,7 @@ interface ActionSchema {
   'vre:effects'?: string;
 }
 
-type HandleKind = 'binding' | 'param';
+type HandleKind = 'binding' | 'param' | 'property';
 
 interface Ctx {
   params: Set<string>;
@@ -130,13 +132,13 @@ function genRef(expr: Extract<VREExpr, { kind: 'ref' }>, ctx: Ctx): string {
   }
   const head = parts[0];
   const prop = parts[parts.length - 1];
-  if (ctx.bindings.has(head) || ctx.params.has(head)) {
+  if (ctx.bindings.has(head) || ctx.params.has(head) || ctx.properties.has(head)) {
     return expr.post
       ? `__t_${head}.state[${j(prop)}]`
       : `__pre_${head}[${j(prop)}]`;
   }
   throw new Error(
-    `VRE: '${parts.join('.')}' in action '${ctx.action}' names no Thing binding or input parameter '${head}'`
+    `VRE: '${parts.join('.')}' in action '${ctx.action}' names no Thing binding, input parameter or property '${head}'`
   );
 }
 
@@ -189,9 +191,12 @@ function collectHandles(
       handles.set(head, 'binding');
     } else if (ctx.params.has(head)) {
       handles.set(head, 'param');
+    } else if (ctx.properties.has(head)) {
+      // A property whose value is a Thing reference — dereferenced at runtime.
+      handles.set(head, 'property');
     } else {
       throw new Error(
-        `VRE: '${head}' in action '${ctx.action}' names no Thing binding or input parameter`
+        `VRE: '${head}' in action '${ctx.action}' names no Thing binding, input parameter or property`
       );
     }
   };
@@ -282,15 +287,21 @@ function genRule(
     body += `  const __p_${param} = ${accessor};\n`;
   }
 
+  // Snapshot the local pre-state first, so a property-valued handle can read the
+  // Thing reference it holds from the snapshot.
+  body += '  const __pre = { ...state };\n';
+
   // Resolve every referenced Thing once and snapshot its pre-state. A static
-  // binding resolves from its URI; a dynamic handle resolves from the input
-  // parameter value that carries the Thing reference.
+  // binding resolves from its URI; a parameter handle from the input value that
+  // carries the reference; a property handle from the property's pre-state value.
   for (const [handle, kind] of handles) {
-    const source = kind === 'binding' ? j(ctx.bindings.get(handle) as string) : `__p_${handle}`;
+    const source =
+      kind === 'binding' ? j(ctx.bindings.get(handle) as string)
+        : kind === 'param' ? `__p_${handle}`
+          : `__pre[${j(handle)}]`;
     body += `  const __t_${handle} = resolveThing(${source});\n`;
     body += `  const __pre_${handle} = { ...__t_${handle}.state };\n`;
   }
-  body += '  const __pre = { ...state };\n';
 
   // Compute every effect value against the pre-state, THEN apply all of them.
   program.effects.forEach((effect, index) => {
