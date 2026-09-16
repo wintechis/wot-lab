@@ -1,13 +1,13 @@
 {
     "title": "Smart Plug",
-    "description": "A switchable plug that powers one connected device. Turning the plug on or off also powers or unpowers the device it is connected to — a cross-Thing effect. The device is named by the `device` property, set per instance, so one annotation serves every plug.",
+    "description": "A switchable plug that powers one connected device. Toggling the plug also powers or unpowers the device it is connected to — a cross-Thing effect. The device is named by the `device` property, set per instance, so one annotation serves every plug.",
     "@context": [
         "https://www.w3.org/2019/wot/td/v1",
         "https://www.w3.org/2022/wot/td/v1.1"
     ],
     "properties": {
-        "on": {
-            "title": "On",
+        "poweredOn": {
+            "title": "Powered On",
             "type": "boolean",
             "description": "Whether the plug is switched on.",
             "observable": true,
@@ -22,17 +22,11 @@
         }
     },
     "actions": {
-        "turnOn": {
-            "title": "Turn On",
-            "description": "Switch the plug on and power the connected device.",
-            "output": { "type": "object", "properties": { "success": { "type": "boolean" }, "on": { "type": "boolean" } } },
-            "vre:effects": "on' = true; device.powered' = true; output.success = true; output.on = on';"
-        },
-        "turnOff": {
-            "title": "Turn Off",
-            "description": "Switch the plug off and unpower the connected device.",
-            "output": { "type": "object", "properties": { "success": { "type": "boolean" }, "on": { "type": "boolean" } } },
-            "vre:effects": "on' = false; device.powered' = false; output.success = true; output.on = on';"
+        "toggle": {
+            "title": "Toggle",
+            "description": "Flip the plug on/off, powering or unpowering the connected device to match.",
+            "output": { "type": "object", "properties": { "success": { "type": "boolean" }, "poweredOn": { "type": "boolean" } } },
+            "vre:effects": "poweredOn' = !poweredOn; device.poweredOn' = !poweredOn; output.success = true; output.poweredOn = poweredOn';"
         }
     }
 }

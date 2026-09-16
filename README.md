@@ -210,7 +210,7 @@ be declared on the affordance itself with a `vre:effects` annotation, written in
   a property on *another* Thing, where `handle` is a static binding
   (`const bank = <bank-id>`), an action input parameter carrying a Thing
   reference, or a Thing property whose value is a Thing reference (so one shared
-  model can target a per-instance device — a plug's `device.powered'`).
+  model can target a per-instance device — a plug's `device.poweredOn'`).
   Everything is in-process — the write lands on the other Thing's state and fires
   its change notification, no remote call. Used for the bank
   `transfer`, cart `checkout`, warehouse `orderStock`/`transferStock`, and the
