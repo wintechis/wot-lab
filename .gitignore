@@ -7,3 +7,6 @@ frontend/dist/
 
 # TypeScript build cache
 *.tsbuildinfo
+
+# Editor settings are personal
+.vscode/

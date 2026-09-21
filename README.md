@@ -19,6 +19,7 @@ A Thing needs only its TD and state; behavior can come from `logic.js`, `vre:eff
 - [Configuration](#configuration)
 - [Creating Things](#creating-things)
 - [API Reference](#api-reference)
+- [Security](#security)
 - [Examples](#examples)
 
 ## Overview
@@ -152,7 +153,11 @@ JSON object literal defining initial state:
 
 #### 3. Logic (`logic.js`) — optional
 
-JavaScript code with handler functions and helpers. It is read as text and evaluated in a sandbox where `thing`, `state`, `http`, `URL`, and `createLoggers` are available (no imports needed):
+JavaScript code with handler functions and helpers. It is read as text and `eval`'d with `thing`, `state`, `http`, `URL`, and `createLoggers` in scope (no imports needed).
+
+> **`logic.js` is trusted code, not a sandbox.** It runs inside the lab's process with the lab's
+> privileges — it can read files, open sockets and reach anything the process can. Only start
+> Thing Models you would run as a script. See [Security](#security).
 
 ```javascript
 // Helper functions (if needed)
@@ -277,6 +282,11 @@ routes. `_lab` is a reserved path segment, so it can never shadow a Thing.
 `/_lab/things` is the collection of running Things: `GET` lists them, `POST` adds
 more from a Thing Model.
 
+<<<<<<< HEAD
+=======
+<<<<<<< Updated upstream
+=======
+>>>>>>> 1eda42e (tidy up)
 ## Environments
 
 An **environment** is a named bundle of Thing Models with **fixed instance ids**,
@@ -322,11 +332,19 @@ cross-Thing `vre:effects` (and `logic.js` only where VRE can't reach):
 | `mosaik` | 37 | 6 | A shopfloor: 25 products, ten workstations, a transporter and the recipe book. |
 
 The last three are converted from the tee-wip paper repository by
+<<<<<<< HEAD
 `tools/tee2wotlab.py`. Each environment's benchmark tasks live in
+=======
+`tools/tee2wotlab.py`; [`NOTICE.md`](NOTICE.md) records where their data comes from. Each environment's benchmark tasks live in
+>>>>>>> 1eda42e (tidy up)
 `src/environments/<name>/tasks.json`; see [`tools/README.md`](tools/README.md).
 
 All `/_lab` writes are loopback-only unless `WOT_LAB_ALLOW_REMOTE_WRITE=1`.
 
+<<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+>>>>>>> 1eda42e (tidy up)
 A new Thing Model is sent either as a `spec` (the shape the dashboard form
 produces) or as a `draft` (the two files verbatim). Both go through the same
 validation: names must be slugs, every property and nested member needs a type,
@@ -374,6 +392,26 @@ WoT Lab comes with example Things:
 - **Actions**: `setColor`, `setPower`, `setEffect`, `setBrightness` (full LED control)
 - **Features**: RGB LED control with BLE command simulation, brightness adjustment
 
+## Security
+
+WoT Lab is a development tool, and it is built to be run on a machine you trust, for people you trust.
+
+- **A Thing Model is code.** `logic.js` is `eval`'d in the lab's process with no isolation. Treat a
+  Thing Model from someone else like any other script you are about to run. (`vre:effects` are
+  narrower: they are parsed, and only what the parser accepts is compiled — literals and names are
+  emitted as quoted strings — so an effect can change state but cannot call out of it.)
+- **The server listens on every interface** (`*:8081`), so the Things — their Thing Descriptions,
+  properties, actions and events — are reachable by anyone who can reach the port. There is no
+  authentication; every Thing is served with the `nosec` security scheme.
+- **The lab API (`/_lab`) accepts writes from this machine only.** It creates files and starts
+  Things, so requests that change anything are refused unless they come from a loopback address.
+  `WOT_LAB_ALLOW_REMOTE_WRITE=1` lifts that for a deliberately shared lab; set it only on a
+  network where everyone who can reach the port may write Thing Models to the models directory,
+  start and stop Things, and overwrite their state. The API writes a Thing Description and a
+  `state.json`, never a `logic.js`.
+
+To report a vulnerability, see [`SECURITY.md`](SECURITY.md).
+
 ## Deployment
 
 `.github/workflows/cd.yml` deploys `main`. It packages **code only** — `src`,
@@ -391,17 +429,21 @@ the server, switching between them with one symlink:
 
 ### The service
 
+An example unit; adjust the user, paths, port and Things to your host.
+
 ```ini
 [Unit]
 Description=WoT Lab
 After=network.target
 
 [Service]
-WorkingDirectory=/home/wotlab/wot-lab/current
+WorkingDirectory=/home/<user>/wot-lab/current
 Environment="DEBUG=wot-lab:*"
-Environment="WOT_LAB_ALLOW_REMOTE_WRITE=1"
-ExecStart=/usr/local/bin/bun src/main.ts --port 8043 --things blergb:2 --models-dir /home/wotlab/wot-lab/shared/thing-models
-User=wotlab
+# Lets anyone who can reach the port author Thing Models and start Things.
+# Leave it out unless the lab is meant to be shared; see Security.
+# Environment="WOT_LAB_ALLOW_REMOTE_WRITE=1"
+ExecStart=/usr/local/bin/bun src/main.ts --port 8081 --things counter:2 --models-dir /home/<user>/wot-lab/shared/thing-models
+User=<user>
 Restart=always
 RestartSec=30
 Type=simple

@@ -47,7 +47,7 @@ function makeHttpRequest(port: number, path: string, method = 'GET', data?: unkn
 async function testRuuviTag() {
   try {
     const WoT = await servient.start();
-    const td = await WoT.requestThingDescription('http://localhost:8080/ruuvitag');
+    const td = await WoT.requestThingDescription('http://localhost:8081/ruuvitag');
     const thing = await WoT.consume(td);
 
     console.log('RuuviTag Test Client');

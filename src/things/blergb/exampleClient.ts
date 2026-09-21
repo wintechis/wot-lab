@@ -53,7 +53,7 @@ function makeHttpRequest(port: number, path: string, method = 'GET', data?: unkn
 async function testBLERGBController() {
   try {
     const WoT = await servient.start();
-    const td = await WoT.requestThingDescription('http://localhost:8080/blergb');
+    const td = await WoT.requestThingDescription('http://localhost:8081/blergb');
     const thing = await WoT.consume(td);
 
     console.log('BLE RGB Controller Test Client');
