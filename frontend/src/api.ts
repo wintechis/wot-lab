@@ -81,3 +81,40 @@ export const validateThingModel = (payload: { spec?: ThingSpec; draft?: ThingDra
 
 export const createThingModel = (payload: { spec?: ThingSpec; draft?: ThingDraft }) =>
   send<{ draft: ThingDraft; things: LabThing[] }>('/_lab/thing-models', 'POST', payload);
+
+export const removeAllThings = () => send<{ removed: string[] }>('/_lab/things', 'DELETE');
+
+// --- Environments, tasks and the benchmark controls ---------------------
+// An environment is a manifest on disk: a fixed set of Things under fixed ids.
+// Its tasks say what a run starts from (`initialState`) and is judged by (`goal`).
+
+// These mirror src/things/environments.ts by hand, as ThingSpec mirrors
+// ThingAuthor: the dashboard and the lab type-check as separate projects.
+export type EnvSummary = { name: string; description?: string; things: number; tasks: number };
+export type GoalPredicate = { thing: string; property: string; op: string; value: unknown };
+// One Action invocation: a step of a task's plan, and of a run. `input` is the
+// real WoT payload — `{}` for an Action that takes none.
+export type PlanStep = { thing: string; action: string; input?: unknown };
+export type Task = {
+  id: string; environment: string; level: string; request: string;
+  goal: GoalPredicate[];
+  initialState: Record<string, Record<string, unknown>>;
+  optimalPlan: PlanStep[]; distractorPlan?: PlanStep[]; naiveAttempt?: PlanStep[];
+  note?: string;
+};
+
+export const labEnvironments = (signal?: AbortSignal) =>
+  requestJson<{ current?: string; environments: EnvSummary[] }>(apiUrl('/_lab/environments'), signal);
+
+// `replace` takes everything running offline first, so the lab is exactly the manifest.
+export const startEnvironment = (name: string, replace: boolean) =>
+  send<{ environment: string; things: LabThing[] }>('/_lab/environments', 'POST', { name, replace });
+
+export const environmentTasks = (name: string, signal?: AbortSignal) =>
+  requestJson<{ tasks: Task[] }>(apiUrl(`/_lab/environments/${encodeURIComponent(name)}/tasks`), signal);
+
+export const labReset = (id?: string) => send<{ reset: string[] }>('/_lab/reset', 'POST', id ? { id } : {});
+
+// Writes past TD writability — for constructing a task's initial conditions.
+export const labSetState = (id: string, values: Record<string, unknown>) =>
+  send<{ id: string; set: string[] }>('/_lab/state', 'POST', { id, values });

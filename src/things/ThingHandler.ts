@@ -6,6 +6,7 @@ import { dirname, join } from 'path';
 import { readdir } from 'fs/promises';
 import { createLoggers } from '../utils/debug.js';
 import { vreEffectsToHandlers } from './vre.js';
+import { resolveRef, resolveThing } from './crossThing.js';
 
 const { debug, warn } = createLoggers('things');
 
@@ -111,7 +112,8 @@ async function loadStateFile(
 // Helper function to evaluate a logic file (function body)
 async function evaluateLogicFile(
   td: WoT.ThingDescription,
-  filePath: string
+  filePath: string,
+  instanceId: string
 ): Promise<
   (_thing: WoT.ExposedThing, _state: Record<string, unknown>) => Promise<void>
 > {
@@ -160,8 +162,10 @@ async function evaluateLogicFile(
   const url = await import('url');
   const { createLoggers } = await import('../utils/debug.js');
 
-  // Wrap the content in an async function with built-in modules available
-  const wrappedContent = `(async function(thing, state, http, URL, createLoggers) { ${content} })`;
+  // Wrap the content in an async function with built-in modules available.
+  // `resolveThing`/`resolveRef` and `__thingId` back VRE's cross-Thing effects
+  // and `this.id`. A hand-written logic.js may use them too but does not have to.
+  const wrappedContent = `(async function(thing, state, http, URL, createLoggers, resolveThing, resolveRef, __thingId) { ${content} })`;
   const logicFunction = eval(wrappedContent) as Function;
 
   return (thing: WoT.ExposedThing, state: Record<string, unknown>) =>
@@ -170,7 +174,10 @@ async function evaluateLogicFile(
       state,
       http,
       url.URL,
-      createLoggers
+      createLoggers,
+      resolveThing,
+      resolveRef,
+      instanceId
     );
 }
 
@@ -189,7 +196,10 @@ async function evaluateLogicFile(
 export async function loadThing(
   modelName: string,
   instanceId: string,
-  title?: string
+  title?: string,
+  stateOverride?: Record<string, unknown>,
+  linksOverride?: Record<string, unknown>[],
+  tdOverride?: Record<string, unknown>
 ): Promise<ThingHandler> {
   try {
     const basePath = await resolveModelDirectory(modelName);
@@ -203,18 +213,30 @@ export async function loadThing(
     ).json();
 
     // Load TD, state, and behavior (logic.js and/or `vre:effects`)
-    const [stateObject, logicFunction] = await Promise.all([
+    const [loadedState, logicFunction] = await Promise.all([
       loadStateFile(join(basePath, 'state.json')),
-      evaluateLogicFile(td, join(basePath, 'logic.js'))
+      evaluateLogicFile(td, join(basePath, 'logic.js'), instanceId)
     ]);
+
+    // An environment can pin a Thing's starting values (initial conditions for a
+    // benchmark run); a shallow merge over the model's own state.json is enough,
+    // since properties are top-level.
+    const stateObject = stateOverride ? { ...loadedState, ...stateOverride } : loadedState;
 
     return new (class extends ThingHandler {
       protected state = proxy(stateObject);
 
       constructor() {
-        const instanceTd = { ...td, id: `urn:wot:${instanceId}` };
+        // Instance annotations (which room a sensor is a point of) are merged
+        // first, so the fields the lab owns — id, title, links — still win.
+        const instanceTd = { ...td, ...(tdOverride ?? {}), id: `urn:wot:${instanceId}` };
         if (title) {
           instanceTd.title = title;
+        }
+        // Per-instance links let one shared model point at a different related
+        // Thing per instance (a lamp -> its plug).
+        if (linksOverride) {
+          (instanceTd as { links?: unknown[] }).links = linksOverride;
         }
 
         super(instanceTd);

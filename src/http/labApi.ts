@@ -3,6 +3,7 @@ import { URL } from 'url';
 import { formatThingsFlag } from '../config/options.js';
 import { createLoggers } from '../utils/debug.js';
 import { ThingRegistry } from '../things/ThingRegistry.js';
+import { listEnvironments, loadEnvironmentManifest, loadEnvironmentTasks } from '../things/environments.js';
 import {
   ThingDraft,
   ThingSpec,
@@ -104,13 +105,17 @@ function draftFromBody(body: Record<string, unknown>): ThingDraft {
 
 async function thingsPayload(registry: ThingRegistry) {
   const requests = registry.startupRequests();
+  const environment = registry.environment();
+  // The flags that reproduce this session — the replacement for a config file.
+  // An environment's Things come back through `--env`, which pins their ids and
+  // state; `--things` would allocate new ones. An empty lab needs no flag at all.
+  const flags = [
+    ...(environment ? [`--env ${environment}`] : []),
+    ...(requests.length ? [`--things ${formatThingsFlag(requests)}`] : [])
+  ];
   return {
     things: registry.listThings(),
-    // The flag that reproduces this session — the replacement for a config file.
-    // An empty lab is reproduced by starting with no flag at all.
-    startCommand: requests.length
-      ? `bun run dev -- --things ${formatThingsFlag(requests)}`
-      : 'bun run dev'
+    startCommand: flags.length ? `bun run dev -- ${flags.join(' ')}` : 'bun run dev'
   };
 }
 
@@ -129,7 +134,7 @@ export function createLabApi(registry: ThingRegistry) {
     segments: string[],
     url: URL
   ): Promise<boolean> {
-    const [resource, id] = segments;
+    const [resource, id, member] = segments;
     const method = req.method ?? 'GET';
 
     if (method !== 'GET' && !isWriteAllowed(req)) {
@@ -171,6 +176,12 @@ export function createLabApi(registry: ThingRegistry) {
         return true;
       }
 
+      // Without an id, DELETE empties the lab.
+      if (method === 'DELETE' && resource === 'things' && !id) {
+        sendJson(res, 200, { removed: await registry.removeAll() });
+        return true;
+      }
+
       if (method === 'DELETE' && resource === 'things' && id) {
         const removed = await registry.remove(decodeURIComponent(id));
         if (!removed) {
@@ -186,6 +197,67 @@ export function createLabApi(registry: ThingRegistry) {
           }
         }
         sendJson(res, 200, { removed: true });
+        return true;
+      }
+
+      // Environments: named bundles of Things with fixed ids. GET lists what is
+      // on disk; POST brings one online (the benchmark's start command).
+      // The benchmark tasks of one environment: what a run is replayed against.
+      if (method === 'GET' && resource === 'environments' && id && member === 'tasks') {
+        sendJson(res, 200, { tasks: await loadEnvironmentTasks(decodeURIComponent(id)) });
+        return true;
+      }
+
+      if (method === 'GET' && resource === 'environments' && !id) {
+        // `current` is what a task runner checks before replaying a plan: the
+        // list says what could run, this says what is running.
+        sendJson(res, 200, {
+          current: registry.environment(),
+          environments: await listEnvironments()
+        });
+        return true;
+      }
+
+      if (method === 'POST' && resource === 'environments') {
+        const body = await readJsonBody(req);
+        const name = String(body.name ?? '');
+        if (!name) {
+          sendJson(res, 400, { error: 'An environment name is required' });
+          return true;
+        }
+        const manifest = await loadEnvironmentManifest(name);
+        // `replace` takes whatever is running offline first; without it a start
+        // is refused when any of the manifest's ids is in use.
+        const things = await registry.instantiateEnvironment(manifest, { replace: body.replace === true });
+        sendJson(res, 201, { environment: manifest.name, things });
+        return true;
+      }
+
+      // Reset every running Thing (or one, with {"id": ...}) to its initial
+      // state — the between-runs reset a benchmark needs.
+      if (method === 'POST' && resource === 'reset') {
+        const body = await readJsonBody(req);
+        if (body.id) {
+          const ok = registry.resetThing(String(body.id));
+          sendJson(res, ok ? 200 : 404, ok ? { reset: [String(body.id)] } : { error: `No Thing '${body.id}'` });
+          return true;
+        }
+        sendJson(res, 200, { reset: registry.resetAll() });
+        return true;
+      }
+
+      // Set property values directly, bypassing TD writability — for
+      // constructing initial conditions.
+      if (method === 'POST' && resource === 'state') {
+        const body = await readJsonBody(req);
+        const id = String(body.id ?? '');
+        const values = body.values;
+        if (!id || !values || typeof values !== 'object' || Array.isArray(values)) {
+          sendJson(res, 400, { error: 'Expected {"id": ..., "values": { property: value, ... }}' });
+          return true;
+        }
+        const ok = registry.setProperties(id, values as Record<string, unknown>);
+        sendJson(res, ok ? 200 : 404, ok ? { id, set: Object.keys(values) } : { error: `No Thing '${id}'` });
         return true;
       }
 

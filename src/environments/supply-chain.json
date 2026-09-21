@@ -1,0 +1,15 @@
+{ "name": "supply-chain",
+  "description": "Supply-chain scenario: three warehouses (A/B/C), an aggregate warehouse-system, a company budget, and a supplier. Orders charge the budget and raise the aggregate; transfers move stock between warehouses. Both are cross-Thing effects.",
+  "things": [
+    { "model": "warehouse", "id": "warehouse-a", "title": "Warehouse A",
+      "state": { "currentStock": 1500, "capacity": 3000, "utilizationPercent": 50 } },
+    { "model": "warehouse", "id": "warehouse-b", "title": "Warehouse B",
+      "state": { "currentStock": 1800, "capacity": 4000, "utilizationPercent": 45 } },
+    { "model": "warehouse", "id": "warehouse-c", "title": "Warehouse C",
+      "state": { "currentStock": 1200, "capacity": 3000, "utilizationPercent": 40 } },
+    { "model": "warehouse-system", "id": "warehouse-system", "title": "Warehouse System",
+      "state": { "totalCapacity": 10000, "totalCurrentStock": 4500 } },
+    { "model": "company-budget", "id": "company-budget", "title": "Company Budget",
+      "state": { "monthlyBudget": 100000, "monthlySpent": 35000, "remainingBudget": 65000 } },
+    { "model": "supplier", "id": "supplier", "title": "Supplier",
+      "state": { "unitPrice": 50 } } ] }

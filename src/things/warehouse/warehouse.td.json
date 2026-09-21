@@ -1,0 +1,83 @@
+{
+    "title": "Warehouse",
+    "description": "A warehouse holding stock up to a capacity. Order stock from the supplier (charged to the company budget) or transfer stock to another warehouse (a cross-Thing effect, no cost). Bounds are honored: currentStock may never exceed its capacity or fall below 0; an action that would breach a bound applies nothing on any Thing and reports success false.",
+    "@context": [
+        "https://www.w3.org/2019/wot/td/v1",
+        "https://www.w3.org/2022/wot/td/v1.1"
+    ],
+    "properties": {
+        "currentStock": {
+            "title": "Current Stock",
+            "type": "number",
+            "description": "Units currently held. Bounded below by 0 and above by capacity.",
+            "minimum": 0,
+            "observable": true,
+            "readOnly": true
+        },
+        "capacity": {
+            "title": "Capacity",
+            "type": "number",
+            "description": "Maximum units this warehouse can hold; the upper bound on currentStock.",
+            "observable": true,
+            "readOnly": true
+        },
+        "utilizationPercent": {
+            "title": "Utilization %",
+            "type": "number",
+            "description": "currentStock / capacity as a percentage.",
+            "observable": true,
+            "readOnly": true
+        },
+        "orderCounter": {
+            "title": "Order Counter",
+            "type": "number",
+            "description": "Number of successful orders placed; backs deterministic order ids.",
+            "observable": false,
+            "readOnly": true
+        }
+    },
+    "actions": {
+        "orderStock": {
+            "title": "Order Stock",
+            "description": "Order units from the supplier; cost is the supplier's unit price times the quantity, charged to the company budget. Rejected (no effect anywhere) if it would push stock above capacity.",
+            "input": {
+                "type": "object",
+                "properties": { "quantity": { "type": "number", "minimum": 0 } },
+                "required": ["quantity"]
+            },
+            "output": {
+                "type": "object",
+                "properties": {
+                    "success": { "type": "boolean" },
+                    "cost": { "type": "number" },
+                    "newStock": { "type": "number" },
+                    "orderId": { "type": "string" },
+                    "message": { "type": "string" }
+                }
+            },
+            "vre:effects": "const company = <company-budget>; const supplier = <supplier>; const system = <warehouse-system>; currentStock' = ((currentStock + quantity) <= capacity) ? (currentStock + quantity) : currentStock; orderCounter' = ((currentStock + quantity) <= capacity) ? (orderCounter + 1) : orderCounter; company.monthlySpent' = ((currentStock + quantity) <= capacity) ? (company.monthlySpent + quantity * supplier.unitPrice) : company.monthlySpent; company.remainingBudget' = ((currentStock + quantity) <= capacity) ? (company.remainingBudget - quantity * supplier.unitPrice) : company.remainingBudget; utilizationPercent' = ((currentStock + quantity) <= capacity) ? ((currentStock + quantity) / capacity * 100) : utilizationPercent; system.totalCurrentStock' = ((currentStock + quantity) <= capacity) ? (system.totalCurrentStock + quantity) : system.totalCurrentStock; output.success = (currentStock + quantity) <= capacity; output.cost = ((currentStock + quantity) <= capacity) ? (quantity * supplier.unitPrice) : 0; output.newStock = currentStock'; output.orderId = \"ORD-\" + this.id + \"-\" + orderCounter'; output.message = ((currentStock + quantity) <= capacity) ? (\"Ordered \" + quantity + \" units\") : \"Order exceeds capacity\";"
+        },
+        "transferStock": {
+            "title": "Transfer Stock",
+            "description": "Move units from this warehouse to another warehouse. Rejected (no effect anywhere) if it would push the destination above its capacity or take this warehouse below 0.",
+            "input": {
+                "type": "object",
+                "properties": {
+                    "toWarehouse": { "type": "string", "description": "Target warehouse id." },
+                    "quantity": { "type": "number", "minimum": 0 }
+                },
+                "required": ["toWarehouse", "quantity"]
+            },
+            "output": {
+                "type": "object",
+                "properties": {
+                    "success": { "type": "boolean" },
+                    "quantity": { "type": "number" },
+                    "from": { "type": "object", "properties": { "currentStock": { "type": "number" } } },
+                    "to": { "type": "object", "properties": { "currentStock": { "type": "number" } } }
+                }
+            },
+            "vre:effects": "currentStock' = (((toWarehouse.currentStock + quantity) <= toWarehouse.capacity) && ((currentStock - quantity) >= 0)) ? (currentStock - quantity) : currentStock; toWarehouse.currentStock' = (((toWarehouse.currentStock + quantity) <= toWarehouse.capacity) && ((currentStock - quantity) >= 0)) ? (toWarehouse.currentStock + quantity) : toWarehouse.currentStock; utilizationPercent' = (((toWarehouse.currentStock + quantity) <= toWarehouse.capacity) && ((currentStock - quantity) >= 0)) ? ((currentStock - quantity) / capacity * 100) : utilizationPercent; toWarehouse.utilizationPercent' = (((toWarehouse.currentStock + quantity) <= toWarehouse.capacity) && ((currentStock - quantity) >= 0)) ? ((toWarehouse.currentStock + quantity) / toWarehouse.capacity * 100) : toWarehouse.utilizationPercent; output.success = ((toWarehouse.currentStock + quantity) <= toWarehouse.capacity) && ((currentStock - quantity) >= 0); output.quantity = quantity; output.from.currentStock = currentStock'; output.to.currentStock = toWarehouse.currentStock';"
+        }
+    }
+}

@@ -1,0 +1,31 @@
+{
+  "@context": [
+    "https://www.w3.org/2022/wot/td/v1.1",
+    {
+      "brick": "http://buildsys.org/ontologies/Brick#",
+      "rec": "https://w3id.org/rec#"
+    }
+  ],
+  "@type": [
+    "brick:Contact_Sensor",
+    "rec:Window"
+  ],
+  "title": "Window contact sensor",
+  "description": "Reports whether the window of one room stands open. The value is written by that room's window actuator.",
+  "securityDefinitions": {
+    "nosec_sc": {
+      "scheme": "nosec"
+    }
+  },
+  "security": "nosec_sc",
+  "properties": {
+    "isOpen": {
+      "type": "boolean",
+      "title": "Whether the window is open",
+      "readOnly": true,
+      "writeOnly": false,
+      "observable": true,
+      "@type": "brick:Open_Close_Status"
+    }
+  }
+}

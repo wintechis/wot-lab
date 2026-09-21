@@ -1,5 +1,6 @@
 import * as WoT from 'wot-typescript-definitions';
 import { ThingHandler } from './ThingHandler.js';
+import { registerExposedThing } from './crossThing.js';
 import { createLoggers } from '../utils/debug.js';
 
 const { debug } = createLoggers('things');
@@ -29,6 +30,11 @@ export class ThingFactory {
       const exposedThing = await this.wot.produce({ ...td, title: instanceId });
       await handler.setup(exposedThing);
       await exposedThing.expose();
+
+      // Make this Thing reachable by cross-Thing VRE effects on other Things:
+      // they write its state proxy directly but need its ExposedThing to fire
+      // property-change notifications.
+      registerExposedThing(instanceId, exposedThing);
 
       // The routing title has done its job once the paths are fixed. The Thing
       // Description is serialized from this object on every request, so putting

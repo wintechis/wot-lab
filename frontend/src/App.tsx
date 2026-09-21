@@ -30,10 +30,12 @@ import {
   CopyIcon,
   DashIcon,
   DeviceDesktopIcon,
+  HistoryIcon,
   LinkExternalIcon,
   MoonIcon,
   PlayIcon,
   PlusIcon,
+  StackIcon,
   SunIcon,
   SyncIcon,
   TrashIcon
@@ -44,6 +46,7 @@ import {
   ThingModel,
   apiBase,
   apiUrl,
+  labEnvironments,
   labThingModels,
   labThings,
   removeThing,
@@ -51,6 +54,8 @@ import {
 } from './api';
 import { HighlightedJson, InlineCode, JsonBlock } from './Json';
 import { CreateThingDialog } from './CreateThing';
+import { StartEnvironmentDialog } from './Environments';
+import { ReplayView } from './Replay';
 
 type ThingEntry = { id: string; title: string; href: string; description?: string };
 
@@ -112,6 +117,10 @@ const sections = ['properties', 'actions', 'events', 'td'] as const;
 type Section = (typeof sections)[number];
 const sectionLabel: Record<Section, string> = { properties: 'Properties', actions: 'Actions', events: 'Events', td: 'Thing Description' };
 type Route = { thingId: string | null; section: Section | null };
+
+// The one page that is not a Thing. A Thing id cannot start with `_`, so the
+// segment can never be one — the same reasoning that reserves `_lab`.
+const replayPage = '_replay';
 
 function parseRoute(): Route {
   const segments = decodeURIComponent(window.location.pathname).replace(/^\/+/, '').split('/').filter(Boolean);
@@ -1215,8 +1224,8 @@ function ThingInspector({ thing, section, onSection, onRemove }: { thing: Inspec
 
 // --- Landing page -------------------------------------------------------
 
-function Landing({ things, models, loading, onOpen, onAdd }: {
-  things: ThingEntry[]; models: ThingModel[]; loading: boolean; onOpen: (id: string) => void; onAdd: () => void;
+function Landing({ things, models, loading, onOpen, onAdd, onEnvironment }: {
+  things: ThingEntry[]; models: ThingModel[]; loading: boolean; onOpen: (id: string) => void; onAdd: () => void; onEnvironment: () => void;
 }) {
   return <Stack gap="spacious">
     <Stack gap="condensed">
@@ -1256,10 +1265,13 @@ function Landing({ things, models, loading, onOpen, onAdd }: {
                 <Text weight="semibold">Nothing is running yet.</Text>
                 <Text className="muted">
                   {models.length
-                    ? `${models.length} Thing ${models.length === 1 ? 'Model is' : 'Models are'} available on disk. Create a Thing from one, or write a new model.`
+                    ? `${models.length} Thing ${models.length === 1 ? 'Model is' : 'Models are'} available on disk. Create a Thing from one, write a new model, or start a whole environment.`
                     : 'No Thing Models were found on disk. Write one to get started.'}
                 </Text>
-                <Button variant="primary" leadingVisual={PlusIcon} onClick={onAdd}>Add a Thing</Button>
+                <Stack direction="horizontal" gap="condensed" wrap="wrap">
+                  <Button variant="primary" leadingVisual={PlusIcon} onClick={onAdd}>Add a Thing</Button>
+                  <Button leadingVisual={StackIcon} onClick={onEnvironment}>Start an environment</Button>
+                </Stack>
               </Stack>
             </div>}
     </Stack>
@@ -1282,6 +1294,8 @@ function App() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
   const [adding, setAdding] = useState(false);
+  const [environment, setEnvironment] = useState<string | undefined>();
+  const [choosingEnvironment, setChoosingEnvironment] = useState(false);
   const [removing, setRemoving] = useState<ThingEntry | null>(null);
   const [removeFiles, setRemoveFiles] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -1292,11 +1306,13 @@ function App() {
       // The exposed Things, the Thing Models on disk and the lab's own view of
       // what is running are three views of the same lab; loading them together
       // keeps the sidebar, the add dialog and the start command from disagreeing.
-      const [index, catalog, running] = await Promise.all([
+      const [index, catalog, running, environments] = await Promise.all([
         requestJson<{ things: ThingEntry[] }>(`${apiBase}/`),
         labThingModels(),
-        labThings()
+        labThings(),
+        labEnvironments()
       ]);
+      setEnvironment(environments.current);
       setThings(index.things);
       setModels(catalog.thingModels);
       setLive(running.things);
@@ -1307,7 +1323,7 @@ function App() {
 
   useEffect(() => { void loadThings(); }, []);
   useEffect(() => {
-    if (!route.thingId) { setThing(null); return; }
+    if (!route.thingId || route.thingId === replayPage) { setThing(null); return; }
     setThing(null); setError('');
     const controller = new AbortController();
     void requestJson<ThingDescription>(`${apiBase}/${encodeURIComponent(route.thingId)}`, controller.signal)
@@ -1369,13 +1385,25 @@ function App() {
             <Stack direction="horizontal" align="center" gap="normal" wrap="wrap">
               <IconButton icon={ColorModeIcon} aria-label={`Color mode: ${colorMode}. Switch to ${nextColorMode[colorMode]}.`} variant="invisible" onClick={() => setColorMode(mode => nextColorMode[mode])} />
               <Button leadingVisual={SyncIcon} onClick={() => void loadThings()}>Refresh</Button>
+              <Button leadingVisual={StackIcon} onClick={() => setChoosingEnvironment(true)}>Environment</Button>
               <Button variant="primary" leadingVisual={PlusIcon} onClick={() => setAdding(true)}>Add Thing</Button>
             </Stack>
           </Stack>
         </PageLayout.Header>
 
-        <PageLayout.Pane position="start" width="small" padding="normal" divider="line" sticky>
-          <Text className="eyebrow" as="div">Exposed Things</Text>
+        <PageLayout.Pane position="start" width="small" padding="normal" divider="line" sticky aria-label="Navigation">
+          <Text className="eyebrow" as="div">Benchmark</Text>
+          <NavList className="pane-section">
+            <NavList.Item href={`/${replayPage}`} aria-current={route.thingId === replayPage}
+              onClick={event => { event.preventDefault(); navigate(replayPage); }}>
+              <NavList.LeadingVisual><HistoryIcon /></NavList.LeadingVisual>
+              Replay a run
+            </NavList.Item>
+          </NavList>
+          <Stack direction="horizontal" align="center" gap="condensed" wrap="wrap">
+            <Text className="eyebrow" as="div">Exposed Things</Text>
+            {environment && <Label>{environment}</Label>}
+          </Stack>
           {loading
             ? <Stack align="center" padding="normal"><Spinner size="medium" /></Stack>
             : things.length
@@ -1406,13 +1434,16 @@ function App() {
         <PageLayout.Content padding="normal">
           <div style={{ maxWidth: 960, marginInline: 'auto' }}>
             {error && <Flash variant="danger">{error}</Flash>}
-            {route.thingId
-              ? thing && thing.id === route.thingId
-                ? <ThingInspector key={thing.id} thing={thing} section={route.section}
-                    onSection={(s, options) => navigate(thing.id, s, options)}
-                    onRemove={() => setRemoving(things.find(entry => entry.id === thing.id) ?? { id: thing.id, title: thing.title, href: '' })} />
-                : !error && <Stack align="center" padding="spacious"><Spinner /></Stack>
-              : <Landing things={things} models={models} loading={loading} onOpen={id => navigate(id)} onAdd={() => setAdding(true)} />}
+            {route.thingId === replayPage
+              ? <ReplayView onLabChanged={() => void loadThings()} />
+              : route.thingId
+                ? thing && thing.id === route.thingId
+                  ? <ThingInspector key={thing.id} thing={thing} section={route.section}
+                      onSection={(s, options) => navigate(thing.id, s, options)}
+                      onRemove={() => setRemoving(things.find(entry => entry.id === thing.id) ?? { id: thing.id, title: thing.title, href: '' })} />
+                  : !error && <Stack align="center" padding="spacious"><Spinner /></Stack>
+                : <Landing things={things} models={models} loading={loading} onOpen={id => navigate(id)}
+                  onAdd={() => setAdding(true)} onEnvironment={() => setChoosingEnvironment(true)} />}
           </div>
         </PageLayout.Content>
       </PageLayout>
@@ -1420,6 +1451,10 @@ function App() {
       {adding && <CreateThingDialog models={models}
         onClose={() => setAdding(false)}
         onCreated={id => { setAdding(false); void loadThings(); if (id) navigate(id); }} />}
+
+      {choosingEnvironment && <StartEnvironmentDialog running={live.length}
+        onClose={() => setChoosingEnvironment(false)}
+        onStarted={() => { setChoosingEnvironment(false); if (route.thingId !== replayPage) navigate(null); void loadThings(); }} />}
 
       {removing && <ConfirmationDialog title={`Remove ${removing.title}?`} confirmButtonType="danger"
         confirmButtonContent="Remove" onClose={gesture => void confirmRemoval(gesture)}>

@@ -711,3 +711,82 @@ body {
   font-size: 100%;
   padding: 0.1em 0.3em;
 }
+
+/* --- Replay ------------------------------------------------------------- */
+
+.pane-section {
+  margin-bottom: var(--base-size-16);
+}
+
+.replay-facts {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: var(--base-size-4) var(--base-size-16);
+  margin: 0;
+}
+
+.replay-facts dt {
+  color: var(--fgColor-muted);
+  font-size: var(--text-body-size-small);
+}
+
+.replay-facts dd {
+  margin: 0;
+}
+
+.aff-table--replay td {
+  vertical-align: top;
+}
+
+/* The output is the one column whose length is open-ended, so it takes the
+   slack and wraps; the others keep to their content. */
+.aff-table--replay td.replay-output-cell {
+  width: 100%;
+  min-width: 12rem;
+}
+
+/* Ids and values have no spaces to break at, so they may break anywhere
+   rather than widen the table past its container. */
+.aff-table--replay td.replay-wrap {
+  min-width: 11rem;
+  overflow-wrap: anywhere;
+}
+
+.replay-output {
+  margin: 0;
+  max-height: 6rem;
+  overflow: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: var(--text-body-size-small);
+}
+
+.replay-recorded {
+  overflow-wrap: anywhere;
+}
+
+.replay-input {
+  max-width: 16rem;
+  margin-top: var(--base-size-4);
+}
+
+.replay-holds {
+  color: var(--fgColor-success);
+}
+
+.sat-bar {
+  width: 4rem;
+  height: var(--base-size-8);
+  border-radius: var(--borderRadius-full);
+  background-color: var(--bgColor-neutral-muted);
+  overflow: hidden;
+}
+
+.sat-bar-fill {
+  height: 100%;
+  background-color: var(--bgColor-attention-emphasis);
+}
+
+.sat-bar-fill--full {
+  background-color: var(--bgColor-success-emphasis);
+}

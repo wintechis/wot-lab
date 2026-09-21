@@ -4,6 +4,7 @@ type TokenKind =
   | 'URI'
   | 'NUMBER'
   | 'BOOL'
+  | 'NULL'
   | 'STRING'
   | 'PRIME'
   | 'ASSIGN'
@@ -41,9 +42,15 @@ interface Token {
 export type VREExpr =
   | { kind: 'number'; value: number }
   | { kind: 'bool'; value: boolean }
+  // `null` is the unset value: a Property that has no value yet (a setpoint
+  // nobody has chosen) rather than a wrong one. Comparable with == / != only.
+  | { kind: 'null' }
   | { kind: 'string'; value: string }
   | { kind: 'emptyArray' }
-  | { kind: 'ref'; parts: string[] }
+  // `post` marks a primed reference (`count'`) in an expression: it denotes the
+  // POST-state value. An unprimed reference denotes the PRE-state value. This is
+  // the one convention shared by VRE effects, VRE outputs and VRP permissions.
+  | { kind: 'ref'; parts: string[]; post?: boolean }
   | { kind: 'binary'; op: string; left: VREExpr; right: VREExpr }
   | { kind: 'unary'; op: string; operand: VREExpr }
   | {
@@ -63,10 +70,16 @@ export interface VreEvent {
   name: string;
   data?: VREExpr;
 }
+/** An `output.<path> = <expr>` assignment: a field of the action's return value. */
+export interface VreOutput {
+  path: string[];
+  value: VREExpr;
+}
 export interface VreProgram {
   bindings: Map<string, string>;
   effects: VreEffect[];
   events: VreEvent[];
+  outputs: VreOutput[];
 }
 
 function lex(input: string): Token[] {
@@ -137,6 +150,8 @@ function lex(input: string): Token[] {
         tokens.push({ kind: 'CONST', value: ident, pos });
       } else if (ident === 'true' || ident === 'false') {
         tokens.push({ kind: 'BOOL', value: ident, pos });
+      } else if (ident === 'null') {
+        tokens.push({ kind: 'NULL', value: ident, pos });
       } else {
         tokens.push({ kind: 'IDENT', value: ident, pos });
       }
@@ -250,6 +265,7 @@ class Parser {
     const bindings = new Map<string, string>();
     const effects: VreEffect[] = [];
     const events: VreEvent[] = [];
+    const outputs: VreOutput[] = [];
     while (this.peek().kind === 'CONST') {
       this.consume();
       const name = this.expect('IDENT').value;
@@ -261,11 +277,36 @@ class Parser {
     while (this.peek().kind !== 'EOF') {
       if (this.peek().kind === 'IDENT' && this.peek().value === 'emitEvent') {
         events.push(this.parseEventStmt());
+      } else if (
+        this.peek().kind === 'IDENT' &&
+        this.peek().value === 'output' &&
+        this.peekAt(1).kind === 'DOT'
+      ) {
+        outputs.push(this.parseOutputStmt());
       } else {
         effects.push(this.parseEffectStmt());
       }
     }
-    return { bindings, effects, events };
+    return { bindings, effects, events, outputs };
+  }
+
+  // `output.a.b = expr` — a field (possibly nested) of the action's return
+  // value. Distinguished from an effect by the `output` head and the absence of
+  // a prime before `=` (effect targets are primed).
+  private parseOutputStmt(): VreOutput {
+    this.expect('IDENT'); // `output`
+    const path: string[] = [];
+    while (this.peek().kind === 'DOT' && this.peekAt(1).kind === 'IDENT') {
+      this.consume();
+      path.push(this.consume().value);
+    }
+    if (path.length === 0) {
+      throw new Error('VRE: output must name a field, e.g. output.amount = ...');
+    }
+    this.expect('ASSIGN');
+    const value = this.parseExpr();
+    this.match('SEMICOLON');
+    return { path, value };
   }
 
   private parseEventStmt(): VreEvent {
@@ -416,6 +457,10 @@ class Parser {
       this.consume();
       return { kind: 'bool', value: t.value === 'true' };
     }
+    if (t.kind === 'NULL') {
+      this.consume();
+      return { kind: 'null' };
+    }
     if (t.kind === 'STRING') {
       this.consume();
       return { kind: 'string', value: JSON.parse(`"${t.value}"`) as string };
@@ -447,7 +492,11 @@ class Parser {
         this.consume();
         parts.push(this.consume().value);
       }
-      return { kind: 'ref', parts };
+      // A trailing prime marks a POST-state reference (`balance'`) in an
+      // expression. Effect targets consume their prime in parseEffectStmt, so a
+      // prime here only ever belongs to a reference used as a value.
+      const post = this.match('PRIME');
+      return { kind: 'ref', parts, post };
     }
     throw new Error(
       `VRE: unexpected token ${t.kind} ('${t.value}') at position ${t.pos}`

@@ -1,0 +1,28 @@
+{
+    "title": "Car Charger",
+    "description": "An EV charger. Starting a charge raises the home's live power draw by its wattage and its monthly usage by its per-cycle energy; stopping lowers the power draw again. Both are cross-Thing effects, idempotent so a repeated start or stop does not double-count.",
+    "@context": [
+        "https://www.w3.org/2019/wot/td/v1",
+        "https://www.w3.org/2022/wot/td/v1.1"
+    ],
+    "properties": {
+        "isCharging": { "title": "Charging", "type": "boolean", "observable": true, "readOnly": true },
+        "powerWatts": { "title": "Power (W)", "type": "number", "observable": true, "readOnly": true },
+        "kwhPerCycle": { "title": "Energy per Cycle (kWh)", "type": "number", "observable": true, "readOnly": true }
+    },
+    "actions": {
+        "startCharging": {
+            "title": "Start Charging",
+            "description": "Begin charging.",
+            "input": { "type": "object", "properties": { "mode": { "type": "string" } } },
+            "output": { "type": "object", "properties": { "success": { "type": "boolean" }, "isCharging": { "type": "boolean" } } },
+            "vre:effects": "const home = <home>; home.currentPowerUsageW' = home.currentPowerUsageW + (isCharging ? 0 : powerWatts); home.currentMonthUsageKWh' = home.currentMonthUsageKWh + (isCharging ? 0 : kwhPerCycle); isCharging' = true; output.success = true; output.isCharging = isCharging';"
+        },
+        "stopCharging": {
+            "title": "Stop Charging",
+            "description": "Stop charging.",
+            "output": { "type": "object", "properties": { "success": { "type": "boolean" }, "isCharging": { "type": "boolean" } } },
+            "vre:effects": "const home = <home>; home.currentPowerUsageW' = home.currentPowerUsageW - (isCharging ? powerWatts : 0); isCharging' = false; output.success = true; output.isCharging = isCharging';"
+        }
+    }
+}

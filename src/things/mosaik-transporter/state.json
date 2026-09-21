@@ -1,0 +1,8 @@
+{
+  "xpos": 0.0,
+  "ypos": 0.0,
+  "carrying": false,
+  "capacity": 1,
+  "speed": 1,
+  "status": "idle"
+}

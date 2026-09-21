@@ -1,0 +1,28 @@
+{
+    "title": "Appliance",
+    "description": "A switchable appliance (washer, dryer). Starting it raises the home's live power draw by its wattage and its monthly usage by its per-cycle energy; stopping it lowers the power draw again. Both are cross-Thing effects, and are idempotent so a repeated start or stop does not double-count.",
+    "@context": [
+        "https://www.w3.org/2019/wot/td/v1",
+        "https://www.w3.org/2022/wot/td/v1.1"
+    ],
+    "properties": {
+        "isRunning": { "title": "Running", "type": "boolean", "observable": true, "readOnly": true },
+        "powerWatts": { "title": "Power (W)", "type": "number", "observable": true, "readOnly": true },
+        "kwhPerCycle": { "title": "Energy per Cycle (kWh)", "type": "number", "observable": true, "readOnly": true }
+    },
+    "actions": {
+        "startAppliance": {
+            "title": "Start",
+            "description": "Start the appliance.",
+            "input": { "type": "object", "properties": { "cycle": { "type": "string" } } },
+            "output": { "type": "object", "properties": { "success": { "type": "boolean" }, "isRunning": { "type": "boolean" }, "message": { "type": "string" } } },
+            "vre:effects": "const home = <home>; home.currentPowerUsageW' = home.currentPowerUsageW + (isRunning ? 0 : powerWatts); home.currentMonthUsageKWh' = home.currentMonthUsageKWh + (isRunning ? 0 : kwhPerCycle); isRunning' = true; output.success = true; output.isRunning = isRunning'; output.message = \"Started with \" + cycle + \" cycle\";"
+        },
+        "stopAppliance": {
+            "title": "Stop",
+            "description": "Stop the appliance.",
+            "output": { "type": "object", "properties": { "success": { "type": "boolean" }, "isRunning": { "type": "boolean" } } },
+            "vre:effects": "const home = <home>; home.currentPowerUsageW' = home.currentPowerUsageW - (isRunning ? powerWatts : 0); isRunning' = false; output.success = true; output.isRunning = isRunning';"
+        }
+    }
+}

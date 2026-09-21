@@ -1,0 +1,240 @@
+{
+  "@context": [
+    "https://www.w3.org/2022/wot/td/v1.1",
+    {
+      "arena": "https://solid.ti.rw.fau.de/public/ns/arena#"
+    }
+  ],
+  "@type": "arena:Transporter",
+  "title": "Transporter",
+  "description": "The one mobile Thing of the shopfloor. It moves one unit at a time and carries at most one product, which it picks up where it stands.",
+  "securityDefinitions": {
+    "nosec_sc": {
+      "scheme": "nosec"
+    }
+  },
+  "security": "nosec_sc",
+  "properties": {
+    "xpos": {
+      "type": "number",
+      "title": "Position on the x axis",
+      "readOnly": true,
+      "writeOnly": false,
+      "observable": true,
+      "@type": "arena:XPosition"
+    },
+    "ypos": {
+      "type": "number",
+      "title": "Position on the y axis",
+      "readOnly": true,
+      "writeOnly": false,
+      "observable": true,
+      "@type": "arena:YPosition"
+    },
+    "carrying": {
+      "title": "The product being carried, or false while the transporter is empty",
+      "readOnly": true,
+      "writeOnly": false,
+      "observable": true,
+      "@type": "arena:CarryState",
+      "oneOf": [
+        {
+          "type": "string",
+          "enum": [
+            "battery",
+            "batterycell",
+            "case",
+            "casewithbattery",
+            "casewithcommunicationmodule",
+            "casewithmainmodule",
+            "casewithsensormodule",
+            "comm",
+            "communicationmodule",
+            "cpu",
+            "displayunit",
+            "flash",
+            "glass",
+            "ingot",
+            "lcd",
+            "mainmodule",
+            "mainmodulewithports",
+            "mainboard",
+            "mainboard2",
+            "mainboard3",
+            "port",
+            "ram",
+            "sensor",
+            "sensormodule",
+            "smartphone"
+          ]
+        },
+        {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        }
+      ]
+    },
+    "capacity": {
+      "type": "integer",
+      "title": "How many products may be carried at once",
+      "readOnly": true,
+      "writeOnly": false,
+      "observable": true
+    },
+    "speed": {
+      "type": "integer",
+      "title": "Units moved per invocation",
+      "readOnly": true,
+      "writeOnly": false,
+      "observable": true
+    },
+    "status": {
+      "type": "string",
+      "title": "Operating status",
+      "readOnly": true,
+      "writeOnly": false,
+      "observable": true
+    }
+  },
+  "actions": {
+    "pickup": {
+      "title": "pick a product up",
+      "description": "Take the given product, but only while the transporter carries nothing and stands on the product's position.",
+      "input": {
+        "type": "string",
+        "title": "product",
+        "description": "The Thing Description of the product to pick up.",
+        "enum": [
+          "battery",
+          "batterycell",
+          "case",
+          "casewithbattery",
+          "casewithcommunicationmodule",
+          "casewithmainmodule",
+          "casewithsensormodule",
+          "comm",
+          "communicationmodule",
+          "cpu",
+          "displayunit",
+          "flash",
+          "glass",
+          "ingot",
+          "lcd",
+          "mainmodule",
+          "mainmodulewithports",
+          "mainboard",
+          "mainboard2",
+          "mainboard3",
+          "port",
+          "ram",
+          "sensor",
+          "sensormodule",
+          "smartphone"
+        ]
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "carrying": {
+            "type": "string"
+          }
+        }
+      },
+      "safe": false,
+      "idempotent": false,
+      "vre:effects": "carrying' = carrying == false\n             && product.xpos == xpos\n             && product.ypos == ypos\n  ? product\n  : carrying;\noutput.success = carrying == false\n                 && product.xpos == xpos\n                 && product.ypos == ypos;\noutput.carrying = carrying';"
+    },
+    "drop": {
+      "title": "drop any carried product",
+      "description": "Put down whatever the transporter carries, at its current position.",
+      "output": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          }
+        }
+      },
+      "safe": false,
+      "idempotent": false,
+      "vre:effects": "carrying' = false;\noutput.success = carrying != false;"
+    },
+    "moveLeft": {
+      "title": "move transporter left",
+      "description": "Move one unit left along the x axis. A product the transporter carries moves with it; writing through 'carrying' has no effect while nothing is carried.",
+      "output": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "xpos": {
+            "type": "number"
+          }
+        }
+      },
+      "safe": false,
+      "idempotent": false,
+      "vre:effects": "xpos' = xpos - 1;\ncarrying.xpos' = (xpos - 1);\noutput.success = true;\noutput.xpos = xpos';"
+    },
+    "moveRight": {
+      "title": "move transporter right",
+      "description": "Move one unit right along the x axis. A product the transporter carries moves with it; writing through 'carrying' has no effect while nothing is carried.",
+      "output": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "xpos": {
+            "type": "number"
+          }
+        }
+      },
+      "safe": false,
+      "idempotent": false,
+      "vre:effects": "xpos' = xpos + 1;\ncarrying.xpos' = (xpos + 1);\noutput.success = true;\noutput.xpos = xpos';"
+    },
+    "moveUp": {
+      "title": "move transporter up",
+      "description": "Move one unit up along the y axis. A product the transporter carries moves with it; writing through 'carrying' has no effect while nothing is carried.",
+      "output": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "ypos": {
+            "type": "number"
+          }
+        }
+      },
+      "safe": false,
+      "idempotent": false,
+      "vre:effects": "ypos' = ypos - 1;\ncarrying.ypos' = (ypos - 1);\noutput.success = true;\noutput.ypos = ypos';"
+    },
+    "moveDown": {
+      "title": "move transporter down",
+      "description": "Move one unit down along the y axis. A product the transporter carries moves with it; writing through 'carrying' has no effect while nothing is carried.",
+      "output": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "ypos": {
+            "type": "number"
+          }
+        }
+      },
+      "safe": false,
+      "idempotent": false,
+      "vre:effects": "ypos' = ypos + 1;\ncarrying.ypos' = (ypos + 1);\noutput.success = true;\noutput.ypos = ypos';"
+    }
+  }
+}

@@ -1,0 +1,30 @@
+{
+    "title": "Dimmable Lamp",
+    "description": "A lamp powered by a smart plug. Its brightness can be set only while powered on; setting it while off is a no-op with success false. `poweredOn` is written by the plug (a cross-Thing effect), and a per-instance link points at that plug.",
+    "@context": ["https://www.w3.org/2019/wot/td/v1", "https://www.w3.org/2022/wot/td/v1.1"],
+    "properties": {
+        "poweredOn": {
+            "title": "Powered On",
+            "type": "boolean",
+            "description": "Whether the lamp has power; written by the plug that controls it.",
+            "observable": true,
+            "readOnly": true
+        },
+        "brightness": {
+            "title": "Brightness",
+            "type": "integer",
+            "description": "Brightness level, 0 to 100.",
+            "observable": true,
+            "readOnly": true
+        }
+    },
+    "actions": {
+        "setBrightness": {
+            "title": "Set Brightness",
+            "description": "Set the brightness; only takes effect while the lamp is powered on.",
+            "input": { "type": "object", "properties": { "level": { "type": "integer" } }, "required": ["level"] },
+            "output": { "type": "object", "properties": { "success": { "type": "boolean" }, "brightness": { "type": "integer" } } },
+            "vre:effects": "brightness' = poweredOn ? level : brightness; output.success = poweredOn; output.brightness = brightness';"
+        }
+    }
+}

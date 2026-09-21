@@ -1,0 +1,105 @@
+[
+  {
+    "id": "b1",
+    "environment": "ibm-building3-small",
+    "level": "S",
+    "initialState": {},
+    "request": "Turn on the lamp in room SOR42_G_15.",
+    "goal": [
+      {
+        "thing": "room-sor42-g-15-colorlamp",
+        "property": "power",
+        "op": "=",
+        "value": "on"
+      }
+    ],
+    "optimalPlan": [
+      {
+        "thing": "room-sor42-g-15-colorlamp",
+        "action": "setPower",
+        "input": "on"
+      }
+    ]
+  },
+  {
+    "id": "b2",
+    "environment": "ibm-building3-small",
+    "level": "S",
+    "initialState": {},
+    "request": "Set the brightness of the lamp in room SOR42_G_15 to 123.",
+    "goal": [
+      {
+        "thing": "room-sor42-g-15-colorlamp",
+        "property": "brightness",
+        "op": "=",
+        "value": 123
+      }
+    ],
+    "optimalPlan": [
+      {
+        "thing": "room-sor42-g-15-colorlamp",
+        "action": "setPower",
+        "input": "on"
+      },
+      {
+        "thing": "room-sor42-g-15-colorlamp",
+        "action": "setBrightness",
+        "input": 123
+      }
+    ]
+  },
+  {
+    "id": "b9",
+    "environment": "ibm-building3-small",
+    "level": "S",
+    "initialState": {},
+    "request": "Turn on the light in room 18.",
+    "goal": [
+      {
+        "thing": "room-18-colorlamp",
+        "property": "power",
+        "op": "=",
+        "value": "on"
+      }
+    ],
+    "optimalPlan": [
+      {
+        "thing": "room-18-colorlamp",
+        "action": "setPower",
+        "input": "on"
+      }
+    ]
+  },
+  {
+    "id": "b11",
+    "environment": "ibm-building3-small",
+    "level": "S",
+    "initialState": {},
+    "request": "Heat room SOR42_G_15 to 23 degrees.",
+    "goal": [
+      {
+        "thing": "room-sor42-g-15-heater-sensor",
+        "property": "temperature",
+        "op": "=",
+        "value": 23
+      }
+    ],
+    "optimalPlan": [
+      {
+        "thing": "room-sor42-g-15-heater",
+        "action": "setDesiredTemperature",
+        "input": 23
+      },
+      {
+        "thing": "room-sor42-g-15-heater",
+        "action": "increaseTemperature",
+        "input": {}
+      },
+      {
+        "thing": "room-sor42-g-15-heater",
+        "action": "increaseTemperature",
+        "input": {}
+      }
+    ]
+  }
+]

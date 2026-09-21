@@ -1,0 +1,64 @@
+{
+  "@context": [
+    "https://www.w3.org/2022/wot/td/v1.1",
+    {
+      "brick": "http://buildsys.org/ontologies/Brick#"
+    }
+  ],
+  "@type": [
+    "brick:Luminance_Command",
+    "brick:Label",
+    "brick:TagSet"
+  ],
+  "title": "Lighting load command",
+  "description": "A building-management point that commands a lighting group.",
+  "securityDefinitions": {
+    "nosec_sc": {
+      "scheme": "nosec"
+    }
+  },
+  "security": "nosec_sc",
+  "properties": {
+    "value": {
+      "type": "string",
+      "enum": [
+        "on",
+        "off",
+        "neutral"
+      ],
+      "title": "Lighting load command",
+      "readOnly": true,
+      "writeOnly": false,
+      "observable": true,
+      "@type": "brick:Luminance_Command"
+    }
+  },
+  "actions": {
+    "setValue": {
+      "title": "Set the point's value",
+      "input": {
+        "type": "string",
+        "title": "setting",
+        "enum": [
+          "on",
+          "off",
+          "neutral"
+        ]
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "value": {
+            "type": "string"
+          }
+        }
+      },
+      "safe": false,
+      "idempotent": false,
+      "vre:effects": "value' = setting;\noutput.success = true;\noutput.value = value';"
+    }
+  }
+}

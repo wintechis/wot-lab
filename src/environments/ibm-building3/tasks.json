@@ -1,0 +1,464 @@
+[
+  {
+    "id": "b1",
+    "environment": "ibm-building3",
+    "level": "S",
+    "initialState": {},
+    "request": "Turn on the lamp in room SOR42_G_15.",
+    "goal": [
+      {
+        "thing": "room-sor42-g-15-colorlamp",
+        "property": "power",
+        "op": "=",
+        "value": "on"
+      }
+    ],
+    "optimalPlan": [
+      {
+        "thing": "room-sor42-g-15-colorlamp",
+        "action": "setPower",
+        "input": "on"
+      }
+    ]
+  },
+  {
+    "id": "b2",
+    "environment": "ibm-building3",
+    "level": "S",
+    "initialState": {},
+    "request": "Set the brightness of the lamp in room SOR42_G_15 to 123.",
+    "goal": [
+      {
+        "thing": "room-sor42-g-15-colorlamp",
+        "property": "brightness",
+        "op": "=",
+        "value": 123
+      }
+    ],
+    "optimalPlan": [
+      {
+        "thing": "room-sor42-g-15-colorlamp",
+        "action": "setPower",
+        "input": "on"
+      },
+      {
+        "thing": "room-sor42-g-15-colorlamp",
+        "action": "setBrightness",
+        "input": 123
+      }
+    ]
+  },
+  {
+    "id": "b3",
+    "environment": "ibm-building3",
+    "level": "S",
+    "initialState": {},
+    "request": "Open the door of the Breakout room.",
+    "goal": [
+      {
+        "thing": "room-breakout-door-sensor",
+        "property": "isOpen",
+        "op": "=",
+        "value": true
+      }
+    ],
+    "optimalPlan": [
+      {
+        "thing": "room-breakout-door-actuator",
+        "action": "setOpen",
+        "input": true
+      }
+    ]
+  },
+  {
+    "id": "b4",
+    "environment": "ibm-building3",
+    "level": "S",
+    "initialState": {
+      "room-breakout-door-sensor": {
+        "isOpen": true
+      },
+      "room-breakout-window-sensor": {
+        "isOpen": true
+      }
+    },
+    "request": "Close the door and the window of the Breakout room.",
+    "goal": [
+      {
+        "thing": "room-breakout-door-sensor",
+        "property": "isOpen",
+        "op": "=",
+        "value": false
+      },
+      {
+        "thing": "room-breakout-window-sensor",
+        "property": "isOpen",
+        "op": "=",
+        "value": false
+      }
+    ],
+    "optimalPlan": [
+      {
+        "thing": "room-breakout-door-actuator",
+        "action": "setOpen",
+        "input": false
+      },
+      {
+        "thing": "room-breakout-window-actuator",
+        "action": "setOpen",
+        "input": false
+      }
+    ]
+  },
+  {
+    "id": "b5",
+    "environment": "ibm-building3",
+    "level": "S",
+    "initialState": {},
+    "request": "Heat the Breakout room to 22 degrees.",
+    "goal": [
+      {
+        "thing": "room-breakout-heater-sensor",
+        "property": "temperature",
+        "op": "=",
+        "value": 22
+      }
+    ],
+    "optimalPlan": [
+      {
+        "thing": "room-breakout-heater",
+        "action": "setDesiredTemperature",
+        "input": 22
+      },
+      {
+        "thing": "room-breakout-heater",
+        "action": "increaseTemperature",
+        "input": {}
+      }
+    ]
+  },
+  {
+    "id": "b6",
+    "environment": "ibm-building3",
+    "level": "S",
+    "initialState": {},
+    "request": "Switch on all lamps in rooms SOR42_G_01 to SOR42_G_10.",
+    "goal": [
+      {
+        "thing": "room-sor42-g-01-colorlamp",
+        "property": "power",
+        "op": "=",
+        "value": "on"
+      },
+      {
+        "thing": "room-sor42-g-02-colorlamp",
+        "property": "power",
+        "op": "=",
+        "value": "on"
+      },
+      {
+        "thing": "room-sor42-g-03-colorlamp",
+        "property": "power",
+        "op": "=",
+        "value": "on"
+      },
+      {
+        "thing": "room-sor42-g-04-colorlamp",
+        "property": "power",
+        "op": "=",
+        "value": "on"
+      },
+      {
+        "thing": "room-sor42-g-05-colorlamp",
+        "property": "power",
+        "op": "=",
+        "value": "on"
+      },
+      {
+        "thing": "room-sor42-g-06-colorlamp",
+        "property": "power",
+        "op": "=",
+        "value": "on"
+      },
+      {
+        "thing": "room-sor42-g-07-colorlamp",
+        "property": "power",
+        "op": "=",
+        "value": "on"
+      },
+      {
+        "thing": "room-sor42-g-08-colorlamp",
+        "property": "power",
+        "op": "=",
+        "value": "on"
+      },
+      {
+        "thing": "room-sor42-g-09-colorlamp",
+        "property": "power",
+        "op": "=",
+        "value": "on"
+      },
+      {
+        "thing": "room-sor42-g-10-colorlamp",
+        "property": "power",
+        "op": "=",
+        "value": "on"
+      }
+    ],
+    "optimalPlan": [
+      {
+        "thing": "room-sor42-g-01-colorlamp",
+        "action": "setPower",
+        "input": "on"
+      },
+      {
+        "thing": "room-sor42-g-02-colorlamp",
+        "action": "setPower",
+        "input": "on"
+      },
+      {
+        "thing": "room-sor42-g-03-colorlamp",
+        "action": "setPower",
+        "input": "on"
+      },
+      {
+        "thing": "room-sor42-g-04-colorlamp",
+        "action": "setPower",
+        "input": "on"
+      },
+      {
+        "thing": "room-sor42-g-05-colorlamp",
+        "action": "setPower",
+        "input": "on"
+      },
+      {
+        "thing": "room-sor42-g-06-colorlamp",
+        "action": "setPower",
+        "input": "on"
+      },
+      {
+        "thing": "room-sor42-g-07-colorlamp",
+        "action": "setPower",
+        "input": "on"
+      },
+      {
+        "thing": "room-sor42-g-08-colorlamp",
+        "action": "setPower",
+        "input": "on"
+      },
+      {
+        "thing": "room-sor42-g-09-colorlamp",
+        "action": "setPower",
+        "input": "on"
+      },
+      {
+        "thing": "room-sor42-g-10-colorlamp",
+        "action": "setPower",
+        "input": "on"
+      }
+    ]
+  },
+  {
+    "id": "b7",
+    "environment": "ibm-building3",
+    "level": "S",
+    "initialState": {
+      "room-sor42-g-16-colorlamp": {
+        "power": "on"
+      },
+      "room-sor42-g-17-colorlamp": {
+        "power": "on"
+      },
+      "room-sor42-g-18-colorlamp": {
+        "power": "on"
+      },
+      "room-sor42-g-19-colorlamp": {
+        "power": "on"
+      }
+    },
+    "request": "Switch off the lamps in rooms SOR42_G_16 to SOR42_G_19.",
+    "goal": [
+      {
+        "thing": "room-sor42-g-16-colorlamp",
+        "property": "power",
+        "op": "=",
+        "value": "off"
+      },
+      {
+        "thing": "room-sor42-g-17-colorlamp",
+        "property": "power",
+        "op": "=",
+        "value": "off"
+      },
+      {
+        "thing": "room-sor42-g-18-colorlamp",
+        "property": "power",
+        "op": "=",
+        "value": "off"
+      },
+      {
+        "thing": "room-sor42-g-19-colorlamp",
+        "property": "power",
+        "op": "=",
+        "value": "off"
+      }
+    ],
+    "optimalPlan": [
+      {
+        "thing": "room-sor42-g-16-colorlamp",
+        "action": "setPower",
+        "input": "off"
+      },
+      {
+        "thing": "room-sor42-g-17-colorlamp",
+        "action": "setPower",
+        "input": "off"
+      },
+      {
+        "thing": "room-sor42-g-18-colorlamp",
+        "action": "setPower",
+        "input": "off"
+      },
+      {
+        "thing": "room-sor42-g-19-colorlamp",
+        "action": "setPower",
+        "input": "off"
+      }
+    ]
+  },
+  {
+    "id": "b8",
+    "environment": "ibm-building3",
+    "level": "S",
+    "initialState": {},
+    "request": "Set the lamps in rooms SOR42_G_01, SOR42_G_02 and SOR42_G_03 to red.",
+    "goal": [
+      {
+        "thing": "room-sor42-g-01-colorlamp",
+        "property": "color",
+        "op": "=",
+        "value": "red"
+      },
+      {
+        "thing": "room-sor42-g-02-colorlamp",
+        "property": "color",
+        "op": "=",
+        "value": "red"
+      },
+      {
+        "thing": "room-sor42-g-03-colorlamp",
+        "property": "color",
+        "op": "=",
+        "value": "red"
+      }
+    ],
+    "optimalPlan": [
+      {
+        "thing": "room-sor42-g-01-colorlamp",
+        "action": "setPower",
+        "input": "on"
+      },
+      {
+        "thing": "room-sor42-g-01-colorlamp",
+        "action": "setColor",
+        "input": "red"
+      },
+      {
+        "thing": "room-sor42-g-02-colorlamp",
+        "action": "setPower",
+        "input": "on"
+      },
+      {
+        "thing": "room-sor42-g-02-colorlamp",
+        "action": "setColor",
+        "input": "red"
+      },
+      {
+        "thing": "room-sor42-g-03-colorlamp",
+        "action": "setPower",
+        "input": "on"
+      },
+      {
+        "thing": "room-sor42-g-03-colorlamp",
+        "action": "setColor",
+        "input": "red"
+      }
+    ]
+  },
+  {
+    "id": "b9",
+    "environment": "ibm-building3",
+    "level": "S",
+    "initialState": {},
+    "request": "Turn on the light in room 18.",
+    "goal": [
+      {
+        "thing": "room-18-colorlamp",
+        "property": "power",
+        "op": "=",
+        "value": "on"
+      }
+    ],
+    "optimalPlan": [
+      {
+        "thing": "room-18-colorlamp",
+        "action": "setPower",
+        "input": "on"
+      }
+    ]
+  },
+  {
+    "id": "b10",
+    "environment": "ibm-building3",
+    "level": "S",
+    "initialState": {},
+    "request": "Open the window in the Breakout room.",
+    "goal": [
+      {
+        "thing": "room-breakout-window-sensor",
+        "property": "isOpen",
+        "op": "=",
+        "value": true
+      }
+    ],
+    "optimalPlan": [
+      {
+        "thing": "room-breakout-window-actuator",
+        "action": "setOpen",
+        "input": true
+      }
+    ]
+  },
+  {
+    "id": "b11",
+    "environment": "ibm-building3",
+    "level": "S",
+    "initialState": {},
+    "request": "Heat room SOR42_G_15 to 23 degrees.",
+    "goal": [
+      {
+        "thing": "room-sor42-g-15-heater-sensor",
+        "property": "temperature",
+        "op": "=",
+        "value": 23
+      }
+    ],
+    "optimalPlan": [
+      {
+        "thing": "room-sor42-g-15-heater",
+        "action": "setDesiredTemperature",
+        "input": 23
+      },
+      {
+        "thing": "room-sor42-g-15-heater",
+        "action": "increaseTemperature",
+        "input": {}
+      },
+      {
+        "thing": "room-sor42-g-15-heater",
+        "action": "increaseTemperature",
+        "input": {}
+      }
+    ]
+  }
+]

@@ -1,0 +1,18 @@
+{ "name": "smart-home",
+  "description": "Smart-home energy scenario: a home hub, a thermostat, washer and dryer, and a car charger. Appliances keep the home's live power draw in sync via cross-Thing effects; the home's initial state fixes a non-peak hour.",
+  "things": [
+    { "model": "home", "id": "home", "title": "Smart Home",
+      "state": { "currentMonthUsageKWh": 150.5, "monthlyBudgetKWh": 500, "currentPowerUsageW": 800, "isPeakHour": false } },
+    { "model": "thermostat", "id": "thermostat", "title": "Thermostat",
+      "state": { "targetTemp": 72, "currentTemp": 72, "mode": "auto", "maxTemp": 85, "minTemp": 50 } },
+    { "model": "appliance", "id": "washer", "title": "Washer",
+      "state": { "isRunning": false, "powerWatts": 2000, "kwhPerCycle": 2.0 } },
+    { "model": "appliance", "id": "dryer", "title": "Dryer",
+      "state": { "isRunning": false, "powerWatts": 3000, "kwhPerCycle": 2.5 } },
+    { "model": "car-charger", "id": "car-charger", "title": "Car Charger",
+      "state": { "isCharging": false, "powerWatts": 7000, "kwhPerCycle": 148 } },
+    { "model": "smart-plug", "id": "plug", "title": "Reading Plug",
+      "state": { "poweredOn": false, "device": "lamp" } },
+    { "model": "dimmable-lamp", "id": "lamp", "title": "Reading Lamp",
+      "state": { "poweredOn": false, "brightness": 100 },
+      "links": [{ "href": "/plug", "rel": "controlledBy" }] } ] }

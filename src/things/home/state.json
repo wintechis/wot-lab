@@ -1,0 +1,6 @@
+{
+    "currentMonthUsageKWh": 150.5,
+    "monthlyBudgetKWh": 500,
+    "currentPowerUsageW": 800,
+    "isPeakHour": false
+}

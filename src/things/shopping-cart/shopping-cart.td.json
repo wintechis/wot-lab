@@ -1,0 +1,93 @@
+{
+    "title": "Shopping Cart",
+    "description": "A shopping cart with a product catalog. Add and remove items (priced from the catalog), then check out to charge a bank account. Checkout is a cross-Thing effect.",
+    "@context": [
+        "https://www.w3.org/2019/wot/td/v1",
+        "https://www.w3.org/2022/wot/td/v1.1"
+    ],
+    "properties": {
+        "items": {
+            "title": "Items",
+            "type": "array",
+            "description": "Item ids currently in the cart.",
+            "items": { "type": "string" },
+            "observable": true,
+            "readOnly": true
+        },
+        "totalAmount": {
+            "title": "Total Amount",
+            "type": "number",
+            "description": "Sum of the catalog prices of the items in the cart.",
+            "observable": true,
+            "readOnly": true
+        },
+        "availableProducts": {
+            "title": "Available Products",
+            "type": "array",
+            "description": "The catalog: each product has an identifier, name and price.",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "identifier": { "type": "string" },
+                    "name": { "type": "string" },
+                    "price": { "type": "number" }
+                }
+            },
+            "observable": true,
+            "readOnly": true
+        }
+    },
+    "actions": {
+        "addItem": {
+            "title": "Add Item",
+            "description": "Add the catalog item with the given id to the cart.",
+            "input": {
+                "type": "object",
+                "properties": { "itemId": { "type": "string" } },
+                "required": ["itemId"]
+            },
+            "output": {
+                "type": "object",
+                "properties": {
+                    "totalAmount": { "type": "number" },
+                    "itemsCount": { "type": "number" }
+                }
+            }
+        },
+        "removeItem": {
+            "title": "Remove Item",
+            "description": "Remove one instance of the given item id from the cart.",
+            "input": {
+                "type": "object",
+                "properties": { "itemId": { "type": "string" } },
+                "required": ["itemId"]
+            },
+            "output": {
+                "type": "object",
+                "properties": {
+                    "totalAmount": { "type": "number" },
+                    "itemsCount": { "type": "number" }
+                }
+            }
+        },
+        "checkout": {
+            "title": "Checkout",
+            "description": "Empty the cart and charge its total to the given bank account. A checkout of an empty cart (total 0) changes nothing and reports success false.",
+            "input": {
+                "type": "object",
+                "properties": { "bankAccount": { "type": "string", "description": "Bank account id to charge." } },
+                "required": ["bankAccount"]
+            },
+            "output": {
+                "type": "object",
+                "properties": {
+                    "success": { "type": "boolean" },
+                    "userId": { "type": "string" },
+                    "charged": { "type": "string" },
+                    "amount": { "type": "number" }
+                }
+            },
+            "vre:effects": "items' = totalAmount > 0 ? [] : items; totalAmount' = totalAmount > 0 ? 0 : totalAmount; bankAccount.balance' = totalAmount > 0 ? bankAccount.balance - totalAmount : bankAccount.balance; output.success = totalAmount > 0; output.userId = this.id; output.charged = bankAccount; output.amount = totalAmount;"
+        }
+    }
+}

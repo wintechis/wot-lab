@@ -1,0 +1,9 @@
+{
+    "title": "Warehouse System",
+    "description": "Aggregate view over the warehouses: total capacity and total current stock. totalCurrentStock is maintained by warehouse orders (a cross-Thing effect); transfers move stock between warehouses and leave the total unchanged.",
+    "@context": ["https://www.w3.org/2019/wot/td/v1", "https://www.w3.org/2022/wot/td/v1.1"],
+    "properties": {
+        "totalCapacity": { "title": "Total Capacity", "type": "number", "observable": true, "readOnly": true },
+        "totalCurrentStock": { "title": "Total Current Stock", "type": "number", "observable": true, "readOnly": true }
+    }
+}

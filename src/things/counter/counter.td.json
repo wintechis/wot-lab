@@ -28,17 +28,17 @@
         "increment": {
             "title": "Increment",
             "description": "Increase the count by one and emit a change event.",
-            "vre:effects": "count' = count + 1; emitEvent(\"change\", count);"
+            "vre:effects": "count' = count + 1; emitEvent(\"change\", count');"
         },
         "decrement": {
             "title": "Decrement",
             "description": "Decrease the count by one and emit a change event.",
-            "vre:effects": "count' = count - 1; emitEvent(\"change\", count);"
+            "vre:effects": "count' = count - 1; emitEvent(\"change\", count');"
         },
         "reset": {
             "title": "Reset",
             "description": "Set the count back to zero and emit a change event.",
-            "vre:effects": "count' = 0; emitEvent(\"change\", count);"
+            "vre:effects": "count' = 0; emitEvent(\"change\", count');"
         }
     },
     "events": {

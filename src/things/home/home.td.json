@@ -1,0 +1,30 @@
+{
+    "title": "Smart Home",
+    "description": "The home energy hub. Tracks monthly usage and budget, live power draw (kept up to date by the appliances as they start and stop — a cross-Thing effect), and whether it is currently a peak hour (set by the environment).",
+    "@context": [
+        "https://www.w3.org/2019/wot/td/v1",
+        "https://www.w3.org/2022/wot/td/v1.1"
+    ],
+    "properties": {
+        "currentMonthUsageKWh": { "title": "Month Usage (kWh)", "type": "number", "observable": true, "readOnly": true },
+        "monthlyBudgetKWh": { "title": "Monthly Budget (kWh)", "type": "number", "observable": true, "readOnly": true },
+        "currentPowerUsageW": { "title": "Current Power (W)", "type": "number", "observable": true, "readOnly": true },
+        "isPeakHour": { "title": "Peak Hour", "type": "boolean", "description": "True during peak hours; set by the environment as an initial condition.", "observable": true, "readOnly": true }
+    },
+    "actions": {
+        "setBudget": {
+            "title": "Set Monthly Budget",
+            "description": "Set the monthly energy budget in kWh.",
+            "input": {
+                "type": "object",
+                "properties": { "kWh": { "type": "number", "minimum": 0 } },
+                "required": ["kWh"]
+            },
+            "output": {
+                "type": "object",
+                "properties": { "success": { "type": "boolean" }, "monthlyBudgetKWh": { "type": "number" } }
+            },
+            "vre:effects": "monthlyBudgetKWh' = kWh; output.success = true; output.monthlyBudgetKWh = monthlyBudgetKWh';"
+        }
+    }
+}

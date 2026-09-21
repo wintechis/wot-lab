@@ -1,0 +1,4597 @@
+[
+  {
+    "id": "s1",
+    "environment": "mosaik",
+    "level": "L2",
+    "initialState": {},
+    "request": "Move transporter t1 to position (1, 1).",
+    "goal": [
+      {
+        "thing": "t1",
+        "property": "xpos",
+        "op": "=",
+        "value": 1.0
+      },
+      {
+        "thing": "t1",
+        "property": "ypos",
+        "op": "=",
+        "value": 1.0
+      }
+    ],
+    "optimalPlan": [
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      }
+    ]
+  },
+  {
+    "id": "s2",
+    "environment": "mosaik",
+    "level": "L5",
+    "initialState": {},
+    "request": "Move transporters t1 and t2 to position (1, 1).",
+    "note": "Infeasible: mosaik.trig describes one transporter, so there is no 't2' to move. The goal is t1 left where it started.",
+    "goal": [
+      {
+        "thing": "t1",
+        "property": "xpos",
+        "op": "=",
+        "value": 0.0
+      },
+      {
+        "thing": "t1",
+        "property": "ypos",
+        "op": "=",
+        "value": 0.0
+      }
+    ],
+    "optimalPlan": []
+  },
+  {
+    "id": "s3",
+    "environment": "mosaik",
+    "level": "L3",
+    "initialState": {},
+    "request": "Bring the ingot to the solder2 station and put it down there.",
+    "goal": [
+      {
+        "thing": "ingot",
+        "property": "xpos",
+        "op": "=",
+        "value": 9.0
+      },
+      {
+        "thing": "ingot",
+        "property": "ypos",
+        "op": "=",
+        "value": 12.0
+      },
+      {
+        "thing": "t1",
+        "property": "carrying",
+        "op": "=",
+        "value": false
+      }
+    ],
+    "optimalPlan": [
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "pickup",
+        "input": "ingot"
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "drop",
+        "input": {}
+      }
+    ]
+  },
+  {
+    "id": "s4",
+    "environment": "mosaik",
+    "level": "L3",
+    "initialState": {},
+    "request": "Bring the cpu to the solder1 station and the glass to the casting station, and put each down there.",
+    "goal": [
+      {
+        "thing": "cpu",
+        "property": "xpos",
+        "op": "=",
+        "value": 9.0
+      },
+      {
+        "thing": "cpu",
+        "property": "ypos",
+        "op": "=",
+        "value": 7.0
+      },
+      {
+        "thing": "glass",
+        "property": "xpos",
+        "op": "=",
+        "value": 25.0
+      },
+      {
+        "thing": "glass",
+        "property": "ypos",
+        "op": "=",
+        "value": 0.0
+      },
+      {
+        "thing": "t1",
+        "property": "carrying",
+        "op": "=",
+        "value": false
+      }
+    ],
+    "optimalPlan": [
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "pickup",
+        "input": "cpu"
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "drop",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "pickup",
+        "input": "glass"
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "drop",
+        "input": {}
+      }
+    ]
+  },
+  {
+    "id": "s5",
+    "environment": "mosaik",
+    "level": "L3",
+    "initialState": {},
+    "request": "Produce the main module at the solder1 station.",
+    "goal": [
+      {
+        "thing": "mainmodule",
+        "property": "state",
+        "op": "=",
+        "value": "initialState"
+      }
+    ],
+    "optimalPlan": [
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "pickup",
+        "input": "cpu"
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "drop",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "pickup",
+        "input": "mainboard"
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "drop",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "pickup",
+        "input": "flash"
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "drop",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "pickup",
+        "input": "ram"
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "drop",
+        "input": {}
+      },
+      {
+        "thing": "solder1",
+        "action": "produceMainModule",
+        "input": "produceIt"
+      }
+    ]
+  },
+  {
+    "id": "s6",
+    "environment": "mosaik",
+    "level": "L3",
+    "initialState": {},
+    "request": "Produce the smartphone.",
+    "goal": [
+      {
+        "thing": "smartphone",
+        "property": "state",
+        "op": "=",
+        "value": "initialState"
+      }
+    ],
+    "optimalPlan": [
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "pickup",
+        "input": "batterycell"
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "drop",
+        "input": {}
+      },
+      {
+        "thing": "combine",
+        "action": "produceBattery",
+        "input": "produceIt"
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "pickup",
+        "input": "ingot"
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "drop",
+        "input": {}
+      },
+      {
+        "thing": "casting",
+        "action": "produceCase",
+        "input": "produceIt"
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "pickup",
+        "input": "cpu"
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "drop",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "pickup",
+        "input": "mainboard"
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "drop",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "pickup",
+        "input": "flash"
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "drop",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "pickup",
+        "input": "ram"
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "drop",
+        "input": {}
+      },
+      {
+        "thing": "solder1",
+        "action": "produceMainModule",
+        "input": "produceIt"
+      },
+      {
+        "thing": "t1",
+        "action": "pickup",
+        "input": "mainmodule"
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "drop",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "pickup",
+        "input": "port"
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "drop",
+        "input": {}
+      },
+      {
+        "thing": "fixing",
+        "action": "produceMainModuleWithPorts",
+        "input": "produceIt"
+      },
+      {
+        "thing": "t1",
+        "action": "pickup",
+        "input": "mainmodulewithports"
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "drop",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "pickup",
+        "input": "case"
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "drop",
+        "input": {}
+      },
+      {
+        "thing": "bolt1",
+        "action": "produceCaseWithMainModule",
+        "input": "produceIt"
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "pickup",
+        "input": "mainboard2"
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "drop",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "pickup",
+        "input": "comm"
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "drop",
+        "input": {}
+      },
+      {
+        "thing": "solder2",
+        "action": "produceCommunicationModule",
+        "input": "produceIt"
+      },
+      {
+        "thing": "t1",
+        "action": "pickup",
+        "input": "communicationmodule"
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "drop",
+        "input": {}
+      },
+      {
+        "thing": "bolt1",
+        "action": "produceCaseWithCommunicationModule",
+        "input": "produceIt"
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "pickup",
+        "input": "mainboard3"
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "drop",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "pickup",
+        "input": "sensor"
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "drop",
+        "input": {}
+      },
+      {
+        "thing": "solder2",
+        "action": "produceSensorModule",
+        "input": "produceIt"
+      },
+      {
+        "thing": "t1",
+        "action": "pickup",
+        "input": "sensormodule"
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "drop",
+        "input": {}
+      },
+      {
+        "thing": "bolt1",
+        "action": "produceCaseWithSensorModule",
+        "input": "produceIt"
+      },
+      {
+        "thing": "t1",
+        "action": "pickup",
+        "input": "casewithsensormodule"
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "drop",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "pickup",
+        "input": "battery"
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "drop",
+        "input": {}
+      },
+      {
+        "thing": "glue1",
+        "action": "produceCaseWithBattery",
+        "input": "produceIt"
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "pickup",
+        "input": "glass"
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "drop",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveRight",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveDown",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "pickup",
+        "input": "lcd"
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveLeft",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "moveUp",
+        "input": {}
+      },
+      {
+        "thing": "t1",
+        "action": "drop",
+        "input": {}
+      },
+      {
+        "thing": "glue1",
+        "action": "produceDisplayUnit",
+        "input": "produceIt"
+      },
+      {
+        "thing": "glue1",
+        "action": "produceSmartphone",
+        "input": "produceIt"
+      }
+    ]
+  }
+]

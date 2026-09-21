@@ -1,0 +1,166 @@
+{
+    "items": [],
+    "totalAmount": 0,
+    "availableProducts": [
+        {
+            "identifier": "small-1",
+            "name": "Small Item 1",
+            "price": 1
+        },
+        {
+            "identifier": "small-2",
+            "name": "Small Item 2",
+            "price": 1
+        },
+        {
+            "identifier": "small-3",
+            "name": "Small Item 3",
+            "price": 1
+        },
+        {
+            "identifier": "small-4",
+            "name": "Small Item 4",
+            "price": 1
+        },
+        {
+            "identifier": "small-5",
+            "name": "Small Item 5",
+            "price": 1
+        },
+        {
+            "identifier": "small-6",
+            "name": "Small Item 6",
+            "price": 1
+        },
+        {
+            "identifier": "small-7",
+            "name": "Small Item 7",
+            "price": 1
+        },
+        {
+            "identifier": "small-8",
+            "name": "Small Item 8",
+            "price": 1
+        },
+        {
+            "identifier": "small-9",
+            "name": "Small Item 9",
+            "price": 1
+        },
+        {
+            "identifier": "small-10",
+            "name": "Small Item 10",
+            "price": 1
+        },
+        {
+            "identifier": "small-11",
+            "name": "Small Item 11",
+            "price": 1
+        },
+        {
+            "identifier": "small-12",
+            "name": "Small Item 12",
+            "price": 1
+        },
+        {
+            "identifier": "small-13",
+            "name": "Small Item 13",
+            "price": 1
+        },
+        {
+            "identifier": "small-14",
+            "name": "Small Item 14",
+            "price": 1
+        },
+        {
+            "identifier": "small-15",
+            "name": "Small Item 15",
+            "price": 1
+        },
+        {
+            "identifier": "small-16",
+            "name": "Small Item 16",
+            "price": 1
+        },
+        {
+            "identifier": "small-17",
+            "name": "Small Item 17",
+            "price": 1
+        },
+        {
+            "identifier": "small-18",
+            "name": "Small Item 18",
+            "price": 1
+        },
+        {
+            "identifier": "small-19",
+            "name": "Small Item 19",
+            "price": 1
+        },
+        {
+            "identifier": "small-20",
+            "name": "Small Item 20",
+            "price": 1
+        },
+        {
+            "identifier": "small-21",
+            "name": "Small Item 21",
+            "price": 1
+        },
+        {
+            "identifier": "small-22",
+            "name": "Small Item 22",
+            "price": 1
+        },
+        {
+            "identifier": "small-23",
+            "name": "Small Item 23",
+            "price": 1
+        },
+        {
+            "identifier": "small-24",
+            "name": "Small Item 24",
+            "price": 1
+        },
+        {
+            "identifier": "small-25",
+            "name": "Small Item 25",
+            "price": 1
+        },
+        {
+            "identifier": "small-26",
+            "name": "Small Item 26",
+            "price": 1
+        },
+        {
+            "identifier": "small-27",
+            "name": "Small Item 27",
+            "price": 1
+        },
+        {
+            "identifier": "small-28",
+            "name": "Small Item 28",
+            "price": 1
+        },
+        {
+            "identifier": "small-29",
+            "name": "Small Item 29",
+            "price": 1
+        },
+        {
+            "identifier": "small-30",
+            "name": "Small Item 30",
+            "price": 1
+        },
+        {
+            "identifier": "grinder",
+            "name": "Espresso Grinder",
+            "price": 120
+        },
+        {
+            "identifier": "beans",
+            "name": "Coffee Beans",
+            "price": 15
+        }
+    ]
+}

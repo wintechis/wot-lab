@@ -1,0 +1,70 @@
+{
+  "@context": [
+    "https://www.w3.org/2022/wot/td/v1.1",
+    {
+      "arena": "https://solid.ti.rw.fau.de/public/ns/arena#"
+    }
+  ],
+  "@type": "arena:Shopfloor",
+  "title": "Shopfloor",
+  "description": "The aggregate Thing of the environment. It holds the extent of the floor and the recipe book, so that no agent has to assemble the production plan from the individual stations. It has no Actions.",
+  "securityDefinitions": {
+    "nosec_sc": {
+      "scheme": "nosec"
+    }
+  },
+  "security": "nosec_sc",
+  "properties": {
+    "sizeX": {
+      "type": "integer",
+      "title": "Extent along the x axis",
+      "readOnly": true,
+      "writeOnly": false,
+      "observable": true
+    },
+    "sizeY": {
+      "type": "integer",
+      "title": "Extent along the y axis",
+      "readOnly": true,
+      "writeOnly": false,
+      "observable": true
+    },
+    "services": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "title": "The services the stations of this shopfloor realise",
+      "readOnly": true,
+      "writeOnly": false,
+      "observable": true
+    },
+    "recipes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "inputs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "output": {
+            "type": "string"
+          },
+          "service": {
+            "type": "string"
+          }
+        }
+      },
+      "title": "The recipe book: which inputs a service turns into which output",
+      "readOnly": true,
+      "writeOnly": false,
+      "observable": true
+    }
+  }
+}

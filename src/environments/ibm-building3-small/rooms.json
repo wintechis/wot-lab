@@ -1,0 +1,28 @@
+{
+  "Room_18": {
+    "label": "18",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-18-colorlamp",
+      "room-18-door-actuator",
+      "room-18-door-sensor",
+      "room-18-heater",
+      "room-18-heater-sensor",
+      "room-18-window-actuator",
+      "room-18-window-sensor"
+    ]
+  },
+  "Room_SOR42_G_15": {
+    "label": "SOR42_G_15",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor42-g-15-colorlamp",
+      "room-sor42-g-15-door-actuator",
+      "room-sor42-g-15-door-sensor",
+      "room-sor42-g-15-heater",
+      "room-sor42-g-15-heater-sensor",
+      "room-sor42-g-15-window-actuator",
+      "room-sor42-g-15-window-sensor"
+    ]
+  }
+}

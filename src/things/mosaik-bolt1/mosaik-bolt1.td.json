@@ -1,0 +1,113 @@
+{
+  "@context": [
+    "https://www.w3.org/2022/wot/td/v1.1",
+    {
+      "arena": "https://solid.ti.rw.fau.de/public/ns/arena#"
+    }
+  ],
+  "@type": [
+    "arena:Station",
+    "arena:Workstation"
+  ],
+  "title": "bolt1",
+  "description": "A station at a fixed position on the shopfloor that realises one service. Each of its Actions runs one recipe: it produces the recipe's output product at the station's own position, but only while every input product of that recipe already lies at the station. The Actions themselves differ per station and are given in the instance Thing Descriptions.",
+  "securityDefinitions": {
+    "nosec_sc": {
+      "scheme": "nosec"
+    }
+  },
+  "security": "nosec_sc",
+  "properties": {
+    "xpos": {
+      "type": "number",
+      "title": "Position on the x axis",
+      "readOnly": true,
+      "writeOnly": false,
+      "observable": true,
+      "@type": "arena:XPosition"
+    },
+    "ypos": {
+      "type": "number",
+      "title": "Position on the y axis",
+      "readOnly": true,
+      "writeOnly": false,
+      "observable": true,
+      "@type": "arena:YPosition"
+    },
+    "service": {
+      "type": "string",
+      "title": "The service this station realises",
+      "readOnly": true,
+      "writeOnly": false,
+      "observable": true
+    }
+  },
+  "actions": {
+    "produceCaseWithCommunicationModule": {
+      "title": "produce caseWithCommunicationModule",
+      "description": "Run the caseWithCommunicationModule recipe: consume caseWithMainModule, communicationModule and place caseWithCommunicationModule at this station. Has no effect unless every input already lies at the station.",
+      "input": {
+        "type": "string",
+        "enum": [
+          "produceIt"
+        ],
+        "title": "trigger"
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          }
+        }
+      },
+      "safe": false,
+      "idempotent": false,
+      "vre:effects": "const caseWithMainModule = <casewithmainmodule>;\nconst communicationModule = <communicationmodule>;\nconst caseWithCommunicationModule = <casewithcommunicationmodule>;\ncaseWithCommunicationModule.xpos' = caseWithMainModule.xpos == xpos && caseWithMainModule.ypos == ypos\n  && communicationModule.xpos == xpos && communicationModule.ypos == ypos ? xpos : caseWithCommunicationModule.xpos;\ncaseWithCommunicationModule.ypos' = caseWithMainModule.xpos == xpos && caseWithMainModule.ypos == ypos\n  && communicationModule.xpos == xpos && communicationModule.ypos == ypos ? ypos : caseWithCommunicationModule.ypos;\ncaseWithCommunicationModule.state' = caseWithMainModule.xpos == xpos && caseWithMainModule.ypos == ypos\n  && communicationModule.xpos == xpos && communicationModule.ypos == ypos ? \"initialState\" : caseWithCommunicationModule.state;\noutput.success = caseWithMainModule.xpos == xpos && caseWithMainModule.ypos == ypos\n  && communicationModule.xpos == xpos && communicationModule.ypos == ypos;"
+    },
+    "produceCaseWithMainModule": {
+      "title": "produce caseWithMainModule",
+      "description": "Run the caseWithMainModule recipe: consume case, mainModuleWithPorts and place caseWithMainModule at this station. Has no effect unless every input already lies at the station.",
+      "input": {
+        "type": "string",
+        "enum": [
+          "produceIt"
+        ],
+        "title": "trigger"
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          }
+        }
+      },
+      "safe": false,
+      "idempotent": false,
+      "vre:effects": "const case = <case>;\nconst mainModuleWithPorts = <mainmodulewithports>;\nconst caseWithMainModule = <casewithmainmodule>;\ncaseWithMainModule.xpos' = case.xpos == xpos && case.ypos == ypos\n  && mainModuleWithPorts.xpos == xpos && mainModuleWithPorts.ypos == ypos ? xpos : caseWithMainModule.xpos;\ncaseWithMainModule.ypos' = case.xpos == xpos && case.ypos == ypos\n  && mainModuleWithPorts.xpos == xpos && mainModuleWithPorts.ypos == ypos ? ypos : caseWithMainModule.ypos;\ncaseWithMainModule.state' = case.xpos == xpos && case.ypos == ypos\n  && mainModuleWithPorts.xpos == xpos && mainModuleWithPorts.ypos == ypos ? \"initialState\" : caseWithMainModule.state;\noutput.success = case.xpos == xpos && case.ypos == ypos\n  && mainModuleWithPorts.xpos == xpos && mainModuleWithPorts.ypos == ypos;"
+    },
+    "produceCaseWithSensorModule": {
+      "title": "produce caseWithSensorModule",
+      "description": "Run the caseWithSensorModule recipe: consume caseWithCommunicationModule, sensorModule and place caseWithSensorModule at this station. Has no effect unless every input already lies at the station.",
+      "input": {
+        "type": "string",
+        "enum": [
+          "produceIt"
+        ],
+        "title": "trigger"
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          }
+        }
+      },
+      "safe": false,
+      "idempotent": false,
+      "vre:effects": "const caseWithCommunicationModule = <casewithcommunicationmodule>;\nconst sensorModule = <sensormodule>;\nconst caseWithSensorModule = <casewithsensormodule>;\ncaseWithSensorModule.xpos' = caseWithCommunicationModule.xpos == xpos && caseWithCommunicationModule.ypos == ypos\n  && sensorModule.xpos == xpos && sensorModule.ypos == ypos ? xpos : caseWithSensorModule.xpos;\ncaseWithSensorModule.ypos' = caseWithCommunicationModule.xpos == xpos && caseWithCommunicationModule.ypos == ypos\n  && sensorModule.xpos == xpos && sensorModule.ypos == ypos ? ypos : caseWithSensorModule.ypos;\ncaseWithSensorModule.state' = caseWithCommunicationModule.xpos == xpos && caseWithCommunicationModule.ypos == ypos\n  && sensorModule.xpos == xpos && sensorModule.ypos == ypos ? \"initialState\" : caseWithSensorModule.state;\noutput.success = caseWithCommunicationModule.xpos == xpos && caseWithCommunicationModule.ypos == ypos\n  && sensorModule.xpos == xpos && sensorModule.ypos == ypos;"
+    }
+  }
+}

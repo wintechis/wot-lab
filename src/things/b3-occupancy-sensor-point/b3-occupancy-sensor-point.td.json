@@ -1,0 +1,36 @@
+{
+  "@context": [
+    "https://www.w3.org/2022/wot/td/v1.1",
+    {
+      "brick": "http://buildsys.org/ontologies/Brick#"
+    }
+  ],
+  "@type": [
+    "brick:Occupancy_Sensor",
+    "brick:Label",
+    "brick:TagSet"
+  ],
+  "title": "Occupancy trigger",
+  "description": "A building-management point that reports whether a space is occupied.",
+  "securityDefinitions": {
+    "nosec_sc": {
+      "scheme": "nosec"
+    }
+  },
+  "security": "nosec_sc",
+  "properties": {
+    "value": {
+      "type": "string",
+      "enum": [
+        "on",
+        "off",
+        "neutral"
+      ],
+      "title": "Occupancy trigger",
+      "readOnly": true,
+      "writeOnly": false,
+      "observable": true,
+      "@type": "brick:Occupancy_Sensor"
+    }
+  }
+}
