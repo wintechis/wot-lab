@@ -282,11 +282,6 @@ routes. `_lab` is a reserved path segment, so it can never shadow a Thing.
 `/_lab/things` is the collection of running Things: `GET` lists them, `POST` adds
 more from a Thing Model.
 
-<<<<<<< HEAD
-=======
-<<<<<<< Updated upstream
-=======
->>>>>>> 1eda42e (tidy up)
 ## Environments
 
 An **environment** is a named bundle of Thing Models with **fixed instance ids**,
@@ -332,19 +327,12 @@ cross-Thing `vre:effects` (and `logic.js` only where VRE can't reach):
 | `mosaik` | 37 | 6 | A shopfloor: 25 products, ten workstations, a transporter and the recipe book. |
 
 The last three are converted from the tee-wip paper repository by
-<<<<<<< HEAD
-`tools/tee2wotlab.py`. Each environment's benchmark tasks live in
-=======
-`tools/tee2wotlab.py`; [`NOTICE.md`](NOTICE.md) records where their data comes from. Each environment's benchmark tasks live in
->>>>>>> 1eda42e (tidy up)
+`tools/tee2wotlab.py`; [`NOTICE.md`](NOTICE.md) records where their data comes from.
+Each environment's benchmark tasks live in
 `src/environments/<name>/tasks.json`; see [`tools/README.md`](tools/README.md).
 
 All `/_lab` writes are loopback-only unless `WOT_LAB_ALLOW_REMOTE_WRITE=1`.
 
-<<<<<<< HEAD
-=======
->>>>>>> Stashed changes
->>>>>>> 1eda42e (tidy up)
 A new Thing Model is sent either as a `spec` (the shape the dashboard form
 produces) or as a `draft` (the two files verbatim). Both go through the same
 validation: names must be slugs, every property and nested member needs a type,
