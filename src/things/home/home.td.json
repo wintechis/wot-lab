@@ -1,6 +1,6 @@
 {
     "title": "Smart Home",
-    "description": "The home energy hub. Tracks monthly usage and budget, live power draw (kept up to date by the appliances as they start and stop — a cross-Thing effect), and whether it is currently a peak hour (derived from the clock).",
+    "description": "The home energy hub. Tracks monthly usage and budget, live power draw (kept up to date by the appliances as they start and stop — a cross-Thing effect), and whether it is currently a peak hour (set by the environment).",
     "@context": [
         "https://www.w3.org/2019/wot/td/v1",
         "https://www.w3.org/2022/wot/td/v1.1"
@@ -9,7 +9,7 @@
         "currentMonthUsageKWh": { "title": "Month Usage (kWh)", "type": "number", "observable": true, "readOnly": true },
         "monthlyBudgetKWh": { "title": "Monthly Budget (kWh)", "type": "number", "observable": true, "readOnly": true },
         "currentPowerUsageW": { "title": "Current Power (W)", "type": "number", "observable": true, "readOnly": true },
-        "isPeakHour": { "title": "Peak Hour", "type": "boolean", "description": "True during peak hours (17:00-21:00 UTC), from the clock.", "observable": true, "readOnly": true }
+        "isPeakHour": { "title": "Peak Hour", "type": "boolean", "description": "True during peak hours; set by the environment as an initial condition.", "observable": true, "readOnly": true }
     },
     "actions": {
         "setBudget": {

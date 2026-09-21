@@ -4,6 +4,7 @@ type TokenKind =
   | 'URI'
   | 'NUMBER'
   | 'BOOL'
+  | 'NULL'
   | 'STRING'
   | 'PRIME'
   | 'ASSIGN'
@@ -41,6 +42,9 @@ interface Token {
 export type VREExpr =
   | { kind: 'number'; value: number }
   | { kind: 'bool'; value: boolean }
+  // `null` is the unset value: a Property that has no value yet (a setpoint
+  // nobody has chosen) rather than a wrong one. Comparable with == / != only.
+  | { kind: 'null' }
   | { kind: 'string'; value: string }
   | { kind: 'emptyArray' }
   // `post` marks a primed reference (`count'`) in an expression: it denotes the
@@ -146,6 +150,8 @@ function lex(input: string): Token[] {
         tokens.push({ kind: 'CONST', value: ident, pos });
       } else if (ident === 'true' || ident === 'false') {
         tokens.push({ kind: 'BOOL', value: ident, pos });
+      } else if (ident === 'null') {
+        tokens.push({ kind: 'NULL', value: ident, pos });
       } else {
         tokens.push({ kind: 'IDENT', value: ident, pos });
       }
@@ -450,6 +456,10 @@ class Parser {
     if (t.kind === 'BOOL') {
       this.consume();
       return { kind: 'bool', value: t.value === 'true' };
+    }
+    if (t.kind === 'NULL') {
+      this.consume();
+      return { kind: 'null' };
     }
     if (t.kind === 'STRING') {
       this.consume();

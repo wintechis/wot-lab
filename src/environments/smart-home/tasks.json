@@ -1,0 +1,665 @@
+[
+  {
+    "id": "sh-0",
+    "environment": "smart-home",
+    "level": "L0",
+    "initialState": {},
+    "request": "Make sure the dryer is not running.",
+    "goal": [
+      {
+        "thing": "dryer",
+        "property": "isRunning",
+        "op": "=",
+        "value": false
+      },
+      {
+        "thing": "washer",
+        "property": "isRunning",
+        "op": "=",
+        "value": false
+      },
+      {
+        "thing": "thermostat",
+        "property": "targetTemp",
+        "op": "=",
+        "value": 72
+      }
+    ],
+    "optimalPlan": []
+  },
+  {
+    "id": "sh-1",
+    "environment": "smart-home",
+    "level": "L1",
+    "initialState": {},
+    "request": "Set the thermostat to 68 degrees.",
+    "goal": [
+      {
+        "thing": "thermostat",
+        "property": "targetTemp",
+        "op": "=",
+        "value": 68
+      }
+    ],
+    "optimalPlan": [
+      {
+        "thing": "thermostat",
+        "action": "setTemperature",
+        "input": {
+          "temp": 68
+        }
+      }
+    ]
+  },
+  {
+    "id": "sh-2",
+    "environment": "smart-home",
+    "level": "L2",
+    "initialState": {},
+    "request": "Set the thermostat to 68 degrees in heat mode.",
+    "goal": [
+      {
+        "thing": "thermostat",
+        "property": "targetTemp",
+        "op": "=",
+        "value": 68
+      },
+      {
+        "thing": "thermostat",
+        "property": "mode",
+        "op": "=",
+        "value": "heat"
+      },
+      {
+        "thing": "dryer",
+        "property": "isRunning",
+        "op": "=",
+        "value": false
+      }
+    ],
+    "optimalPlan": [
+      {
+        "thing": "thermostat",
+        "action": "setTemperature",
+        "input": {
+          "temp": 68
+        }
+      },
+      {
+        "thing": "thermostat",
+        "action": "setMode",
+        "input": {
+          "mode": "heat"
+        }
+      }
+    ]
+  },
+  {
+    "id": "sh-3",
+    "environment": "smart-home",
+    "level": "L3",
+    "initialState": {},
+    "request": "Raise the monthly energy budget to 600 kWh and start charging the car.",
+    "goal": [
+      {
+        "thing": "home",
+        "property": "monthlyBudgetKWh",
+        "op": "=",
+        "value": 600
+      },
+      {
+        "thing": "car-charger",
+        "property": "isCharging",
+        "op": "=",
+        "value": true
+      },
+      {
+        "thing": "home",
+        "property": "currentPowerUsageW",
+        "op": "=",
+        "value": 7800
+      }
+    ],
+    "optimalPlan": [
+      {
+        "thing": "home",
+        "action": "setBudget",
+        "input": {
+          "kWh": 600
+        }
+      },
+      {
+        "thing": "car-charger",
+        "action": "startCharging",
+        "input": {
+          "mode": "standard"
+        }
+      }
+    ]
+  },
+  {
+    "id": "sh-4",
+    "environment": "smart-home",
+    "level": "L3",
+    "initialState": {},
+    "request": "Run the washer, but keep total power draw at or below 4 kW.",
+    "goal": [
+      {
+        "thing": "washer",
+        "property": "isRunning",
+        "op": "=",
+        "value": true
+      },
+      {
+        "thing": "home",
+        "property": "currentPowerUsageW",
+        "op": "<=",
+        "value": 4000
+      },
+      {
+        "thing": "dryer",
+        "property": "isRunning",
+        "op": "=",
+        "value": false
+      },
+      {
+        "thing": "car-charger",
+        "property": "isCharging",
+        "op": "=",
+        "value": false
+      }
+    ],
+    "optimalPlan": [
+      {
+        "thing": "washer",
+        "action": "startAppliance",
+        "input": {
+          "cycle": "normal"
+        }
+      }
+    ]
+  },
+  {
+    "id": "sh-5",
+    "environment": "smart-home",
+    "level": "L4",
+    "initialState": {
+      "washer": {
+        "isRunning": true
+      },
+      "home": {
+        "currentPowerUsageW": 2800
+      }
+    },
+    "request": "Get the dryer running without going over 4 kW total.",
+    "goal": [
+      {
+        "thing": "dryer",
+        "property": "isRunning",
+        "op": "=",
+        "value": true
+      },
+      {
+        "thing": "home",
+        "property": "currentPowerUsageW",
+        "op": "<=",
+        "value": 4000
+      }
+    ],
+    "optimalPlan": [
+      {
+        "thing": "washer",
+        "action": "stopAppliance",
+        "input": {}
+      },
+      {
+        "thing": "dryer",
+        "action": "startAppliance",
+        "input": {
+          "cycle": "normal"
+        }
+      }
+    ],
+    "distractorPlan": [
+      {
+        "thing": "dryer",
+        "action": "startAppliance",
+        "input": {
+          "cycle": "normal"
+        }
+      }
+    ]
+  },
+  {
+    "id": "sh-6",
+    "environment": "smart-home",
+    "level": "L5",
+    "initialState": {},
+    "request": "Set the thermostat to 95 degrees.",
+    "note": "Unreachable: thermostat.maxTemp is 85 and setTemperature only writes targetTemp within [minTemp, maxTemp]; setTemperature(95) answers success false and changes nothing.",
+    "goal": [
+      {
+        "thing": "thermostat",
+        "property": "targetTemp",
+        "op": "=",
+        "value": 72
+      }
+    ],
+    "optimalPlan": [],
+    "naiveAttempt": [
+      {
+        "thing": "thermostat",
+        "action": "setTemperature",
+        "input": {
+          "temp": 95
+        }
+      }
+    ]
+  },
+  {
+    "id": "sh-7",
+    "environment": "smart-home",
+    "level": "L5",
+    "initialState": {},
+    "request": "Run the washer, the dryer and the car charger at the same time while keeping power draw under 5 kW.",
+    "note": "Unreachable: powerWatts is 2000 (washer), 3000 (dryer) and 7000 (car charger) on top of the home's 800 W base draw — 12800 W with all three on — and no Action changes a powerWatts Property. Every attempt changes state, so no naiveAttempt.",
+    "goal": [
+      {
+        "thing": "washer",
+        "property": "isRunning",
+        "op": "=",
+        "value": false
+      },
+      {
+        "thing": "dryer",
+        "property": "isRunning",
+        "op": "=",
+        "value": false
+      },
+      {
+        "thing": "car-charger",
+        "property": "isCharging",
+        "op": "=",
+        "value": false
+      },
+      {
+        "thing": "home",
+        "property": "currentPowerUsageW",
+        "op": "=",
+        "value": 800
+      }
+    ],
+    "optimalPlan": []
+  },
+  {
+    "id": "sh-8",
+    "environment": "smart-home",
+    "level": "L3",
+    "initialState": {},
+    "request": "Dim my reading lamp to 30 percent.",
+    "goal": [
+      {
+        "thing": "lamp",
+        "property": "brightness",
+        "op": "=",
+        "value": 30
+      },
+      {
+        "thing": "lamp",
+        "property": "poweredOn",
+        "op": "=",
+        "value": true
+      }
+    ],
+    "optimalPlan": [
+      {
+        "thing": "plug",
+        "action": "toggle",
+        "input": {}
+      },
+      {
+        "thing": "lamp",
+        "action": "setBrightness",
+        "input": {
+          "level": 30
+        }
+      }
+    ]
+  },
+  {
+    "id": "sh-9",
+    "environment": "smart-home",
+    "level": "L0",
+    "initialState": {},
+    "request": "Make sure the reading lamp is off.",
+    "goal": [
+      {
+        "thing": "lamp",
+        "property": "poweredOn",
+        "op": "=",
+        "value": false
+      },
+      {
+        "thing": "plug",
+        "property": "poweredOn",
+        "op": "=",
+        "value": false
+      },
+      {
+        "thing": "thermostat",
+        "property": "targetTemp",
+        "op": "=",
+        "value": 72
+      }
+    ],
+    "optimalPlan": []
+  },
+  {
+    "id": "sh-10",
+    "environment": "smart-home",
+    "level": "L3",
+    "initialState": {
+      "washer": {
+        "isRunning": true
+      },
+      "dryer": {
+        "isRunning": true
+      },
+      "home": {
+        "currentPowerUsageW": 5800
+      },
+      "plug": {
+        "poweredOn": true
+      },
+      "lamp": {
+        "poweredOn": true
+      }
+    },
+    "request": "I am leaving: nothing may run, everything off, and the thermostat to 60.",
+    "goal": [
+      {
+        "thing": "washer",
+        "property": "isRunning",
+        "op": "=",
+        "value": false
+      },
+      {
+        "thing": "dryer",
+        "property": "isRunning",
+        "op": "=",
+        "value": false
+      },
+      {
+        "thing": "car-charger",
+        "property": "isCharging",
+        "op": "=",
+        "value": false
+      },
+      {
+        "thing": "home",
+        "property": "currentPowerUsageW",
+        "op": "=",
+        "value": 800
+      },
+      {
+        "thing": "lamp",
+        "property": "poweredOn",
+        "op": "=",
+        "value": false
+      },
+      {
+        "thing": "plug",
+        "property": "poweredOn",
+        "op": "=",
+        "value": false
+      },
+      {
+        "thing": "thermostat",
+        "property": "targetTemp",
+        "op": "=",
+        "value": 60
+      }
+    ],
+    "optimalPlan": [
+      {
+        "thing": "washer",
+        "action": "stopAppliance",
+        "input": {}
+      },
+      {
+        "thing": "dryer",
+        "action": "stopAppliance",
+        "input": {}
+      },
+      {
+        "thing": "plug",
+        "action": "toggle",
+        "input": {}
+      },
+      {
+        "thing": "thermostat",
+        "action": "setTemperature",
+        "input": {
+          "temp": 60
+        }
+      }
+    ]
+  },
+  {
+    "id": "sh-11",
+    "environment": "smart-home",
+    "level": "L4",
+    "initialState": {
+      "washer": {
+        "isRunning": true
+      },
+      "dryer": {
+        "isRunning": true
+      },
+      "home": {
+        "currentPowerUsageW": 5800
+      }
+    },
+    "request": "Charge the car now and keep total draw at or below 8 kW. Also dim the reading lamp to 20 percent.",
+    "goal": [
+      {
+        "thing": "car-charger",
+        "property": "isCharging",
+        "op": "=",
+        "value": true
+      },
+      {
+        "thing": "home",
+        "property": "currentPowerUsageW",
+        "op": "<=",
+        "value": 8000
+      },
+      {
+        "thing": "washer",
+        "property": "isRunning",
+        "op": "=",
+        "value": false
+      },
+      {
+        "thing": "dryer",
+        "property": "isRunning",
+        "op": "=",
+        "value": false
+      },
+      {
+        "thing": "lamp",
+        "property": "brightness",
+        "op": "=",
+        "value": 20
+      },
+      {
+        "thing": "lamp",
+        "property": "poweredOn",
+        "op": "=",
+        "value": true
+      },
+      {
+        "thing": "thermostat",
+        "property": "targetTemp",
+        "op": "=",
+        "value": 72
+      }
+    ],
+    "optimalPlan": [
+      {
+        "thing": "washer",
+        "action": "stopAppliance",
+        "input": {}
+      },
+      {
+        "thing": "dryer",
+        "action": "stopAppliance",
+        "input": {}
+      },
+      {
+        "thing": "car-charger",
+        "action": "startCharging",
+        "input": {
+          "mode": "standard"
+        }
+      },
+      {
+        "thing": "plug",
+        "action": "toggle",
+        "input": {}
+      },
+      {
+        "thing": "lamp",
+        "action": "setBrightness",
+        "input": {
+          "level": 20
+        }
+      }
+    ],
+    "distractorPlan": [
+      {
+        "thing": "car-charger",
+        "action": "startCharging",
+        "input": {
+          "mode": "standard"
+        }
+      },
+      {
+        "thing": "plug",
+        "action": "toggle",
+        "input": {}
+      },
+      {
+        "thing": "lamp",
+        "action": "setBrightness",
+        "input": {
+          "level": 20
+        }
+      }
+    ]
+  },
+  {
+    "id": "sh-12",
+    "environment": "smart-home",
+    "level": "L1",
+    "initialState": {
+      "plug": {
+        "poweredOn": true
+      },
+      "lamp": {
+        "poweredOn": true
+      }
+    },
+    "request": "Dim my reading lamp to 30 percent.",
+    "goal": [
+      {
+        "thing": "lamp",
+        "property": "brightness",
+        "op": "=",
+        "value": 30
+      },
+      {
+        "thing": "lamp",
+        "property": "poweredOn",
+        "op": "=",
+        "value": true
+      }
+    ],
+    "optimalPlan": [
+      {
+        "thing": "lamp",
+        "action": "setBrightness",
+        "input": {
+          "level": 30
+        }
+      }
+    ]
+  },
+  {
+    "id": "sh-13",
+    "environment": "smart-home",
+    "level": "L1",
+    "initialState": {},
+    "request": "Raise the monthly energy budget to 600 kWh.",
+    "goal": [
+      {
+        "thing": "home",
+        "property": "monthlyBudgetKWh",
+        "op": "=",
+        "value": 600
+      }
+    ],
+    "optimalPlan": [
+      {
+        "thing": "home",
+        "action": "setBudget",
+        "input": {
+          "kWh": 600
+        }
+      }
+    ]
+  },
+  {
+    "id": "sh-14",
+    "environment": "smart-home",
+    "level": "L2",
+    "initialState": {},
+    "request": "Set the energy budget to 450 kWh and the thermostat to 70 degrees.",
+    "goal": [
+      {
+        "thing": "home",
+        "property": "monthlyBudgetKWh",
+        "op": "=",
+        "value": 450
+      },
+      {
+        "thing": "thermostat",
+        "property": "targetTemp",
+        "op": "=",
+        "value": 70
+      },
+      {
+        "thing": "thermostat",
+        "property": "mode",
+        "op": "=",
+        "value": "auto"
+      }
+    ],
+    "optimalPlan": [
+      {
+        "thing": "home",
+        "action": "setBudget",
+        "input": {
+          "kWh": 450
+        }
+      },
+      {
+        "thing": "thermostat",
+        "action": "setTemperature",
+        "input": {
+          "temp": 70
+        }
+      }
+    ]
+  }
+]

@@ -40,6 +40,11 @@ export function setUriAlias(uri: string, id: string): void {
   debug(`URI alias: ${uri} -> ${normalizeThingId(id)}`);
 }
 
+/** The aliases in force, so a caller replacing them can put them back. */
+export function currentUriAliases(): [string, string][] {
+  return [...uriAliases];
+}
+
 export function clearUriAliases(): void {
   uriAliases.clear();
 }
@@ -74,6 +79,28 @@ export function resolveThing(ref: string): ThingRef {
       exposed?.emitPropertyChange(property);
     }
   };
+}
+
+/**
+ * Resolve a reference slot that is allowed to be empty.
+ *
+ * A reference Property need not always hold a reference: a transporter carries
+ * a product or it carries nothing, and the dump spells "nothing" as `false`.
+ * An empty slot (`false`, `null`, `undefined`, `""`) is a domain state, not a
+ * misconfiguration, so it resolves to a detached handle — reads give
+ * `undefined` and writes go nowhere. An unknown *non-empty* reference still
+ * throws through `resolveThing`: that one is a broken environment.
+ */
+export function resolveRef(ref: unknown): ThingRef {
+  if (ref === false || ref === null || ref === undefined || ref === '') {
+    return detachedRef();
+  }
+  return resolveThing(String(ref));
+}
+
+/** A handle to no Thing: writes are discarded, reads are `undefined`. */
+function detachedRef(): ThingRef {
+  return { id: '', state: {}, emit(): void {} };
 }
 
 function has(id: string): boolean {

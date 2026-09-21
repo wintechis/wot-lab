@@ -6,8 +6,7 @@ import { dirname, join } from 'path';
 import { readdir } from 'fs/promises';
 import { createLoggers } from '../utils/debug.js';
 import { vreEffectsToHandlers } from './vre.js';
-import { resolveThing } from './crossThing.js';
-import { nowHour, nowIso } from './clock.js';
+import { resolveRef, resolveThing } from './crossThing.js';
 
 const { debug, warn } = createLoggers('things');
 
@@ -164,10 +163,9 @@ async function evaluateLogicFile(
   const { createLoggers } = await import('../utils/debug.js');
 
   // Wrap the content in an async function with built-in modules available.
-  // `resolveThing` and `__thingId` back VRE's cross-Thing effects and `this.id`;
-  // `__clockNow`/`__clockHour` back the controllable clock. A hand-written
-  // logic.js may use them too but does not have to.
-  const wrappedContent = `(async function(thing, state, http, URL, createLoggers, resolveThing, __thingId, __clockNow, __clockHour) { ${content} })`;
+  // `resolveThing`/`resolveRef` and `__thingId` back VRE's cross-Thing effects
+  // and `this.id`. A hand-written logic.js may use them too but does not have to.
+  const wrappedContent = `(async function(thing, state, http, URL, createLoggers, resolveThing, resolveRef, __thingId) { ${content} })`;
   const logicFunction = eval(wrappedContent) as Function;
 
   return (thing: WoT.ExposedThing, state: Record<string, unknown>) =>
@@ -178,9 +176,8 @@ async function evaluateLogicFile(
       url.URL,
       createLoggers,
       resolveThing,
-      instanceId,
-      nowIso,
-      nowHour
+      resolveRef,
+      instanceId
     );
 }
 
@@ -201,7 +198,8 @@ export async function loadThing(
   instanceId: string,
   title?: string,
   stateOverride?: Record<string, unknown>,
-  linksOverride?: Record<string, unknown>[]
+  linksOverride?: Record<string, unknown>[],
+  tdOverride?: Record<string, unknown>
 ): Promise<ThingHandler> {
   try {
     const basePath = await resolveModelDirectory(modelName);
@@ -229,7 +227,9 @@ export async function loadThing(
       protected state = proxy(stateObject);
 
       constructor() {
-        const instanceTd = { ...td, id: `urn:wot:${instanceId}` };
+        // Instance annotations (which room a sensor is a point of) are merged
+        // first, so the fields the lab owns — id, title, links — still win.
+        const instanceTd = { ...td, ...(tdOverride ?? {}), id: `urn:wot:${instanceId}` };
         if (title) {
           instanceTd.title = title;
         }

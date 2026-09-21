@@ -1,0 +1,29 @@
+{
+  "@context": [
+    "https://www.w3.org/2022/wot/td/v1.1",
+    {
+      "brick": "http://buildsys.org/ontologies/Brick#",
+      "qudt": "http://qudt.org/schema/qudt#"
+    }
+  ],
+  "@type": "brick:Temperature_Sensor",
+  "title": "Room temperature sensor",
+  "description": "Reports the temperature of one room. The value is written by that room's radiator; no Action of this Thing changes it.",
+  "securityDefinitions": {
+    "nosec_sc": {
+      "scheme": "nosec"
+    }
+  },
+  "security": "nosec_sc",
+  "properties": {
+    "temperature": {
+      "type": "number",
+      "unit": "qudt:DEG_C",
+      "title": "Room temperature in degrees Celsius",
+      "readOnly": true,
+      "writeOnly": false,
+      "observable": true,
+      "@type": "brick:Temperature"
+    }
+  }
+}

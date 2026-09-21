@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "wot-lab run",
+  "description": "A run: the Action invocations an agent made at a task, in order. The dashboard replays it (Replay a run). A file holds one run, a JSON array of runs, or one run per line (JSONL).",
+  "type": "object",
+  "required": ["environment", "steps"],
+  "properties": {
+    "environment": { "type": "string", "description": "Name of the environment manifest in src/environments/." },
+    "task": { "type": "string", "description": "Id of a record in the environment's tasks.json, which supplies initialState and goal." },
+    "agent": { "type": "string" },
+    "model": { "type": "string" },
+    "timestamp": { "type": "string" },
+    "initialState": {
+      "type": "object",
+      "description": "Only read when `task` is absent. Thing id -> property values, as in a task record.",
+      "additionalProperties": { "type": "object" }
+    },
+    "goal": {
+      "type": "array",
+      "description": "Only read when `task` is absent. Predicates as in a task record.",
+      "items": {
+        "type": "object",
+        "required": ["thing", "property", "op", "value"],
+        "properties": {
+          "thing": { "type": "string" },
+          "property": { "type": "string" },
+          "op": { "enum": ["=", "!=", "<", "<=", ">", ">=", "length", "contains"] },
+          "value": {}
+        }
+      }
+    },
+    "steps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "description": "One Action invocation, shaped like an optimalPlan entry. An entry with \"op\": \"read\" is a logged read and is skipped.",
+        "required": ["thing", "action"],
+        "properties": {
+          "thing": { "type": "string", "description": "Instance id, never a URL." },
+          "action": { "type": "string" },
+          "input": { "description": "The WoT payload: {} for an Action that takes none, the bare value for a scalar schema." },
+          "status": { "type": "integer", "description": "HTTP status the harness saw. Not replayed; shown when the replay differs." },
+          "output": { "description": "Response body the harness saw. Not replayed; shown when the replay differs." }
+        }
+      }
+    }
+  }
+}

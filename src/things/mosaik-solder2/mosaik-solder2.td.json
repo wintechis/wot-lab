@@ -1,0 +1,113 @@
+{
+  "@context": [
+    "https://www.w3.org/2022/wot/td/v1.1",
+    {
+      "arena": "https://solid.ti.rw.fau.de/public/ns/arena#"
+    }
+  ],
+  "@type": [
+    "arena:Station",
+    "arena:Workstation"
+  ],
+  "title": "solder2",
+  "description": "A station at a fixed position on the shopfloor that realises one service. Each of its Actions runs one recipe: it produces the recipe's output product at the station's own position, but only while every input product of that recipe already lies at the station. The Actions themselves differ per station and are given in the instance Thing Descriptions.",
+  "securityDefinitions": {
+    "nosec_sc": {
+      "scheme": "nosec"
+    }
+  },
+  "security": "nosec_sc",
+  "properties": {
+    "xpos": {
+      "type": "number",
+      "title": "Position on the x axis",
+      "readOnly": true,
+      "writeOnly": false,
+      "observable": true,
+      "@type": "arena:XPosition"
+    },
+    "ypos": {
+      "type": "number",
+      "title": "Position on the y axis",
+      "readOnly": true,
+      "writeOnly": false,
+      "observable": true,
+      "@type": "arena:YPosition"
+    },
+    "service": {
+      "type": "string",
+      "title": "The service this station realises",
+      "readOnly": true,
+      "writeOnly": false,
+      "observable": true
+    }
+  },
+  "actions": {
+    "produceCommunicationModule": {
+      "title": "produce communicationModule",
+      "description": "Run the communicationModule recipe: consume comm, mainboard2 and place communicationModule at this station. Has no effect unless every input already lies at the station.",
+      "input": {
+        "type": "string",
+        "enum": [
+          "produceIt"
+        ],
+        "title": "trigger"
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          }
+        }
+      },
+      "safe": false,
+      "idempotent": false,
+      "vre:effects": "const comm = <comm>;\nconst mainboard2 = <mainboard2>;\nconst communicationModule = <communicationmodule>;\ncommunicationModule.xpos' = comm.xpos == xpos && comm.ypos == ypos\n  && mainboard2.xpos == xpos && mainboard2.ypos == ypos ? xpos : communicationModule.xpos;\ncommunicationModule.ypos' = comm.xpos == xpos && comm.ypos == ypos\n  && mainboard2.xpos == xpos && mainboard2.ypos == ypos ? ypos : communicationModule.ypos;\ncommunicationModule.state' = comm.xpos == xpos && comm.ypos == ypos\n  && mainboard2.xpos == xpos && mainboard2.ypos == ypos ? \"initialState\" : communicationModule.state;\noutput.success = comm.xpos == xpos && comm.ypos == ypos\n  && mainboard2.xpos == xpos && mainboard2.ypos == ypos;"
+    },
+    "produceMainModule": {
+      "title": "produce mainModule",
+      "description": "Run the mainModule recipe: consume cpu, flash, mainboard, ram and place mainModule at this station. Has no effect unless every input already lies at the station.",
+      "input": {
+        "type": "string",
+        "enum": [
+          "produceIt"
+        ],
+        "title": "trigger"
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          }
+        }
+      },
+      "safe": false,
+      "idempotent": false,
+      "vre:effects": "const cpu = <cpu>;\nconst flash = <flash>;\nconst mainboard = <mainboard>;\nconst ram = <ram>;\nconst mainModule = <mainmodule>;\nmainModule.xpos' = cpu.xpos == xpos && cpu.ypos == ypos\n  && flash.xpos == xpos && flash.ypos == ypos\n  && mainboard.xpos == xpos && mainboard.ypos == ypos\n  && ram.xpos == xpos && ram.ypos == ypos ? xpos : mainModule.xpos;\nmainModule.ypos' = cpu.xpos == xpos && cpu.ypos == ypos\n  && flash.xpos == xpos && flash.ypos == ypos\n  && mainboard.xpos == xpos && mainboard.ypos == ypos\n  && ram.xpos == xpos && ram.ypos == ypos ? ypos : mainModule.ypos;\nmainModule.state' = cpu.xpos == xpos && cpu.ypos == ypos\n  && flash.xpos == xpos && flash.ypos == ypos\n  && mainboard.xpos == xpos && mainboard.ypos == ypos\n  && ram.xpos == xpos && ram.ypos == ypos ? \"initialState\" : mainModule.state;\noutput.success = cpu.xpos == xpos && cpu.ypos == ypos\n  && flash.xpos == xpos && flash.ypos == ypos\n  && mainboard.xpos == xpos && mainboard.ypos == ypos\n  && ram.xpos == xpos && ram.ypos == ypos;"
+    },
+    "produceSensorModule": {
+      "title": "produce sensorModule",
+      "description": "Run the sensorModule recipe: consume mainboard3, sensor and place sensorModule at this station. Has no effect unless every input already lies at the station.",
+      "input": {
+        "type": "string",
+        "enum": [
+          "produceIt"
+        ],
+        "title": "trigger"
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          }
+        }
+      },
+      "safe": false,
+      "idempotent": false,
+      "vre:effects": "const mainboard3 = <mainboard3>;\nconst sensor = <sensor>;\nconst sensorModule = <sensormodule>;\nsensorModule.xpos' = mainboard3.xpos == xpos && mainboard3.ypos == ypos\n  && sensor.xpos == xpos && sensor.ypos == ypos ? xpos : sensorModule.xpos;\nsensorModule.ypos' = mainboard3.xpos == xpos && mainboard3.ypos == ypos\n  && sensor.xpos == xpos && sensor.ypos == ypos ? ypos : sensorModule.ypos;\nsensorModule.state' = mainboard3.xpos == xpos && mainboard3.ypos == ypos\n  && sensor.xpos == xpos && sensor.ypos == ypos ? \"initialState\" : sensorModule.state;\noutput.success = mainboard3.xpos == xpos && mainboard3.ypos == ypos\n  && sensor.xpos == xpos && sensor.ypos == ypos;"
+    }
+  }
+}

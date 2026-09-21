@@ -1,0 +1,674 @@
+[
+  {
+    "id": "ec-0",
+    "environment": "e-commerce",
+    "level": "L0",
+    "initialState": {},
+    "request": "Make sure Alice's cart is empty.",
+    "goal": [
+      {
+        "thing": "cart",
+        "property": "items",
+        "op": "length",
+        "value": 0
+      },
+      {
+        "thing": "cart",
+        "property": "totalAmount",
+        "op": "=",
+        "value": 0
+      },
+      {
+        "thing": "bank-alice",
+        "property": "balance",
+        "op": "=",
+        "value": 5000
+      }
+    ],
+    "optimalPlan": []
+  },
+  {
+    "id": "ec-1",
+    "environment": "e-commerce",
+    "level": "L1",
+    "initialState": {},
+    "request": "Put Small Item 1 in Alice's cart.",
+    "goal": [
+      {
+        "thing": "cart",
+        "property": "items",
+        "op": "length",
+        "value": 1
+      },
+      {
+        "thing": "cart",
+        "property": "items",
+        "op": "contains",
+        "value": "small-1"
+      },
+      {
+        "thing": "cart",
+        "property": "totalAmount",
+        "op": "=",
+        "value": 1
+      }
+    ],
+    "optimalPlan": [
+      {
+        "thing": "cart",
+        "action": "addItem",
+        "input": {
+          "itemId": "small-1"
+        }
+      }
+    ]
+  },
+  {
+    "id": "ec-2",
+    "environment": "e-commerce",
+    "level": "L2",
+    "initialState": {},
+    "request": "Alice wants three small items in her cart.",
+    "goal": [
+      {
+        "thing": "cart",
+        "property": "items",
+        "op": "length",
+        "value": 3
+      },
+      {
+        "thing": "cart",
+        "property": "totalAmount",
+        "op": "=",
+        "value": 3
+      },
+      {
+        "thing": "bank-alice",
+        "property": "balance",
+        "op": "=",
+        "value": 5000
+      }
+    ],
+    "optimalPlan": [
+      {
+        "thing": "cart",
+        "action": "addItem",
+        "input": {
+          "itemId": "small-1"
+        }
+      },
+      {
+        "thing": "cart",
+        "action": "addItem",
+        "input": {
+          "itemId": "small-2"
+        }
+      },
+      {
+        "thing": "cart",
+        "action": "addItem",
+        "input": {
+          "itemId": "small-3"
+        }
+      }
+    ]
+  },
+  {
+    "id": "ec-3",
+    "environment": "e-commerce",
+    "level": "L3",
+    "initialState": {},
+    "request": "Alice wants to upgrade her coffee setup: order the espresso grinder and a bag of coffee beans for her, paid from her bank account.",
+    "goal": [
+      {
+        "thing": "cart",
+        "property": "items",
+        "op": "length",
+        "value": 0
+      },
+      {
+        "thing": "cart",
+        "property": "totalAmount",
+        "op": "=",
+        "value": 0
+      },
+      {
+        "thing": "bank-alice",
+        "property": "balance",
+        "op": "=",
+        "value": 4865
+      },
+      {
+        "thing": "bank-bob",
+        "property": "balance",
+        "op": "=",
+        "value": 100
+      },
+      {
+        "thing": "bank-charlie",
+        "property": "balance",
+        "op": "=",
+        "value": 5000
+      }
+    ],
+    "optimalPlan": [
+      {
+        "thing": "cart",
+        "action": "addItem",
+        "input": {
+          "itemId": "grinder"
+        }
+      },
+      {
+        "thing": "cart",
+        "action": "addItem",
+        "input": {
+          "itemId": "beans"
+        }
+      },
+      {
+        "thing": "cart",
+        "action": "checkout",
+        "input": {
+          "bankAccount": "bank-alice"
+        }
+      }
+    ]
+  },
+  {
+    "id": "ec-4",
+    "environment": "e-commerce",
+    "level": "L3",
+    "initialState": {},
+    "request": "Send Bob $100 from Alice's account.",
+    "goal": [
+      {
+        "thing": "bank-alice",
+        "property": "balance",
+        "op": "=",
+        "value": 4900
+      },
+      {
+        "thing": "bank-bob",
+        "property": "balance",
+        "op": "=",
+        "value": 200
+      },
+      {
+        "thing": "cart",
+        "property": "totalAmount",
+        "op": "=",
+        "value": 0
+      }
+    ],
+    "optimalPlan": [
+      {
+        "thing": "bank-alice",
+        "action": "transfer",
+        "input": {
+          "amount": 100,
+          "bankAccount": "bank-bob"
+        }
+      }
+    ]
+  },
+  {
+    "id": "ec-5",
+    "environment": "e-commerce",
+    "level": "L1",
+    "initialState": {},
+    "request": "Take $5 out of Alice's account.",
+    "goal": [
+      {
+        "thing": "bank-alice",
+        "property": "balance",
+        "op": "=",
+        "value": 4995
+      },
+      {
+        "thing": "cart",
+        "property": "items",
+        "op": "length",
+        "value": 0
+      }
+    ],
+    "optimalPlan": [
+      {
+        "thing": "bank-alice",
+        "action": "withdraw",
+        "input": {
+          "amount": 5
+        }
+      }
+    ]
+  },
+  {
+    "id": "ec-6",
+    "environment": "e-commerce",
+    "level": "L5",
+    "initialState": {},
+    "request": "Put the espresso grinder on sale for $100.",
+    "note": "Unreachable: cart.availableProducts is readOnly and no Action of any Thing writes it (the cart's Actions are addItem, removeItem, checkout). No Action to attempt, so no naiveAttempt.",
+    "goal": [
+      {
+        "thing": "cart",
+        "property": "availableProducts",
+        "op": "length",
+        "value": 32
+      },
+      {
+        "thing": "cart",
+        "property": "items",
+        "op": "length",
+        "value": 0
+      },
+      {
+        "thing": "cart",
+        "property": "totalAmount",
+        "op": "=",
+        "value": 0
+      },
+      {
+        "thing": "bank-alice",
+        "property": "balance",
+        "op": "=",
+        "value": 5000
+      }
+    ],
+    "optimalPlan": []
+  },
+  {
+    "id": "ec-7",
+    "environment": "e-commerce",
+    "level": "L3",
+    "initialState": {},
+    "request": "Send Charlie $200 from Bob's account; Bob has agreed to go into overdraft for it.",
+    "note": "Feasible in this environment: the bank-account TD declares no minimum balance and transfer is unguarded, so Bob's balance goes to -100.",
+    "goal": [
+      {
+        "thing": "bank-bob",
+        "property": "balance",
+        "op": "=",
+        "value": -100
+      },
+      {
+        "thing": "bank-charlie",
+        "property": "balance",
+        "op": "=",
+        "value": 5200
+      },
+      {
+        "thing": "bank-alice",
+        "property": "balance",
+        "op": "=",
+        "value": 5000
+      }
+    ],
+    "optimalPlan": [
+      {
+        "thing": "bank-bob",
+        "action": "transfer",
+        "input": {
+          "amount": 200,
+          "bankAccount": "bank-charlie"
+        }
+      }
+    ]
+  },
+  {
+    "id": "ec-8",
+    "environment": "e-commerce",
+    "level": "L4",
+    "initialState": {},
+    "request": "Bob wants the espresso grinder and the coffee beans, paid from his own account, but his account must not go below zero; Alice covers the difference.",
+    "goal": [
+      {
+        "thing": "cart",
+        "property": "items",
+        "op": "length",
+        "value": 0
+      },
+      {
+        "thing": "cart",
+        "property": "totalAmount",
+        "op": "=",
+        "value": 0
+      },
+      {
+        "thing": "bank-bob",
+        "property": "balance",
+        "op": "=",
+        "value": 0
+      },
+      {
+        "thing": "bank-alice",
+        "property": "balance",
+        "op": "=",
+        "value": 4965
+      },
+      {
+        "thing": "bank-charlie",
+        "property": "balance",
+        "op": "=",
+        "value": 5000
+      }
+    ],
+    "optimalPlan": [
+      {
+        "thing": "bank-alice",
+        "action": "transfer",
+        "input": {
+          "amount": 35,
+          "bankAccount": "bank-bob"
+        }
+      },
+      {
+        "thing": "cart",
+        "action": "addItem",
+        "input": {
+          "itemId": "grinder"
+        }
+      },
+      {
+        "thing": "cart",
+        "action": "addItem",
+        "input": {
+          "itemId": "beans"
+        }
+      },
+      {
+        "thing": "cart",
+        "action": "checkout",
+        "input": {
+          "bankAccount": "bank-bob"
+        }
+      }
+    ],
+    "distractorPlan": [
+      {
+        "thing": "cart",
+        "action": "addItem",
+        "input": {
+          "itemId": "grinder"
+        }
+      },
+      {
+        "thing": "cart",
+        "action": "addItem",
+        "input": {
+          "itemId": "beans"
+        }
+      },
+      {
+        "thing": "cart",
+        "action": "checkout",
+        "input": {
+          "bankAccount": "bank-bob"
+        }
+      }
+    ]
+  },
+  {
+    "id": "ec-9",
+    "environment": "e-commerce",
+    "level": "L3",
+    "initialState": {},
+    "request": "Charlie wants to gift Alice the espresso grinder and the coffee beans, and he pays for it: Alice's own balance must not change.",
+    "goal": [
+      {
+        "thing": "cart",
+        "property": "items",
+        "op": "length",
+        "value": 0
+      },
+      {
+        "thing": "cart",
+        "property": "totalAmount",
+        "op": "=",
+        "value": 0
+      },
+      {
+        "thing": "bank-alice",
+        "property": "balance",
+        "op": "=",
+        "value": 5000
+      },
+      {
+        "thing": "bank-charlie",
+        "property": "balance",
+        "op": "=",
+        "value": 4865
+      },
+      {
+        "thing": "bank-bob",
+        "property": "balance",
+        "op": "=",
+        "value": 100
+      }
+    ],
+    "optimalPlan": [
+      {
+        "thing": "cart",
+        "action": "addItem",
+        "input": {
+          "itemId": "grinder"
+        }
+      },
+      {
+        "thing": "cart",
+        "action": "addItem",
+        "input": {
+          "itemId": "beans"
+        }
+      },
+      {
+        "thing": "cart",
+        "action": "checkout",
+        "input": {
+          "bankAccount": "bank-charlie"
+        }
+      }
+    ]
+  },
+  {
+    "id": "ec-10",
+    "environment": "e-commerce",
+    "level": "L3",
+    "initialState": {},
+    "request": "Alice buys Small Items 1 through 5, and then sends Bob $50.",
+    "goal": [
+      {
+        "thing": "cart",
+        "property": "items",
+        "op": "length",
+        "value": 0
+      },
+      {
+        "thing": "cart",
+        "property": "totalAmount",
+        "op": "=",
+        "value": 0
+      },
+      {
+        "thing": "bank-alice",
+        "property": "balance",
+        "op": "=",
+        "value": 4945
+      },
+      {
+        "thing": "bank-bob",
+        "property": "balance",
+        "op": "=",
+        "value": 150
+      },
+      {
+        "thing": "bank-charlie",
+        "property": "balance",
+        "op": "=",
+        "value": 5000
+      }
+    ],
+    "optimalPlan": [
+      {
+        "thing": "cart",
+        "action": "addItem",
+        "input": {
+          "itemId": "small-1"
+        }
+      },
+      {
+        "thing": "cart",
+        "action": "addItem",
+        "input": {
+          "itemId": "small-2"
+        }
+      },
+      {
+        "thing": "cart",
+        "action": "addItem",
+        "input": {
+          "itemId": "small-3"
+        }
+      },
+      {
+        "thing": "cart",
+        "action": "addItem",
+        "input": {
+          "itemId": "small-4"
+        }
+      },
+      {
+        "thing": "cart",
+        "action": "addItem",
+        "input": {
+          "itemId": "small-5"
+        }
+      },
+      {
+        "thing": "cart",
+        "action": "checkout",
+        "input": {
+          "bankAccount": "bank-alice"
+        }
+      },
+      {
+        "thing": "bank-alice",
+        "action": "transfer",
+        "input": {
+          "amount": 50,
+          "bankAccount": "bank-bob"
+        }
+      }
+    ]
+  },
+  {
+    "id": "ec-11",
+    "environment": "e-commerce",
+    "level": "L3",
+    "initialState": {
+      "cart": {
+        "items": [
+          "grinder",
+          "beans"
+        ],
+        "totalAmount": 135
+      }
+    },
+    "request": "Alice wants to upgrade her coffee setup: order the espresso grinder and a bag of coffee beans for her, paid from her bank account.",
+    "goal": [
+      {
+        "thing": "cart",
+        "property": "items",
+        "op": "length",
+        "value": 0
+      },
+      {
+        "thing": "cart",
+        "property": "totalAmount",
+        "op": "=",
+        "value": 0
+      },
+      {
+        "thing": "bank-alice",
+        "property": "balance",
+        "op": "=",
+        "value": 4865
+      }
+    ],
+    "optimalPlan": [
+      {
+        "thing": "cart",
+        "action": "checkout",
+        "input": {
+          "bankAccount": "bank-alice"
+        }
+      }
+    ]
+  },
+  {
+    "id": "ec-12",
+    "environment": "e-commerce",
+    "level": "L2",
+    "initialState": {},
+    "request": "Deposit $50 into Alice's account and $25 into Bob's.",
+    "goal": [
+      {
+        "thing": "bank-alice",
+        "property": "balance",
+        "op": "=",
+        "value": 5050
+      },
+      {
+        "thing": "bank-bob",
+        "property": "balance",
+        "op": "=",
+        "value": 125
+      },
+      {
+        "thing": "bank-charlie",
+        "property": "balance",
+        "op": "=",
+        "value": 5000
+      }
+    ],
+    "optimalPlan": [
+      {
+        "thing": "bank-alice",
+        "action": "deposit",
+        "input": {
+          "amount": 50
+        }
+      },
+      {
+        "thing": "bank-bob",
+        "action": "deposit",
+        "input": {
+          "amount": 25
+        }
+      }
+    ]
+  },
+  {
+    "id": "ec-13",
+    "environment": "e-commerce",
+    "level": "L5",
+    "initialState": {},
+    "request": "Change Bob's account number to bob-2.",
+    "note": "Unreachable: bank-account.accountNumber is readOnly and no Action writes it (deposit, withdraw and transfer touch balance only). No Action to attempt, so no naiveAttempt.",
+    "goal": [
+      {
+        "thing": "bank-bob",
+        "property": "accountNumber",
+        "op": "=",
+        "value": "bob"
+      },
+      {
+        "thing": "bank-bob",
+        "property": "balance",
+        "op": "=",
+        "value": 100
+      }
+    ],
+    "optimalPlan": []
+  }
+]

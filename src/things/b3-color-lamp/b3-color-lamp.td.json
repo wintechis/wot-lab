@@ -1,0 +1,137 @@
+{
+  "@context": [
+    "https://www.w3.org/2022/wot/td/v1.1",
+    {
+      "brick": "http://buildsys.org/ontologies/Brick#",
+      "ex": "http://www.example.org/"
+    }
+  ],
+  "@type": "brick:Lighting",
+  "title": "Colour lamp",
+  "description": "A dimmable colour lamp in one room. Brightness and colour only change while the lamp is switched on, so a run that dims an unpowered lamp leaves the state as it was.",
+  "securityDefinitions": {
+    "nosec_sc": {
+      "scheme": "nosec"
+    }
+  },
+  "security": "nosec_sc",
+  "properties": {
+    "power": {
+      "type": "string",
+      "enum": [
+        "on",
+        "off"
+      ],
+      "title": "Whether the lamp is switched on",
+      "readOnly": true,
+      "writeOnly": false,
+      "observable": true,
+      "@type": "brick:On_Off_Status"
+    },
+    "brightness": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 255,
+      "title": "Brightness of the bulb",
+      "readOnly": true,
+      "writeOnly": false,
+      "observable": true,
+      "@type": "ex:BrightnessValue"
+    },
+    "color": {
+      "type": "string",
+      "enum": [
+        "red",
+        "blue",
+        "yellow",
+        "green",
+        "white"
+      ],
+      "title": "Colour of the bulb",
+      "readOnly": true,
+      "writeOnly": false,
+      "observable": true,
+      "@type": "ex:ColorValue"
+    }
+  },
+  "actions": {
+    "setPower": {
+      "title": "Switch lamp on or off",
+      "input": {
+        "type": "string",
+        "title": "state",
+        "enum": [
+          "on",
+          "off"
+        ]
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "power": {
+            "type": "string"
+          }
+        }
+      },
+      "safe": false,
+      "idempotent": false,
+      "vre:effects": "power' = state;\noutput.success = true;\noutput.power = power';"
+    },
+    "setBrightness": {
+      "title": "Set lamp brightness",
+      "description": "Set the brightness value of the bulb. Effective only while the lamp is on.",
+      "input": {
+        "type": "integer",
+        "title": "level",
+        "minimum": 1,
+        "maximum": 255
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "brightness": {
+            "type": "integer"
+          }
+        }
+      },
+      "safe": false,
+      "idempotent": false,
+      "vre:effects": "brightness' = power == \"on\" ? level : brightness;\noutput.success = power == \"on\";\noutput.brightness = brightness';"
+    },
+    "setColor": {
+      "title": "Set lamp colour",
+      "description": "Set the colour of the bulb. Effective only while the lamp is on.",
+      "input": {
+        "type": "string",
+        "title": "hue",
+        "enum": [
+          "red",
+          "blue",
+          "yellow",
+          "green",
+          "white"
+        ]
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "color": {
+            "type": "string"
+          }
+        }
+      },
+      "safe": false,
+      "idempotent": false,
+      "vre:effects": "color' = power == \"on\" ? hue : color;\noutput.success = power == \"on\";\noutput.color = color';"
+    }
+  }
+}

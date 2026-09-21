@@ -1,0 +1,69 @@
+{
+  "@context": [
+    "https://www.w3.org/2022/wot/td/v1.1",
+    {
+      "arena": "https://solid.ti.rw.fau.de/public/ns/arena#"
+    }
+  ],
+  "@type": [
+    "arena:Station",
+    "arena:Workstation"
+  ],
+  "title": "fixing",
+  "description": "A station at a fixed position on the shopfloor that realises one service. Each of its Actions runs one recipe: it produces the recipe's output product at the station's own position, but only while every input product of that recipe already lies at the station. The Actions themselves differ per station and are given in the instance Thing Descriptions.",
+  "securityDefinitions": {
+    "nosec_sc": {
+      "scheme": "nosec"
+    }
+  },
+  "security": "nosec_sc",
+  "properties": {
+    "xpos": {
+      "type": "number",
+      "title": "Position on the x axis",
+      "readOnly": true,
+      "writeOnly": false,
+      "observable": true,
+      "@type": "arena:XPosition"
+    },
+    "ypos": {
+      "type": "number",
+      "title": "Position on the y axis",
+      "readOnly": true,
+      "writeOnly": false,
+      "observable": true,
+      "@type": "arena:YPosition"
+    },
+    "service": {
+      "type": "string",
+      "title": "The service this station realises",
+      "readOnly": true,
+      "writeOnly": false,
+      "observable": true
+    }
+  },
+  "actions": {
+    "produceMainModuleWithPorts": {
+      "title": "produce mainModuleWithPorts",
+      "description": "Run the mainModuleWithPorts recipe: consume mainModule, port and place mainModuleWithPorts at this station. Has no effect unless every input already lies at the station.",
+      "input": {
+        "type": "string",
+        "enum": [
+          "produceIt"
+        ],
+        "title": "trigger"
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          }
+        }
+      },
+      "safe": false,
+      "idempotent": false,
+      "vre:effects": "const mainModule = <mainmodule>;\nconst port = <port>;\nconst mainModuleWithPorts = <mainmodulewithports>;\nmainModuleWithPorts.xpos' = mainModule.xpos == xpos && mainModule.ypos == ypos\n  && port.xpos == xpos && port.ypos == ypos ? xpos : mainModuleWithPorts.xpos;\nmainModuleWithPorts.ypos' = mainModule.xpos == xpos && mainModule.ypos == ypos\n  && port.xpos == xpos && port.ypos == ypos ? ypos : mainModuleWithPorts.ypos;\nmainModuleWithPorts.state' = mainModule.xpos == xpos && mainModule.ypos == ypos\n  && port.xpos == xpos && port.ypos == ypos ? \"initialState\" : mainModuleWithPorts.state;\noutput.success = mainModule.xpos == xpos && mainModule.ypos == ypos\n  && port.xpos == xpos && port.ypos == ypos;"
+    }
+  }
+}

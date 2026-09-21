@@ -1,9 +1,9 @@
-{
-    "name": "social-media",
-    "description": "Decentralized social network: pages alice, bob, charlie, each hosting its own data. Following and liking are cross-Thing effects via a page-id parameter. Initial graph: alice<->bob and charlie following alice and bob.",
-    "things": [
-        { "model": "social-page", "id": "alice", "title": "Alice", "state": { "following": ["bob"], "followers": ["charlie"] } },
-        { "model": "social-page", "id": "bob", "title": "Bob", "state": { "following": [], "followers": ["alice", "charlie"] } },
-        { "model": "social-page", "id": "charlie", "title": "Charlie", "state": { "following": ["alice", "bob"], "followers": [] } }
-    ]
-}
+{ "name": "social-media",
+  "description": "Decentralized social network: pages alice, bob, charlie, each hosting its own data. Following and liking are cross-Thing effects via a page-id parameter. Initial graph: alice<->bob and charlie following alice and bob.",
+  "things": [
+    { "model": "social-page", "id": "alice", "title": "Alice",
+      "state": { "following": ["bob"], "followers": ["charlie"] } },
+    { "model": "social-page", "id": "bob", "title": "Bob",
+      "state": { "following": [], "followers": ["alice", "charlie"] } },
+    { "model": "social-page", "id": "charlie", "title": "Charlie",
+      "state": { "following": ["alice", "bob"], "followers": [] } } ] }

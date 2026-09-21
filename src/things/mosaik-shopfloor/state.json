@@ -1,0 +1,123 @@
+{
+  "sizeX": 37,
+  "sizeY": 22,
+  "services": [
+    "BoltingService",
+    "CastingService",
+    "CombiningService",
+    "DeliveryService",
+    "FixingService",
+    "GluingService",
+    "SolderingService"
+  ],
+  "recipes": [
+    {
+      "inputs": [
+        "batterycell"
+      ],
+      "label": "battery",
+      "output": "battery",
+      "service": "CombiningService"
+    },
+    {
+      "inputs": [
+        "ingot"
+      ],
+      "label": "case",
+      "output": "case",
+      "service": "CastingService"
+    },
+    {
+      "inputs": [
+        "battery",
+        "caseWithSensorModule"
+      ],
+      "label": "casewithbattery",
+      "output": "caseWithBattery",
+      "service": "GluingService"
+    },
+    {
+      "inputs": [
+        "caseWithMainModule",
+        "communicationModule"
+      ],
+      "label": "casewithcommunicationmodule",
+      "output": "caseWithCommunicationModule",
+      "service": "BoltingService"
+    },
+    {
+      "inputs": [
+        "case",
+        "mainModuleWithPorts"
+      ],
+      "label": "casewithmainmodule",
+      "output": "caseWithMainModule",
+      "service": "BoltingService"
+    },
+    {
+      "inputs": [
+        "caseWithCommunicationModule",
+        "sensorModule"
+      ],
+      "label": "casewithsensormodule",
+      "output": "caseWithSensorModule",
+      "service": "BoltingService"
+    },
+    {
+      "inputs": [
+        "comm",
+        "mainboard2"
+      ],
+      "label": "communicationmodule",
+      "output": "communicationModule",
+      "service": "SolderingService"
+    },
+    {
+      "inputs": [
+        "glass",
+        "lcd"
+      ],
+      "label": "displayunit",
+      "output": "displayUnit",
+      "service": "GluingService"
+    },
+    {
+      "inputs": [
+        "cpu",
+        "flash",
+        "mainboard",
+        "ram"
+      ],
+      "label": "mainmodule",
+      "output": "mainModule",
+      "service": "SolderingService"
+    },
+    {
+      "inputs": [
+        "mainModule",
+        "port"
+      ],
+      "label": "mainmodulewithports",
+      "output": "mainModuleWithPorts",
+      "service": "FixingService"
+    },
+    {
+      "inputs": [
+        "mainboard3",
+        "sensor"
+      ],
+      "label": "sensormodule",
+      "output": "sensorModule",
+      "service": "SolderingService"
+    },
+    {
+      "inputs": [
+        "caseWithBattery",
+        "displayUnit"
+      ],
+      "label": "smartphone",
+      "output": "smartphone",
+      "service": "GluingService"
+    }
+  ]
+}

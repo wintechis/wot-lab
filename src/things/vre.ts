@@ -17,7 +17,10 @@ import { parseVre, VREExpr, VreProgram, VreOutput } from './vre-parser.js';
  * (`const bank = <uri>`), an action input parameter carrying a Thing reference,
  * or a Thing property whose value is a Thing reference (so a shared annotation
  * can target a per-instance device set in the manifest). `this.id` is the
- * running instance's own id.
+ * running instance's own id. A reference Property may also be empty (`false`,
+ * `null`, `""`) — a transporter that carries nothing — in which case the handle
+ * resolves to no Thing: reads give `undefined` and writes are discarded. Only a
+ * non-empty reference that names no Thing is an error.
  *
  * Semantics follow V-Realm's flat effects: every effect's right-hand side is
  * evaluated against the PRE-state snapshot, then all effects are applied at
@@ -29,6 +32,7 @@ import { parseVre, VREExpr, VreProgram, VreOutput } from './vre-parser.js';
 
 interface ActionInputSchema {
   type?: string;
+  title?: string;
   properties?: Record<string, unknown>;
 }
 interface ActionSchema {
@@ -54,6 +58,9 @@ function genExpr(expr: VREExpr, ctx: Ctx): string {
   if (expr.kind === 'bool') {
     return expr.value ? 'true' : 'false';
   }
+  if (expr.kind === 'null') {
+    return 'null';
+  }
   if (expr.kind === 'string') {
     return JSON.stringify(expr.value);
   }
@@ -73,14 +80,9 @@ function genExpr(expr: VREExpr, ctx: Ctx): string {
     )} : ${genExpr(expr.whenFalse, ctx)})`;
   }
   if (expr.kind === 'functionCall') {
-    // Time reads go through the controllable clock so time-dependent behaviour
-    // is reproducible. `now()` is an ISO string; `hour()` is the UTC hour 0-23.
-    if (expr.name === 'now' && expr.args.length === 0) {
-      return '__clockNow()';
-    }
-    if (expr.name === 'hour' && expr.args.length === 0) {
-      return '__clockHour()';
-    }
+    // VRE has no functions. An effect reads state and its input, nothing else —
+    // which is what makes a run reproducible from its initial state alone.
+    // Behaviour that needs more belongs in logic.js.
     throw new Error(`VRE: unsupported function '${expr.name}'`);
   }
   if (expr.kind === 'binary') {
@@ -299,7 +301,7 @@ function genRule(
       kind === 'binding' ? j(ctx.bindings.get(handle) as string)
         : kind === 'param' ? `__p_${handle}`
           : `__pre[${j(handle)}]`;
-    body += `  const __t_${handle} = resolveThing(${source});\n`;
+    body += `  const __t_${handle} = resolveRef(${source});\n`;
     body += `  const __pre_${handle} = { ...__t_${handle}.state };\n`;
   }
 
@@ -338,6 +340,22 @@ function genRule(
   return `thing.setActionHandler(${j(action)}, async (inputData) => {\n${body}});\n`;
 }
 
+/**
+ * The names a scalar (non-object) action input answers to.
+ *
+ * `input` always works. A scalar schema that gives itself a `title` — the way a
+ * Thing Description names its single parameter, `"title": "level"` — is also
+ * readable under that name, so an effect can say what the value means instead
+ * of `input`. Both bind the same incoming value; nothing about the wire format
+ * changes, the body is still the bare scalar.
+ */
+function scalarParams(input: ActionInputSchema): string[] {
+  const title = input.title;
+  return title && /^[a-zA-Z_][a-zA-Z0-9_]*$/.test(title) && title !== 'input'
+    ? ['input', title]
+    : ['input'];
+}
+
 /** Compile the `vre:effects` annotations carried by a TD's action affordances. */
 export function vreEffectsToHandlers(td: WoT.ThingDescription): string {
   const actions = (td.actions ?? {}) as unknown as Record<string, ActionSchema>;
@@ -348,7 +366,7 @@ export function vreEffectsToHandlers(td: WoT.ThingDescription): string {
       const input = definition.input;
       const params = input?.type === 'object' && input.properties
         ? Object.keys(input.properties)
-        : input ? ['input'] : [];
+        : input ? scalarParams(input) : [];
       return genRule(action, params, parseVre(effects as string), td);
     })
     .join('\n');

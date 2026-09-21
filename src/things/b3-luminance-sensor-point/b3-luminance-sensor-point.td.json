@@ -1,0 +1,38 @@
+{
+  "@context": [
+    "https://www.w3.org/2022/wot/td/v1.1",
+    {
+      "brick": "http://buildsys.org/ontologies/Brick#"
+    }
+  ],
+  "@type": [
+    "brick:Luminance_Sensor",
+    "brick:Label",
+    "brick:TagSet"
+  ],
+  "title": "Measured luminance level",
+  "description": "A building-management point that reports a normalised luminance reading.",
+  "securityDefinitions": {
+    "nosec_sc": {
+      "scheme": "nosec"
+    }
+  },
+  "security": "nosec_sc",
+  "properties": {
+    "value": {
+      "title": "Measured luminance level",
+      "readOnly": true,
+      "writeOnly": false,
+      "observable": true,
+      "@type": "brick:Luminance_Sensor",
+      "oneOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  }
+}

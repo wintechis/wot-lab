@@ -50,6 +50,10 @@ Open `http://localhost:8081/` in a browser to see the dashboard, or use a WoT cl
 The lab serves a React dashboard at `http://localhost:8081/`: it lists the running
 Things, inspects each one's properties, actions, events and Thing Description, and allows you to interact with them.
 **Add Thing** allows you to create a new Thing off of a pre-defined or new Thing Model.
+**Environment** starts one of the manifests in `src/environments/`, replacing whatever is
+running. **Replay a run** opens a run file (or a task's plan), replays it against the reset
+environment and shows how much of the task's goal holds after every step — see
+[`tools/README.md`](tools/README.md#run-files-runschemajson) for the file format.
 
 ### State Management
 
@@ -219,8 +223,9 @@ be declared on the affordance itself with a `vre:effects` annotation, written in
   return value, evaluated after effects apply. Behaviour VRE cannot express
   (array lookups, sums, object construction) stays in `logic.js`, which composes
   with `vre:effects`.
-- **Time**: `now()` returns an ISO timestamp and `hour()` the UTC hour, both from
-  a controllable clock, so time-dependent behaviour is reproducible.
+- **No functions**: an effect reads the Thing's state and the action's input and
+  nothing else — no time, no calls — so a run is reproducible from its initial
+  state alone. Behaviour that needs more belongs in `logic.js`.
 - **Input parameters**: an object `input` schema exposes each of its properties
   by name; a scalar `input` is referred to as `input`.
 - **Events** are emitted with `emitEvent("name", value)`.
@@ -257,16 +262,17 @@ routes. `_lab` is a reserved path segment, so it can never shadow a Thing.
 | Operation | HTTP endpoint | Method | Notes |
 |-----------|---------------|--------|-------|
 | List Thing Models on disk | `/_lab/thing-models` | `GET` | The catalog in `src/things/`. |
-| List running Things | `/_lab/things` | `GET` | Also returns the `--things` flag that reproduces them. |
+| List running Things | `/_lab/things` | `GET` | Also returns the command that reproduces them: `--env` for a running environment, `--things` for the rest. |
 | Create Things | `/_lab/things` | `POST` | `{"model": "lamp", "count": 2}` |
 | Take a Thing offline | `/_lab/things/{thingId}` | `DELETE` | Add `?files=true&model=<model>` to delete the Thing Model too. |
+| Take every Thing offline | `/_lab/things` | `DELETE` | Leaves an empty lab. |
 | Preview a new Thing Model | `/_lab/thing-models/validate` | `POST` | Returns the files that would be written, plus any errors. |
 | Create a Thing Model | `/_lab/thing-models` | `POST` | Writes `src/things/<name>/` and creates one Thing from it. |
 | List environments | `/_lab/environments` | `GET` | The scenario manifests on disk. |
-| Start an environment | `/_lab/environments` | `POST` | `{"name": "e-commerce"}`. |
+| Start an environment | `/_lab/environments` | `POST` | `{"name": "e-commerce"}`. Refused if any of its ids is in use, unless `"replace": true` takes everything running offline first. |
+| List an environment's tasks | `/_lab/environments/{name}/tasks` | `GET` | The records of its `tasks.json`. |
 | Reset to initial state | `/_lab/reset` | `POST` | All Things, or one with `{"id": ...}`. |
 | Inject property values | `/_lab/state` | `POST` | `{"id": ..., "values": {...}}`; bypasses TD writability. |
-| Control the clock | `/_lab/clock` | `GET`/`POST` | `{"iso"\|"millis"\|"advanceMs"}` or `{"real": true}`. |
 
 `/_lab/things` is the collection of running Things: `GET` lists them, `POST` adds
 more from a Thing Model.
@@ -275,18 +281,17 @@ more from a Thing Model.
 
 An **environment** is a named bundle of Thing Models with **fixed instance ids**,
 optional per-Thing `state` overrides and per-instance `links` (one shared model
-can point at a different related Thing per instance), optional URI→id aliases,
-and an optional `clock` to pin — one JSON manifest in
+can point at a different related Thing per instance), and optional URI→id
+aliases — one JSON manifest in
 `src/environments/<name>.json`. It is the
 reproducible unit a benchmark runs against: the same Things, ids and initial
-state, started by one command. (Unlike `--things` and the dashboard, which
-*allocate* ids, an environment *pins* them, so a scenario's cross-Thing
+state, started by one command. (Unlike `--things` and the dashboard's **Add Thing**,
+which *allocate* ids, an environment *pins* them, so a scenario's cross-Thing
 references resolve to the same instances every run.)
 
 ```jsonc
 {
   "name": "e-commerce",
-  "clock": "2026-01-02T09:00:00.000Z",          // optional: pin the virtual clock
   "things": [
     { "model": "shopping-cart", "id": "cart" },
     { "model": "bank-account", "id": "bank-alice", "state": { "balance": 5000 } }
@@ -296,16 +301,31 @@ references resolve to the same instances every run.)
 
 ```bash
 bun run dev -- --env e-commerce                 # start a scenario
-curl localhost:8081/_lab/environments           # list what's available
+curl localhost:8081/_lab/environments           # list what's available, and which one is running
+curl -X POST localhost:8081/_lab/environments -d '{"name":"smart-home","replace":true}'   # swap the running lab for it
+curl localhost:8081/_lab/environments/smart-home/tasks   # its benchmark tasks
 curl -X POST localhost:8081/_lab/reset          # reset every Thing to initial state
 curl -X POST localhost:8081/_lab/state  -d '{"id":"bank-alice","values":{"balance":1000}}'
-curl -X POST localhost:8081/_lab/clock  -d '{"iso":"2026-01-02T18:00:00.000Z"}'
 ```
 
-Four scenarios ship as environments — `e-commerce`, `supply-chain`,
-`social-media`, `smart-home` — each built from Thing Models under `src/things/`
-with cross-Thing `vre:effects` (and `logic.js` only where VRE can't reach). All
-`/_lab` writes are loopback-only unless `WOT_LAB_ALLOW_REMOTE_WRITE=1`.
+Seven environments ship, each built from Thing Models under `src/things/` with
+cross-Thing `vre:effects` (and `logic.js` only where VRE can't reach):
+
+| Environment | Things | Tasks | |
+| --- | --- | --- | --- |
+| `e-commerce` | 4 | 14 | A shopping cart and three bank accounts; checkout and transfer are cross-Thing effects. |
+| `supply-chain` | 6 | 16 | Three warehouses, their aggregate, a company budget and a supplier; orders charge the budget, transfers move stock. |
+| `social-media` | 3 | 14 | Three pages of a decentralized social network; following and liking are cross-Thing effects. |
+| `smart-home` | 7 | 15 | A home energy hub, thermostat, washer, dryer, car charger, and a plug powering a lamp. |
+| `ibm-building3` | 2279 | 11 | An office building: 281 rooms, each with a colour lamp, radiator, temperature sensor, and door and window sensors and actuators. |
+| `ibm-building3-small` | 17 | 4 | Two rooms of the same building, for iterating without the wait. |
+| `mosaik` | 37 | 6 | A shopfloor: 25 products, ten workstations, a transporter and the recipe book. |
+
+The last three are converted from the tee-wip paper repository by
+`tools/tee2wotlab.py`. Each environment's benchmark tasks live in
+`src/environments/<name>/tasks.json`; see [`tools/README.md`](tools/README.md).
+
+All `/_lab` writes are loopback-only unless `WOT_LAB_ALLOW_REMOTE_WRITE=1`.
 
 A new Thing Model is sent either as a `spec` (the shape the dashboard form
 produces) or as a `draft` (the two files verbatim). Both go through the same

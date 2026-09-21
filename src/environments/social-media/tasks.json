@@ -1,0 +1,573 @@
+[
+  {
+    "id": "sm-0",
+    "environment": "social-media",
+    "level": "L0",
+    "initialState": {},
+    "request": "Make sure Alice follows Bob.",
+    "goal": [
+      {
+        "thing": "alice",
+        "property": "following",
+        "op": "contains",
+        "value": "bob"
+      },
+      {
+        "thing": "bob",
+        "property": "followingCount",
+        "op": "=",
+        "value": 0
+      },
+      {
+        "thing": "bob",
+        "property": "postCount",
+        "op": "=",
+        "value": 0
+      }
+    ],
+    "optimalPlan": []
+  },
+  {
+    "id": "sm-1",
+    "environment": "social-media",
+    "level": "L1",
+    "initialState": {},
+    "request": "Post \"hello\" on Bob's page.",
+    "goal": [
+      {
+        "thing": "bob",
+        "property": "postCount",
+        "op": "=",
+        "value": 1
+      }
+    ],
+    "optimalPlan": [
+      {
+        "thing": "bob",
+        "action": "createPost",
+        "input": {
+          "content": "hello"
+        }
+      }
+    ]
+  },
+  {
+    "id": "sm-2",
+    "environment": "social-media",
+    "level": "L3",
+    "initialState": {},
+    "request": "Bob wants to follow Alice.",
+    "goal": [
+      {
+        "thing": "bob",
+        "property": "following",
+        "op": "contains",
+        "value": "alice"
+      },
+      {
+        "thing": "alice",
+        "property": "followers",
+        "op": "contains",
+        "value": "bob"
+      },
+      {
+        "thing": "alice",
+        "property": "followerCount",
+        "op": "=",
+        "value": 2
+      }
+    ],
+    "optimalPlan": [
+      {
+        "thing": "bob",
+        "action": "followUser",
+        "input": {
+          "pageUri": "alice"
+        }
+      }
+    ]
+  },
+  {
+    "id": "sm-3",
+    "environment": "social-media",
+    "level": "L3",
+    "initialState": {},
+    "request": "Bob should follow both Alice and Charlie.",
+    "goal": [
+      {
+        "thing": "bob",
+        "property": "followingCount",
+        "op": "=",
+        "value": 2
+      },
+      {
+        "thing": "alice",
+        "property": "followerCount",
+        "op": "=",
+        "value": 2
+      },
+      {
+        "thing": "charlie",
+        "property": "followerCount",
+        "op": "=",
+        "value": 1
+      }
+    ],
+    "optimalPlan": [
+      {
+        "thing": "bob",
+        "action": "followUser",
+        "input": {
+          "pageUri": "alice"
+        }
+      },
+      {
+        "thing": "bob",
+        "action": "followUser",
+        "input": {
+          "pageUri": "charlie"
+        }
+      }
+    ]
+  },
+  {
+    "id": "sm-4",
+    "environment": "social-media",
+    "level": "L3",
+    "initialState": {
+      "charlie": {
+        "posts": [
+          {
+            "id": "post-1",
+            "content": "First post!"
+          }
+        ]
+      }
+    },
+    "request": "Bob likes Charlie's post.",
+    "goal": [
+      {
+        "thing": "charlie",
+        "property": "likesReceived",
+        "op": "=",
+        "value": 1
+      },
+      {
+        "thing": "bob",
+        "property": "likedPosts",
+        "op": "length",
+        "value": 1
+      },
+      {
+        "thing": "bob",
+        "property": "likedPosts",
+        "op": "contains",
+        "value": "post-1"
+      }
+    ],
+    "optimalPlan": [
+      {
+        "thing": "bob",
+        "action": "likePost",
+        "input": {
+          "pageUri": "charlie",
+          "postId": "post-1"
+        }
+      }
+    ]
+  },
+  {
+    "id": "sm-5",
+    "environment": "social-media",
+    "level": "L4",
+    "initialState": {},
+    "request": "Bob's page should show as many people followed as followers, and he must not lose any followers.",
+    "goal": [
+      {
+        "thing": "bob",
+        "property": "followingCount",
+        "op": "=",
+        "value": 2
+      },
+      {
+        "thing": "bob",
+        "property": "followerCount",
+        "op": "=",
+        "value": 2
+      }
+    ],
+    "optimalPlan": [
+      {
+        "thing": "bob",
+        "action": "followUser",
+        "input": {
+          "pageUri": "alice"
+        }
+      },
+      {
+        "thing": "bob",
+        "action": "followUser",
+        "input": {
+          "pageUri": "charlie"
+        }
+      }
+    ],
+    "distractorPlan": [
+      {
+        "thing": "alice",
+        "action": "unfollowUser",
+        "input": {
+          "pageUri": "bob"
+        }
+      },
+      {
+        "thing": "charlie",
+        "action": "unfollowUser",
+        "input": {
+          "pageUri": "bob"
+        }
+      }
+    ]
+  },
+  {
+    "id": "sm-6",
+    "environment": "social-media",
+    "level": "L5",
+    "initialState": {
+      "charlie": {
+        "posts": [
+          {
+            "id": "post-1",
+            "content": "First post!"
+          }
+        ]
+      }
+    },
+    "request": "Delete Charlie's post.",
+    "note": "Unreachable: social-page has no Action that removes a post (createPost, followUser, unfollowUser, likePost) and posts is readOnly. No Action to attempt, so no naiveAttempt.",
+    "goal": [
+      {
+        "thing": "charlie",
+        "property": "postCount",
+        "op": "=",
+        "value": 1
+      },
+      {
+        "thing": "charlie",
+        "property": "posts",
+        "op": "length",
+        "value": 1
+      }
+    ],
+    "optimalPlan": []
+  },
+  {
+    "id": "sm-7",
+    "environment": "social-media",
+    "level": "L0",
+    "initialState": {},
+    "request": "Bob stops following Charlie.",
+    "goal": [
+      {
+        "thing": "bob",
+        "property": "followingCount",
+        "op": "=",
+        "value": 0
+      },
+      {
+        "thing": "charlie",
+        "property": "followerCount",
+        "op": "=",
+        "value": 0
+      }
+    ],
+    "optimalPlan": []
+  },
+  {
+    "id": "sm-8",
+    "environment": "social-media",
+    "level": "L3",
+    "initialState": {
+      "charlie": {
+        "posts": [
+          {
+            "id": "post-1",
+            "content": "First post!"
+          }
+        ]
+      }
+    },
+    "request": "Charlie's post should have a like from everyone else.",
+    "goal": [
+      {
+        "thing": "charlie",
+        "property": "likesReceived",
+        "op": "=",
+        "value": 2
+      },
+      {
+        "thing": "alice",
+        "property": "likedPosts",
+        "op": "contains",
+        "value": "post-1"
+      },
+      {
+        "thing": "bob",
+        "property": "likedPosts",
+        "op": "contains",
+        "value": "post-1"
+      },
+      {
+        "thing": "charlie",
+        "property": "likedPosts",
+        "op": "length",
+        "value": 0
+      }
+    ],
+    "optimalPlan": [
+      {
+        "thing": "alice",
+        "action": "likePost",
+        "input": {
+          "pageUri": "charlie",
+          "postId": "post-1"
+        }
+      },
+      {
+        "thing": "bob",
+        "action": "likePost",
+        "input": {
+          "pageUri": "charlie",
+          "postId": "post-1"
+        }
+      }
+    ]
+  },
+  {
+    "id": "sm-9",
+    "environment": "social-media",
+    "level": "L3",
+    "initialState": {},
+    "request": "Make it mutual: everyone should follow everyone else. Then Alice posts \"welcome\".",
+    "goal": [
+      {
+        "thing": "alice",
+        "property": "followingCount",
+        "op": "=",
+        "value": 2
+      },
+      {
+        "thing": "alice",
+        "property": "followerCount",
+        "op": "=",
+        "value": 2
+      },
+      {
+        "thing": "bob",
+        "property": "followingCount",
+        "op": "=",
+        "value": 2
+      },
+      {
+        "thing": "bob",
+        "property": "followerCount",
+        "op": "=",
+        "value": 2
+      },
+      {
+        "thing": "charlie",
+        "property": "followingCount",
+        "op": "=",
+        "value": 2
+      },
+      {
+        "thing": "charlie",
+        "property": "followerCount",
+        "op": "=",
+        "value": 2
+      },
+      {
+        "thing": "alice",
+        "property": "postCount",
+        "op": "=",
+        "value": 1
+      }
+    ],
+    "optimalPlan": [
+      {
+        "thing": "alice",
+        "action": "followUser",
+        "input": {
+          "pageUri": "charlie"
+        }
+      },
+      {
+        "thing": "bob",
+        "action": "followUser",
+        "input": {
+          "pageUri": "alice"
+        }
+      },
+      {
+        "thing": "bob",
+        "action": "followUser",
+        "input": {
+          "pageUri": "charlie"
+        }
+      },
+      {
+        "thing": "alice",
+        "action": "createPost",
+        "input": {
+          "content": "welcome"
+        }
+      }
+    ]
+  },
+  {
+    "id": "sm-10",
+    "environment": "social-media",
+    "level": "L3",
+    "initialState": {
+      "bob": {
+        "following": [
+          "alice"
+        ]
+      },
+      "alice": {
+        "followers": [
+          "charlie",
+          "bob"
+        ]
+      }
+    },
+    "request": "Bob should follow both Alice and Charlie.",
+    "goal": [
+      {
+        "thing": "bob",
+        "property": "followingCount",
+        "op": "=",
+        "value": 2
+      },
+      {
+        "thing": "alice",
+        "property": "followerCount",
+        "op": "=",
+        "value": 2
+      },
+      {
+        "thing": "charlie",
+        "property": "followerCount",
+        "op": "=",
+        "value": 1
+      }
+    ],
+    "optimalPlan": [
+      {
+        "thing": "bob",
+        "action": "followUser",
+        "input": {
+          "pageUri": "charlie"
+        }
+      }
+    ]
+  },
+  {
+    "id": "sm-11",
+    "environment": "social-media",
+    "level": "L1",
+    "initialState": {},
+    "request": "Post \"good morning\" on Alice's page.",
+    "goal": [
+      {
+        "thing": "alice",
+        "property": "postCount",
+        "op": "=",
+        "value": 1
+      }
+    ],
+    "optimalPlan": [
+      {
+        "thing": "alice",
+        "action": "createPost",
+        "input": {
+          "content": "good morning"
+        }
+      }
+    ]
+  },
+  {
+    "id": "sm-12",
+    "environment": "social-media",
+    "level": "L2",
+    "initialState": {},
+    "request": "Bob posts \"one\" and then \"two\".",
+    "goal": [
+      {
+        "thing": "bob",
+        "property": "postCount",
+        "op": "=",
+        "value": 2
+      }
+    ],
+    "optimalPlan": [
+      {
+        "thing": "bob",
+        "action": "createPost",
+        "input": {
+          "content": "one"
+        }
+      },
+      {
+        "thing": "bob",
+        "action": "createPost",
+        "input": {
+          "content": "two"
+        }
+      }
+    ]
+  },
+  {
+    "id": "sm-13",
+    "environment": "social-media",
+    "level": "L2",
+    "initialState": {},
+    "request": "Alice and Charlie each post a greeting.",
+    "goal": [
+      {
+        "thing": "alice",
+        "property": "postCount",
+        "op": "=",
+        "value": 1
+      },
+      {
+        "thing": "charlie",
+        "property": "postCount",
+        "op": "=",
+        "value": 1
+      },
+      {
+        "thing": "bob",
+        "property": "postCount",
+        "op": "=",
+        "value": 0
+      }
+    ],
+    "optimalPlan": [
+      {
+        "thing": "alice",
+        "action": "createPost",
+        "input": {
+          "content": "hi"
+        }
+      },
+      {
+        "thing": "charlie",
+        "action": "createPost",
+        "input": {
+          "content": "hi"
+        }
+      }
+    ]
+  }
+]

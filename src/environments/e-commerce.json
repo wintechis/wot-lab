@@ -1,10 +1,10 @@
-{
-    "name": "e-commerce",
-    "description": "Shopping-bot scenario: Alice's cart over a $1 catalog, and three bank accounts (Alice, Bob, Charlie). Checkout and transfer are cross-Thing effects.",
-    "things": [
-        { "model": "shopping-cart", "id": "cart", "title": "Shopping Cart" },
-        { "model": "bank-account", "id": "bank-alice", "title": "Alice's Bank Account", "state": { "balance": 5000, "accountNumber": "alice" } },
-        { "model": "bank-account", "id": "bank-bob", "title": "Bob's Bank Account", "state": { "balance": 100, "accountNumber": "bob" } },
-        { "model": "bank-account", "id": "bank-charlie", "title": "Charlie's Bank Account", "state": { "balance": 5000, "accountNumber": "charlie" } }
-    ]
-}
+{ "name": "e-commerce",
+  "description": "Shopping-bot scenario: Alice's cart over a $1 catalog, and three bank accounts (Alice, Bob, Charlie). Checkout and transfer are cross-Thing effects.",
+  "things": [
+    { "model": "shopping-cart", "id": "cart", "title": "Shopping Cart" },
+    { "model": "bank-account", "id": "bank-alice", "title": "Alice's Bank Account",
+      "state": { "balance": 5000, "accountNumber": "alice" } },
+    { "model": "bank-account", "id": "bank-bob", "title": "Bob's Bank Account",
+      "state": { "balance": 100, "accountNumber": "bob" } },
+    { "model": "bank-account", "id": "bank-charlie", "title": "Charlie's Bank Account",
+      "state": { "balance": 5000, "accountNumber": "charlie" } } ] }

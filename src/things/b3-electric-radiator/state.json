@@ -1,0 +1,6 @@
+{
+  "temperatureSensor": null,
+  "doorSensor": null,
+  "windowSensor": null,
+  "desiredTemperature": null
+}

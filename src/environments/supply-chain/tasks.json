@@ -1,0 +1,735 @@
+[
+  {
+    "id": "sc-0",
+    "environment": "supply-chain",
+    "level": "L0",
+    "initialState": {},
+    "request": "Check that Warehouse C is below 50 % utilisation.",
+    "goal": [
+      {
+        "thing": "warehouse-c",
+        "property": "utilizationPercent",
+        "op": "<",
+        "value": 50
+      },
+      {
+        "thing": "company-budget",
+        "property": "monthlySpent",
+        "op": "=",
+        "value": 35000
+      },
+      {
+        "thing": "warehouse-system",
+        "property": "totalCurrentStock",
+        "op": "=",
+        "value": 4500
+      }
+    ],
+    "optimalPlan": []
+  },
+  {
+    "id": "sc-1",
+    "environment": "supply-chain",
+    "level": "L1",
+    "initialState": {},
+    "request": "Bring Warehouse C's stock to 1,500 units.",
+    "goal": [
+      {
+        "thing": "warehouse-c",
+        "property": "currentStock",
+        "op": "=",
+        "value": 1500
+      }
+    ],
+    "optimalPlan": [
+      {
+        "thing": "warehouse-c",
+        "action": "orderStock",
+        "input": {
+          "quantity": 300
+        }
+      }
+    ]
+  },
+  {
+    "id": "sc-2",
+    "environment": "supply-chain",
+    "level": "L3",
+    "initialState": {},
+    "request": "Move 500 units from Warehouse A to Warehouse B.",
+    "goal": [
+      {
+        "thing": "warehouse-a",
+        "property": "currentStock",
+        "op": "=",
+        "value": 1000
+      },
+      {
+        "thing": "warehouse-b",
+        "property": "currentStock",
+        "op": "=",
+        "value": 2300
+      },
+      {
+        "thing": "company-budget",
+        "property": "monthlySpent",
+        "op": "=",
+        "value": 35000
+      }
+    ],
+    "optimalPlan": [
+      {
+        "thing": "warehouse-a",
+        "action": "transferStock",
+        "input": {
+          "toWarehouse": "warehouse-b",
+          "quantity": 500
+        }
+      }
+    ]
+  },
+  {
+    "id": "sc-3",
+    "environment": "supply-chain",
+    "level": "L4",
+    "initialState": {},
+    "request": "Warehouse C needs 2,000 units, but no money may be spent this month.",
+    "goal": [
+      {
+        "thing": "warehouse-c",
+        "property": "currentStock",
+        "op": "=",
+        "value": 2000
+      },
+      {
+        "thing": "company-budget",
+        "property": "monthlySpent",
+        "op": "=",
+        "value": 35000
+      },
+      {
+        "thing": "warehouse-system",
+        "property": "totalCurrentStock",
+        "op": "=",
+        "value": 4500
+      }
+    ],
+    "optimalPlan": [
+      {
+        "thing": "warehouse-a",
+        "action": "transferStock",
+        "input": {
+          "toWarehouse": "warehouse-c",
+          "quantity": 800
+        }
+      }
+    ],
+    "distractorPlan": [
+      {
+        "thing": "warehouse-c",
+        "action": "orderStock",
+        "input": {
+          "quantity": 800
+        }
+      }
+    ]
+  },
+  {
+    "id": "sc-4",
+    "environment": "supply-chain",
+    "level": "L4",
+    "initialState": {},
+    "request": "Raise total stock to 5,500 units with no warehouse above 60 % utilisation.",
+    "goal": [
+      {
+        "thing": "warehouse-system",
+        "property": "totalCurrentStock",
+        "op": "=",
+        "value": 5500
+      },
+      {
+        "thing": "warehouse-a",
+        "property": "utilizationPercent",
+        "op": "<=",
+        "value": 60
+      },
+      {
+        "thing": "warehouse-b",
+        "property": "utilizationPercent",
+        "op": "<=",
+        "value": 60
+      },
+      {
+        "thing": "warehouse-c",
+        "property": "utilizationPercent",
+        "op": "<=",
+        "value": 60
+      },
+      {
+        "thing": "company-budget",
+        "property": "monthlySpent",
+        "op": "=",
+        "value": 85000
+      }
+    ],
+    "optimalPlan": [
+      {
+        "thing": "warehouse-b",
+        "action": "orderStock",
+        "input": {
+          "quantity": 600
+        }
+      },
+      {
+        "thing": "warehouse-c",
+        "action": "orderStock",
+        "input": {
+          "quantity": 400
+        }
+      }
+    ],
+    "distractorPlan": [
+      {
+        "thing": "warehouse-b",
+        "action": "orderStock",
+        "input": {
+          "quantity": 1000
+        }
+      }
+    ]
+  },
+  {
+    "id": "sc-5",
+    "environment": "supply-chain",
+    "level": "L5",
+    "initialState": {},
+    "request": "Bring Warehouse C to 4,000 units.",
+    "note": "Unreachable: warehouse-c.capacity is 3000; orderStock and transferStock both leave stock unchanged when it would exceed capacity (success false).",
+    "goal": [
+      {
+        "thing": "warehouse-c",
+        "property": "currentStock",
+        "op": "=",
+        "value": 1200
+      },
+      {
+        "thing": "company-budget",
+        "property": "monthlySpent",
+        "op": "=",
+        "value": 35000
+      },
+      {
+        "thing": "warehouse-system",
+        "property": "totalCurrentStock",
+        "op": "=",
+        "value": 4500
+      }
+    ],
+    "optimalPlan": [],
+    "naiveAttempt": [
+      {
+        "thing": "warehouse-c",
+        "action": "orderStock",
+        "input": {
+          "quantity": 2800
+        }
+      }
+    ]
+  },
+  {
+    "id": "sc-6",
+    "environment": "supply-chain",
+    "level": "L4",
+    "initialState": {},
+    "request": "Get 800 more units into Warehouse C, but the remaining budget must stay above $60,000.",
+    "goal": [
+      {
+        "thing": "warehouse-c",
+        "property": "currentStock",
+        "op": "=",
+        "value": 2000
+      },
+      {
+        "thing": "company-budget",
+        "property": "remainingBudget",
+        "op": ">",
+        "value": 60000
+      }
+    ],
+    "optimalPlan": [
+      {
+        "thing": "warehouse-a",
+        "action": "transferStock",
+        "input": {
+          "toWarehouse": "warehouse-c",
+          "quantity": 800
+        }
+      }
+    ],
+    "distractorPlan": [
+      {
+        "thing": "warehouse-c",
+        "action": "orderStock",
+        "input": {
+          "quantity": 800
+        }
+      }
+    ]
+  },
+  {
+    "id": "sc-7",
+    "environment": "supply-chain",
+    "level": "L3",
+    "initialState": {},
+    "request": "Order 300 units for each warehouse, then move 200 units from Warehouse B to Warehouse A.",
+    "goal": [
+      {
+        "thing": "warehouse-a",
+        "property": "currentStock",
+        "op": "=",
+        "value": 2000
+      },
+      {
+        "thing": "warehouse-b",
+        "property": "currentStock",
+        "op": "=",
+        "value": 1900
+      },
+      {
+        "thing": "warehouse-c",
+        "property": "currentStock",
+        "op": "=",
+        "value": 1500
+      },
+      {
+        "thing": "company-budget",
+        "property": "monthlySpent",
+        "op": "=",
+        "value": 80000
+      },
+      {
+        "thing": "warehouse-system",
+        "property": "totalCurrentStock",
+        "op": "=",
+        "value": 5400
+      }
+    ],
+    "optimalPlan": [
+      {
+        "thing": "warehouse-a",
+        "action": "orderStock",
+        "input": {
+          "quantity": 300
+        }
+      },
+      {
+        "thing": "warehouse-b",
+        "action": "orderStock",
+        "input": {
+          "quantity": 300
+        }
+      },
+      {
+        "thing": "warehouse-c",
+        "action": "orderStock",
+        "input": {
+          "quantity": 300
+        }
+      },
+      {
+        "thing": "warehouse-b",
+        "action": "transferStock",
+        "input": {
+          "toWarehouse": "warehouse-a",
+          "quantity": 200
+        }
+      }
+    ]
+  },
+  {
+    "id": "sc-8",
+    "environment": "supply-chain",
+    "level": "L5",
+    "initialState": {},
+    "request": "Bring every warehouse to exactly 50 % utilisation without spending anything.",
+    "note": "Unreachable: the targets (1500, 2000, 1500) sum to 5000 against warehouse-system.totalCurrentStock 4500; transferStock conserves the total and orderStock is the only Action that raises it, and it writes company-budget.monthlySpent every time. Every attempt changes state, so no naiveAttempt.",
+    "goal": [
+      {
+        "thing": "warehouse-a",
+        "property": "currentStock",
+        "op": "=",
+        "value": 1500
+      },
+      {
+        "thing": "warehouse-b",
+        "property": "currentStock",
+        "op": "=",
+        "value": 1800
+      },
+      {
+        "thing": "warehouse-c",
+        "property": "currentStock",
+        "op": "=",
+        "value": 1200
+      },
+      {
+        "thing": "company-budget",
+        "property": "monthlySpent",
+        "op": "=",
+        "value": 35000
+      }
+    ],
+    "optimalPlan": []
+  },
+  {
+    "id": "sc-9",
+    "environment": "supply-chain",
+    "level": "L4",
+    "initialState": {},
+    "request": "Get Warehouse C to 2,700 units and Warehouse B to 2,600, spending at most $40,000.",
+    "goal": [
+      {
+        "thing": "warehouse-c",
+        "property": "currentStock",
+        "op": "=",
+        "value": 2700
+      },
+      {
+        "thing": "warehouse-b",
+        "property": "currentStock",
+        "op": "=",
+        "value": 2600
+      },
+      {
+        "thing": "company-budget",
+        "property": "monthlySpent",
+        "op": "<=",
+        "value": 75000
+      },
+      {
+        "thing": "warehouse-a",
+        "property": "currentStock",
+        "op": "=",
+        "value": 0
+      }
+    ],
+    "optimalPlan": [
+      {
+        "thing": "warehouse-a",
+        "action": "transferStock",
+        "input": {
+          "toWarehouse": "warehouse-c",
+          "quantity": 1500
+        }
+      },
+      {
+        "thing": "warehouse-b",
+        "action": "orderStock",
+        "input": {
+          "quantity": 800
+        }
+      }
+    ],
+    "distractorPlan": [
+      {
+        "thing": "warehouse-c",
+        "action": "orderStock",
+        "input": {
+          "quantity": 1500
+        }
+      },
+      {
+        "thing": "warehouse-b",
+        "action": "orderStock",
+        "input": {
+          "quantity": 800
+        }
+      }
+    ]
+  },
+  {
+    "id": "sc-10",
+    "environment": "supply-chain",
+    "level": "L4",
+    "initialState": {},
+    "request": "Warehouse A should hold 1,000 units, Warehouse B 2,300 and Warehouse C 1,600, spending at most $20,000.",
+    "goal": [
+      {
+        "thing": "warehouse-a",
+        "property": "currentStock",
+        "op": "=",
+        "value": 1000
+      },
+      {
+        "thing": "warehouse-b",
+        "property": "currentStock",
+        "op": "=",
+        "value": 2300
+      },
+      {
+        "thing": "warehouse-c",
+        "property": "currentStock",
+        "op": "=",
+        "value": 1600
+      },
+      {
+        "thing": "company-budget",
+        "property": "monthlySpent",
+        "op": "<=",
+        "value": 55000
+      },
+      {
+        "thing": "warehouse-system",
+        "property": "totalCurrentStock",
+        "op": "=",
+        "value": 4900
+      }
+    ],
+    "optimalPlan": [
+      {
+        "thing": "warehouse-a",
+        "action": "transferStock",
+        "input": {
+          "toWarehouse": "warehouse-b",
+          "quantity": 500
+        }
+      },
+      {
+        "thing": "warehouse-c",
+        "action": "orderStock",
+        "input": {
+          "quantity": 400
+        }
+      }
+    ],
+    "distractorPlan": [
+      {
+        "thing": "warehouse-b",
+        "action": "orderStock",
+        "input": {
+          "quantity": 500
+        }
+      },
+      {
+        "thing": "warehouse-c",
+        "action": "orderStock",
+        "input": {
+          "quantity": 400
+        }
+      }
+    ]
+  },
+  {
+    "id": "sc-11",
+    "environment": "supply-chain",
+    "level": "L0",
+    "initialState": {
+      "warehouse-c": {
+        "currentStock": 2000,
+        "utilizationPercent": 66.66666666666666
+      },
+      "warehouse-system": {
+        "totalCurrentStock": 5300
+      }
+    },
+    "request": "Warehouse C needs 2,000 units, but no money may be spent this month.",
+    "goal": [
+      {
+        "thing": "warehouse-c",
+        "property": "currentStock",
+        "op": "=",
+        "value": 2000
+      },
+      {
+        "thing": "company-budget",
+        "property": "monthlySpent",
+        "op": "=",
+        "value": 35000
+      },
+      {
+        "thing": "warehouse-system",
+        "property": "totalCurrentStock",
+        "op": "=",
+        "value": 5300
+      }
+    ],
+    "optimalPlan": []
+  },
+  {
+    "id": "sc-12",
+    "environment": "supply-chain",
+    "level": "L4",
+    "initialState": {
+      "warehouse-a": {
+        "currentStock": 300,
+        "utilizationPercent": 10.0
+      },
+      "warehouse-system": {
+        "totalCurrentStock": 3300
+      }
+    },
+    "request": "Warehouse C needs 2,000 units, but no money may be spent this month.",
+    "goal": [
+      {
+        "thing": "warehouse-c",
+        "property": "currentStock",
+        "op": "=",
+        "value": 2000
+      },
+      {
+        "thing": "company-budget",
+        "property": "monthlySpent",
+        "op": "=",
+        "value": 35000
+      },
+      {
+        "thing": "warehouse-system",
+        "property": "totalCurrentStock",
+        "op": "=",
+        "value": 3300
+      },
+      {
+        "thing": "warehouse-a",
+        "property": "currentStock",
+        "op": "=",
+        "value": 300
+      }
+    ],
+    "optimalPlan": [
+      {
+        "thing": "warehouse-b",
+        "action": "transferStock",
+        "input": {
+          "toWarehouse": "warehouse-c",
+          "quantity": 800
+        }
+      }
+    ],
+    "distractorPlan": [
+      {
+        "thing": "warehouse-a",
+        "action": "transferStock",
+        "input": {
+          "toWarehouse": "warehouse-c",
+          "quantity": 800
+        }
+      }
+    ]
+  },
+  {
+    "id": "sc-13",
+    "environment": "supply-chain",
+    "level": "L1",
+    "initialState": {},
+    "request": "Order 400 units for Warehouse B.",
+    "goal": [
+      {
+        "thing": "warehouse-b",
+        "property": "currentStock",
+        "op": "=",
+        "value": 2200
+      },
+      {
+        "thing": "company-budget",
+        "property": "monthlySpent",
+        "op": "=",
+        "value": 55000
+      }
+    ],
+    "optimalPlan": [
+      {
+        "thing": "warehouse-b",
+        "action": "orderStock",
+        "input": {
+          "quantity": 400
+        }
+      }
+    ]
+  },
+  {
+    "id": "sc-14",
+    "environment": "supply-chain",
+    "level": "L2",
+    "initialState": {},
+    "request": "Order 200 units each for Warehouse A and Warehouse C.",
+    "goal": [
+      {
+        "thing": "warehouse-a",
+        "property": "currentStock",
+        "op": "=",
+        "value": 1700
+      },
+      {
+        "thing": "warehouse-c",
+        "property": "currentStock",
+        "op": "=",
+        "value": 1400
+      },
+      {
+        "thing": "warehouse-b",
+        "property": "currentStock",
+        "op": "=",
+        "value": 1800
+      }
+    ],
+    "optimalPlan": [
+      {
+        "thing": "warehouse-a",
+        "action": "orderStock",
+        "input": {
+          "quantity": 200
+        }
+      },
+      {
+        "thing": "warehouse-c",
+        "action": "orderStock",
+        "input": {
+          "quantity": 200
+        }
+      }
+    ]
+  },
+  {
+    "id": "sc-15",
+    "environment": "supply-chain",
+    "level": "L2",
+    "initialState": {},
+    "request": "Order 100 more units each for Warehouse A and Warehouse B.",
+    "goal": [
+      {
+        "thing": "warehouse-a",
+        "property": "currentStock",
+        "op": "=",
+        "value": 1600
+      },
+      {
+        "thing": "warehouse-b",
+        "property": "currentStock",
+        "op": "=",
+        "value": 1900
+      },
+      {
+        "thing": "warehouse-c",
+        "property": "currentStock",
+        "op": "=",
+        "value": 1200
+      }
+    ],
+    "optimalPlan": [
+      {
+        "thing": "warehouse-a",
+        "action": "orderStock",
+        "input": {
+          "quantity": 100
+        }
+      },
+      {
+        "thing": "warehouse-b",
+        "action": "orderStock",
+        "input": {
+          "quantity": 100
+        }
+      }
+    ]
+  }
+]

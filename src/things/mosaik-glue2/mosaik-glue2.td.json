@@ -1,0 +1,113 @@
+{
+  "@context": [
+    "https://www.w3.org/2022/wot/td/v1.1",
+    {
+      "arena": "https://solid.ti.rw.fau.de/public/ns/arena#"
+    }
+  ],
+  "@type": [
+    "arena:Station",
+    "arena:Workstation"
+  ],
+  "title": "glue2",
+  "description": "A station at a fixed position on the shopfloor that realises one service. Each of its Actions runs one recipe: it produces the recipe's output product at the station's own position, but only while every input product of that recipe already lies at the station. The Actions themselves differ per station and are given in the instance Thing Descriptions.",
+  "securityDefinitions": {
+    "nosec_sc": {
+      "scheme": "nosec"
+    }
+  },
+  "security": "nosec_sc",
+  "properties": {
+    "xpos": {
+      "type": "number",
+      "title": "Position on the x axis",
+      "readOnly": true,
+      "writeOnly": false,
+      "observable": true,
+      "@type": "arena:XPosition"
+    },
+    "ypos": {
+      "type": "number",
+      "title": "Position on the y axis",
+      "readOnly": true,
+      "writeOnly": false,
+      "observable": true,
+      "@type": "arena:YPosition"
+    },
+    "service": {
+      "type": "string",
+      "title": "The service this station realises",
+      "readOnly": true,
+      "writeOnly": false,
+      "observable": true
+    }
+  },
+  "actions": {
+    "produceCaseWithBattery": {
+      "title": "produce caseWithBattery",
+      "description": "Run the caseWithBattery recipe: consume battery, caseWithSensorModule and place caseWithBattery at this station. Has no effect unless every input already lies at the station.",
+      "input": {
+        "type": "string",
+        "enum": [
+          "produceIt"
+        ],
+        "title": "trigger"
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          }
+        }
+      },
+      "safe": false,
+      "idempotent": false,
+      "vre:effects": "const battery = <battery>;\nconst caseWithSensorModule = <casewithsensormodule>;\nconst caseWithBattery = <casewithbattery>;\ncaseWithBattery.xpos' = battery.xpos == xpos && battery.ypos == ypos\n  && caseWithSensorModule.xpos == xpos && caseWithSensorModule.ypos == ypos ? xpos : caseWithBattery.xpos;\ncaseWithBattery.ypos' = battery.xpos == xpos && battery.ypos == ypos\n  && caseWithSensorModule.xpos == xpos && caseWithSensorModule.ypos == ypos ? ypos : caseWithBattery.ypos;\ncaseWithBattery.state' = battery.xpos == xpos && battery.ypos == ypos\n  && caseWithSensorModule.xpos == xpos && caseWithSensorModule.ypos == ypos ? \"initialState\" : caseWithBattery.state;\noutput.success = battery.xpos == xpos && battery.ypos == ypos\n  && caseWithSensorModule.xpos == xpos && caseWithSensorModule.ypos == ypos;"
+    },
+    "produceDisplayUnit": {
+      "title": "produce displayUnit",
+      "description": "Run the displayUnit recipe: consume glass, lcd and place displayUnit at this station. Has no effect unless every input already lies at the station.",
+      "input": {
+        "type": "string",
+        "enum": [
+          "produceIt"
+        ],
+        "title": "trigger"
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          }
+        }
+      },
+      "safe": false,
+      "idempotent": false,
+      "vre:effects": "const glass = <glass>;\nconst lcd = <lcd>;\nconst displayUnit = <displayunit>;\ndisplayUnit.xpos' = glass.xpos == xpos && glass.ypos == ypos\n  && lcd.xpos == xpos && lcd.ypos == ypos ? xpos : displayUnit.xpos;\ndisplayUnit.ypos' = glass.xpos == xpos && glass.ypos == ypos\n  && lcd.xpos == xpos && lcd.ypos == ypos ? ypos : displayUnit.ypos;\ndisplayUnit.state' = glass.xpos == xpos && glass.ypos == ypos\n  && lcd.xpos == xpos && lcd.ypos == ypos ? \"initialState\" : displayUnit.state;\noutput.success = glass.xpos == xpos && glass.ypos == ypos\n  && lcd.xpos == xpos && lcd.ypos == ypos;"
+    },
+    "produceSmartphone": {
+      "title": "produce smartphone",
+      "description": "Run the smartphone recipe: consume caseWithBattery, displayUnit and place smartphone at this station. Has no effect unless every input already lies at the station.",
+      "input": {
+        "type": "string",
+        "enum": [
+          "produceIt"
+        ],
+        "title": "trigger"
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          }
+        }
+      },
+      "safe": false,
+      "idempotent": false,
+      "vre:effects": "const caseWithBattery = <casewithbattery>;\nconst displayUnit = <displayunit>;\nconst smartphone = <smartphone>;\nsmartphone.xpos' = caseWithBattery.xpos == xpos && caseWithBattery.ypos == ypos\n  && displayUnit.xpos == xpos && displayUnit.ypos == ypos ? xpos : smartphone.xpos;\nsmartphone.ypos' = caseWithBattery.xpos == xpos && caseWithBattery.ypos == ypos\n  && displayUnit.xpos == xpos && displayUnit.ypos == ypos ? ypos : smartphone.ypos;\nsmartphone.state' = caseWithBattery.xpos == xpos && caseWithBattery.ypos == ypos\n  && displayUnit.xpos == xpos && displayUnit.ypos == ypos ? \"initialState\" : smartphone.state;\noutput.success = caseWithBattery.xpos == xpos && caseWithBattery.ypos == ypos\n  && displayUnit.xpos == xpos && displayUnit.ypos == ypos;"
+    }
+  }
+}

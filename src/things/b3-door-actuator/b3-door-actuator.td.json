@@ -1,0 +1,50 @@
+{
+  "@context": [
+    "https://www.w3.org/2022/wot/td/v1.1",
+    {
+      "brick": "http://buildsys.org/ontologies/Brick#"
+    }
+  ],
+  "@type": "brick:Motor",
+  "title": "Door actuator",
+  "description": "The motor that opens and shuts the door of one room. It writes the open state that the room's door contact sensor reports, so operating it is a cross-Thing effect.",
+  "securityDefinitions": {
+    "nosec_sc": {
+      "scheme": "nosec"
+    }
+  },
+  "security": "nosec_sc",
+  "properties": {
+    "sensor": {
+      "type": "string",
+      "format": "uri-reference",
+      "title": "The door contact sensor this motor drives",
+      "readOnly": true,
+      "writeOnly": false,
+      "observable": true
+    }
+  },
+  "actions": {
+    "setOpen": {
+      "title": "Open or close door",
+      "input": {
+        "type": "boolean",
+        "title": "open"
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "isOpen": {
+            "type": "boolean"
+          }
+        }
+      },
+      "safe": false,
+      "idempotent": false,
+      "vre:effects": "sensor.isOpen' = open;\noutput.success = true;\noutput.isOpen = sensor.isOpen';"
+    }
+  }
+}

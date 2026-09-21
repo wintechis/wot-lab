@@ -10,12 +10,12 @@ import { createLoggers } from '../utils/debug.js';
 import { ThingFactory } from './ThingFactory.js';
 import {
   clearUriAliases,
+  currentUriAliases,
   resolveThing,
   setUriAlias,
   unregisterExposedThing
 } from './crossThing.js';
 import { EnvManifest } from './environments.js';
-import { setVirtualTime } from './clock.js';
 import {
   ThingModelInfo,
   listThingModels,
@@ -42,6 +42,9 @@ export class ThingRegistry {
   // initial conditions between benchmark runs.
   private readonly initialStates = new Map<string, Record<string, unknown>>();
   private currentEnvironment?: string;
+  // The Things the current environment brought online, as opposed to ones added
+  // beside it: the first are reproduced by `--env`, the rest by `--things`.
+  private readonly environmentIds = new Set<string>();
 
   constructor(
     wot: typeof WoT,
@@ -71,6 +74,9 @@ export class ThingRegistry {
   startupRequests(): ThingRequest[] {
     const counts = new Map<string, number>();
     for (const thing of this.things.values()) {
+      if (this.environmentIds.has(thing.id)) {
+        continue;
+      }
       counts.set(thing.model, (counts.get(thing.model) ?? 0) + 1);
     }
     return [...counts].map(([model, count]) => ({ model, count }));
@@ -144,10 +150,11 @@ export class ThingRegistry {
     id: string,
     title: string,
     stateOverride?: Record<string, unknown>,
-    linksOverride?: Record<string, unknown>[]
+    linksOverride?: Record<string, unknown>[],
+    tdOverride?: Record<string, unknown>
   ): Promise<LabThing> {
     try {
-      const handler = await loadThing(model, id, title, stateOverride, linksOverride);
+      const handler = await loadThing(model, id, title, stateOverride, linksOverride, tdOverride);
       this.initialStates.set(id, clone(handler.currentState as Record<string, unknown>));
       const result = await this.factory.createThing(handler);
       if (!result.success) {
@@ -173,30 +180,80 @@ export class ThingRegistry {
    * Bring a whole environment online: every Thing under its pinned id and
    * initial state, with the manifest's URI aliases registered first so a
    * scenario's cross-Thing references resolve to these instances.
+   *
+   * With `replace`, everything running is taken offline first, so the lab is
+   * exactly the manifest afterwards. Either way the manifest is checked in full
+   * before anything changes, and a Thing that fails to come online takes the
+   * ones before it down again: a start succeeds or leaves nothing of itself.
    */
-  async instantiateEnvironment(manifest: EnvManifest): Promise<LabThing[]> {
+  async instantiateEnvironment(
+    manifest: EnvManifest,
+    options: { replace?: boolean } = {}
+  ): Promise<LabThing[]> {
+    const problems: string[] = [];
+    const titles = new Map<string, string>();
+    const ids = new Set<string>();
+    for (const spec of manifest.things) {
+      const id = normalizeThingId(spec.id);
+      if (ids.has(id)) {
+        problems.push(`id '${id}' is used twice`);
+      } else if (!options.replace && this.isTaken(id)) {
+        problems.push(`id '${id}' is already in use`);
+      }
+      ids.add(id);
+      if (!titles.has(spec.model)) {
+        const modelInfo = await readThingModel(spec.model);
+        if (!modelInfo) {
+          problems.push(`unknown Thing Model '${spec.model}'`);
+          continue;
+        }
+        titles.set(spec.model, modelInfo.title);
+      }
+    }
+    if (problems.length) {
+      throw new Error(`Environment '${manifest.name}': ${[...new Set(problems)].join('; ')}`);
+    }
+
+    if (options.replace) {
+      await this.removeAll();
+    }
+    // What a failed start puts back: beside running Things, the aliases of the
+    // environment that is still up; after a replace, none.
+    const previousAliases = currentUriAliases();
     clearUriAliases();
     for (const [uri, target] of Object.entries(manifest.uriAliases ?? {})) {
       setUriAlias(uri, target);
     }
-    if (manifest.clock) {
-      setVirtualTime(manifest.clock);
-    }
-
     const created: LabThing[] = [];
-    for (const spec of manifest.things) {
-      const id = normalizeThingId(spec.id);
-      if (this.isTaken(id)) {
-        throw new Error(`Environment '${manifest.name}': id '${id}' is already in use`);
+    try {
+      for (const spec of manifest.things) {
+        created.push(
+          await this.bringOnline(
+            spec.model,
+            normalizeThingId(spec.id),
+            spec.title ?? titles.get(spec.model) ?? spec.model,
+            spec.state,
+            spec.links,
+            spec.td
+          )
+        );
       }
-      const modelInfo = await readThingModel(spec.model);
-      if (!modelInfo) {
-        throw new Error(`Environment '${manifest.name}': unknown Thing Model '${spec.model}'`);
+    } catch (cause) {
+      for (const thing of created) {
+        await this.remove(thing.id);
       }
-      created.push(await this.bringOnline(spec.model, id, spec.title ?? modelInfo.title, spec.state, spec.links));
+      clearUriAliases();
+      for (const [uri, target] of previousAliases) {
+        setUriAlias(uri, target);
+      }
+      throw cause;
     }
     this.currentEnvironment = manifest.name;
-    info(`Environment '${manifest.name}' online: ${created.map((t) => t.id).join(', ')}`);
+    this.environmentIds.clear();
+    for (const thing of created) {
+      this.environmentIds.add(thing.id);
+    }
+    info(`Environment '${manifest.name}' online: ${created.length} Thing(s)`);
     return created;
   }
 
@@ -285,7 +342,25 @@ export class ThingRegistry {
     unregisterExposedThing(normalized);
     this.things.delete(normalized);
     this.initialStates.delete(normalized);
+    // An environment is running for as long as any of its Things is.
+    if (this.environmentIds.delete(normalized) && !this.environmentIds.size) {
+      this.currentEnvironment = undefined;
+    }
     info(`Removed Thing '${normalized}'`);
     return true;
+  }
+
+  /** Take every Thing offline, leaving an empty lab. Returns the ids removed. */
+  async removeAll(): Promise<string[]> {
+    const removed: string[] = [];
+    for (const id of [...this.things.keys()]) {
+      if (await this.remove(id)) {
+        removed.push(id);
+      }
+    }
+    clearUriAliases();
+    this.environmentIds.clear();
+    this.currentEnvironment = undefined;
+    return removed;
   }
 }

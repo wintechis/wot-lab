@@ -1,4 +1,5 @@
 {
     "monthlyBudget": 100000,
-    "monthlySpent": 0
+    "monthlySpent": 0,
+    "remainingBudget": 100000
 }

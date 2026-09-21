@@ -1,0 +1,3877 @@
+{
+  "Room_18": {
+    "label": "18",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-18-colorlamp",
+      "room-18-door-actuator",
+      "room-18-door-sensor",
+      "room-18-heater",
+      "room-18-heater-sensor",
+      "room-18-window-actuator",
+      "room-18-window-sensor"
+    ]
+  },
+  "Room_23": {
+    "label": "23",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-23-colorlamp",
+      "room-23-door-actuator",
+      "room-23-door-sensor",
+      "room-23-heater",
+      "room-23-heater-sensor",
+      "room-23-window-actuator",
+      "room-23-window-sensor"
+    ]
+  },
+  "Room_Aisle": {
+    "label": "Aisle",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-aisle-colorlamp",
+      "room-aisle-door-actuator",
+      "room-aisle-door-sensor",
+      "room-aisle-heater",
+      "room-aisle-heater-sensor",
+      "room-aisle-window-actuator",
+      "room-aisle-window-sensor"
+    ]
+  },
+  "Room_AisleWay": {
+    "label": "AisleWay",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-aisleway-colorlamp",
+      "room-aisleway-door-actuator",
+      "room-aisleway-door-sensor",
+      "room-aisleway-heater",
+      "room-aisleway-heater-sensor",
+      "room-aisleway-window-actuator",
+      "room-aisleway-window-sensor"
+    ]
+  },
+  "Room_Atrium": {
+    "label": "Atrium",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-atrium-colorlamp",
+      "room-atrium-door-actuator",
+      "room-atrium-door-sensor",
+      "room-atrium-heater",
+      "room-atrium-heater-sensor",
+      "room-atrium-window-actuator",
+      "room-atrium-window-sensor",
+      "sor42-1stflr-atrium-in"
+    ]
+  },
+  "Room_BackAisle": {
+    "label": "BackAisle",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-backaisle-colorlamp",
+      "room-backaisle-door-actuator",
+      "room-backaisle-door-sensor",
+      "room-backaisle-heater",
+      "room-backaisle-heater-sensor",
+      "room-backaisle-window-actuator",
+      "room-backaisle-window-sensor"
+    ]
+  },
+  "Room_Beckett": {
+    "label": "Beckett",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-beckett-colorlamp",
+      "room-beckett-door-actuator",
+      "room-beckett-door-sensor",
+      "room-beckett-heater",
+      "room-beckett-heater-sensor",
+      "room-beckett-window-actuator",
+      "room-beckett-window-sensor",
+      "d01-z3-g9-10-people-meet-mm95-trigger"
+    ]
+  },
+  "Room_BoardRoom": {
+    "label": "BoardRoom",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-boardroom-colorlamp",
+      "room-boardroom-door-actuator",
+      "room-boardroom-door-sensor",
+      "room-boardroom-heater",
+      "room-boardroom-heater-sensor",
+      "room-boardroom-window-actuator",
+      "room-boardroom-window-sensor"
+    ]
+  },
+  "Room_Breakout": {
+    "label": "Breakout",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-breakout-colorlamp",
+      "room-breakout-door-actuator",
+      "room-breakout-door-sensor",
+      "room-breakout-heater",
+      "room-breakout-heater-sensor",
+      "room-breakout-window-actuator",
+      "room-breakout-window-sensor"
+    ]
+  },
+  "Room_Briefcenter": {
+    "label": "Briefcenter",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-briefcenter-colorlamp",
+      "room-briefcenter-door-actuator",
+      "room-briefcenter-door-sensor",
+      "room-briefcenter-heater",
+      "room-briefcenter-heater-sensor",
+      "room-briefcenter-window-actuator",
+      "room-briefcenter-window-sensor"
+    ]
+  },
+  "Room_CarCharge": {
+    "label": "CarCharge",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-carcharge-colorlamp",
+      "room-carcharge-door-actuator",
+      "room-carcharge-door-sensor",
+      "room-carcharge-heater",
+      "room-carcharge-heater-sensor",
+      "room-carcharge-window-actuator",
+      "room-carcharge-window-sensor"
+    ]
+  },
+  "Room_Clean": {
+    "label": "Clean",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-clean-colorlamp",
+      "room-clean-door-actuator",
+      "room-clean-door-sensor",
+      "room-clean-heater",
+      "room-clean-heater-sensor",
+      "room-clean-window-actuator",
+      "room-clean-window-sensor"
+    ]
+  },
+  "Room_CoffeeDesk": {
+    "label": "CoffeeDesk",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-coffeedesk-colorlamp",
+      "room-coffeedesk-door-actuator",
+      "room-coffeedesk-door-sensor",
+      "room-coffeedesk-heater",
+      "room-coffeedesk-heater-sensor",
+      "room-coffeedesk-window-actuator",
+      "room-coffeedesk-window-sensor"
+    ]
+  },
+  "Room_Coffeedesk": {
+    "label": "Coffeedesk",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-coffeedesk-colorlamp-2",
+      "room-coffeedesk-door-actuator-2",
+      "room-coffeedesk-door-sensor-2",
+      "room-coffeedesk-heater-2",
+      "room-coffeedesk-heater-sensor-2",
+      "room-coffeedesk-window-actuator-2",
+      "room-coffeedesk-window-sensor-2"
+    ]
+  },
+  "Room_CollaborationSpace": {
+    "label": "CollaborationSpace",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "room-collaborationspace-colorlamp",
+      "room-collaborationspace-door-actuator",
+      "room-collaborationspace-door-sensor",
+      "room-collaborationspace-heater",
+      "room-collaborationspace-heater-sensor",
+      "room-collaborationspace-window-actuator",
+      "room-collaborationspace-window-sensor"
+    ]
+  },
+  "Room_CommsRoom": {
+    "label": "CommsRoom",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-commsroom-colorlamp",
+      "room-commsroom-door-actuator",
+      "room-commsroom-door-sensor",
+      "room-commsroom-heater",
+      "room-commsroom-heater-sensor",
+      "room-commsroom-window-actuator",
+      "room-commsroom-window-sensor"
+    ]
+  },
+  "Room_ComputerRoom": {
+    "label": "ComputerRoom",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-computerroom-colorlamp",
+      "room-computerroom-door-actuator",
+      "room-computerroom-door-sensor",
+      "room-computerroom-heater",
+      "room-computerroom-heater-sensor",
+      "room-computerroom-window-actuator",
+      "room-computerroom-window-sensor"
+    ]
+  },
+  "Room_Corridor": {
+    "label": "Corridor",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-corridor-colorlamp",
+      "room-corridor-door-actuator",
+      "room-corridor-door-sensor",
+      "room-corridor-heater",
+      "room-corridor-heater-sensor",
+      "room-corridor-window-actuator",
+      "room-corridor-window-sensor"
+    ]
+  },
+  "Room_DisabledWC": {
+    "label": "DisabledWC",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-disabledwc-colorlamp",
+      "room-disabledwc-door-actuator",
+      "room-disabledwc-door-sensor",
+      "room-disabledwc-heater",
+      "room-disabledwc-heater-sensor",
+      "room-disabledwc-window-actuator",
+      "room-disabledwc-window-sensor"
+    ]
+  },
+  "Room_ExpoSpace": {
+    "label": "ExpoSpace",
+    "floor": null,
+    "things": [
+      "room-expospace-colorlamp",
+      "room-expospace-door-actuator",
+      "room-expospace-door-sensor",
+      "room-expospace-heater",
+      "room-expospace-heater-sensor",
+      "room-expospace-window-actuator",
+      "room-expospace-window-sensor"
+    ]
+  },
+  "Room_ExpoSpaceWC": {
+    "label": "ExpoSpaceWC",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-expospacewc-colorlamp",
+      "room-expospacewc-door-actuator",
+      "room-expospacewc-door-sensor",
+      "room-expospacewc-heater",
+      "room-expospacewc-heater-sensor",
+      "room-expospacewc-window-actuator",
+      "room-expospacewc-window-sensor"
+    ]
+  },
+  "Room_FemaleWC": {
+    "label": "FemaleWC",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-femalewc-colorlamp",
+      "room-femalewc-door-actuator",
+      "room-femalewc-door-sensor",
+      "room-femalewc-heater",
+      "room-femalewc-heater-sensor",
+      "room-femalewc-window-actuator",
+      "room-femalewc-window-sensor"
+    ]
+  },
+  "Room_FemaleWC_Shower": {
+    "label": "FemaleWC_Shower",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-femalewc-shower-colorlamp",
+      "room-femalewc-shower-door-actuator",
+      "room-femalewc-shower-door-sensor",
+      "room-femalewc-shower-heater",
+      "room-femalewc-shower-heater-sensor",
+      "room-femalewc-shower-window-actuator",
+      "room-femalewc-shower-window-sensor"
+    ]
+  },
+  "Room_FemaleWashroom": {
+    "label": "FemaleWashroom",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-femalewashroom-colorlamp",
+      "room-femalewashroom-door-actuator",
+      "room-femalewashroom-door-sensor",
+      "room-femalewashroom-heater",
+      "room-femalewashroom-heater-sensor",
+      "room-femalewashroom-window-actuator",
+      "room-femalewashroom-window-sensor"
+    ]
+  },
+  "Room_Fridge": {
+    "label": "Fridge",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-fridge-colorlamp",
+      "room-fridge-door-actuator",
+      "room-fridge-door-sensor",
+      "room-fridge-heater",
+      "room-fridge-heater-sensor",
+      "room-fridge-window-actuator",
+      "room-fridge-window-sensor"
+    ]
+  },
+  "Room_Front": {
+    "label": "Front",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "b3-frnt-door-out",
+      "room-front-colorlamp",
+      "room-front-door-actuator",
+      "room-front-door-sensor",
+      "room-front-heater",
+      "room-front-heater-sensor",
+      "room-front-window-actuator",
+      "room-front-window-sensor"
+    ]
+  },
+  "Room_FrontAisle": {
+    "label": "FrontAisle",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "room-frontaisle-colorlamp",
+      "room-frontaisle-door-actuator",
+      "room-frontaisle-door-sensor",
+      "room-frontaisle-heater",
+      "room-frontaisle-heater-sensor",
+      "room-frontaisle-window-actuator",
+      "room-frontaisle-window-sensor"
+    ]
+  },
+  "Room_Kavanagh": {
+    "label": "Kavanagh",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-kavanagh-colorlamp",
+      "room-kavanagh-door-actuator",
+      "room-kavanagh-door-sensor",
+      "room-kavanagh-heater",
+      "room-kavanagh-heater-sensor",
+      "room-kavanagh-window-actuator",
+      "room-kavanagh-window-sensor"
+    ]
+  },
+  "Room_MeetingRoom": {
+    "label": "MeetingRoom",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-meetingroom-colorlamp",
+      "room-meetingroom-door-actuator",
+      "room-meetingroom-door-sensor",
+      "room-meetingroom-heater",
+      "room-meetingroom-heater-sensor",
+      "room-meetingroom-window-actuator",
+      "room-meetingroom-window-sensor"
+    ]
+  },
+  "Room_MenWC": {
+    "label": "MenWC",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-menwc-colorlamp",
+      "room-menwc-door-actuator",
+      "room-menwc-door-sensor",
+      "room-menwc-heater",
+      "room-menwc-heater-sensor",
+      "room-menwc-window-actuator",
+      "room-menwc-window-sensor"
+    ]
+  },
+  "Room_MenWC_Shower": {
+    "label": "MenWC_Shower",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-menwc-shower-colorlamp",
+      "room-menwc-shower-door-actuator",
+      "room-menwc-shower-door-sensor",
+      "room-menwc-shower-heater",
+      "room-menwc-shower-heater-sensor",
+      "room-menwc-shower-window-actuator",
+      "room-menwc-shower-window-sensor"
+    ]
+  },
+  "Room_MensWashroom": {
+    "label": "MensWashroom",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-menswashroom-colorlamp",
+      "room-menswashroom-door-actuator",
+      "room-menswashroom-door-sensor",
+      "room-menswashroom-heater",
+      "room-menswashroom-heater-sensor",
+      "room-menswashroom-window-actuator",
+      "room-menswashroom-window-sensor"
+    ]
+  },
+  "Room_MetHal": {
+    "label": "MetHal",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-methal-colorlamp",
+      "room-methal-door-actuator",
+      "room-methal-door-sensor",
+      "room-methal-heater",
+      "room-methal-heater-sensor",
+      "room-methal-window-actuator",
+      "room-methal-window-sensor"
+    ]
+  },
+  "Room_MiddleAisle": {
+    "label": "MiddleAisle",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "room-middleaisle-colorlamp",
+      "room-middleaisle-door-actuator",
+      "room-middleaisle-door-sensor",
+      "room-middleaisle-heater",
+      "room-middleaisle-heater-sensor",
+      "room-middleaisle-window-actuator",
+      "room-middleaisle-window-sensor"
+    ]
+  },
+  "Room_OpenOffice": {
+    "label": "OpenOffice",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-openoffice-colorlamp",
+      "room-openoffice-door-actuator",
+      "room-openoffice-door-sensor",
+      "room-openoffice-heater",
+      "room-openoffice-heater-sensor",
+      "room-openoffice-window-actuator",
+      "room-openoffice-window-sensor"
+    ]
+  },
+  "Room_OpenPlan41129": {
+    "label": "OpenPlan41-1-29",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "room-openplan41129-colorlamp",
+      "room-openplan41129-door-actuator",
+      "room-openplan41129-door-sensor",
+      "room-openplan41129-heater",
+      "room-openplan41129-heater-sensor",
+      "room-openplan41129-window-actuator",
+      "room-openplan41129-window-sensor"
+    ]
+  },
+  "Room_OpenPlan42119": {
+    "label": "OpenPlan42-1-19",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "room-openplan42119-colorlamp",
+      "room-openplan42119-door-actuator",
+      "room-openplan42119-door-sensor",
+      "room-openplan42119-heater",
+      "room-openplan42119-heater-sensor",
+      "room-openplan42119-window-actuator",
+      "room-openplan42119-window-sensor"
+    ]
+  },
+  "Room_PrintRoom": {
+    "label": "PrintRoom",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-printroom-colorlamp",
+      "room-printroom-door-actuator",
+      "room-printroom-door-sensor",
+      "room-printroom-heater",
+      "room-printroom-heater-sensor",
+      "room-printroom-window-actuator",
+      "room-printroom-window-sensor"
+    ]
+  },
+  "Room_QR029": {
+    "label": "QR029",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "room-qr029-colorlamp",
+      "room-qr029-door-actuator",
+      "room-qr029-door-sensor",
+      "room-qr029-heater",
+      "room-qr029-heater-sensor",
+      "room-qr029-window-actuator",
+      "room-qr029-window-sensor"
+    ]
+  },
+  "Room_QR031": {
+    "label": "QR031",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "room-qr031-colorlamp",
+      "room-qr031-door-actuator",
+      "room-qr031-door-sensor",
+      "room-qr031-heater",
+      "room-qr031-heater-sensor",
+      "room-qr031-window-actuator",
+      "room-qr031-window-sensor"
+    ]
+  },
+  "Room_QR035": {
+    "label": "QR035",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "room-qr035-colorlamp",
+      "room-qr035-door-actuator",
+      "room-qr035-door-sensor",
+      "room-qr035-heater",
+      "room-qr035-heater-sensor",
+      "room-qr035-window-actuator",
+      "room-qr035-window-sensor"
+    ]
+  },
+  "Room_QR037": {
+    "label": "QR037",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "room-qr037-colorlamp",
+      "room-qr037-door-actuator",
+      "room-qr037-door-sensor",
+      "room-qr037-heater",
+      "room-qr037-heater-sensor",
+      "room-qr037-window-actuator",
+      "room-qr037-window-sensor"
+    ]
+  },
+  "Room_QR29": {
+    "label": "QR29",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "room-qr29-colorlamp",
+      "room-qr29-door-actuator",
+      "room-qr29-door-sensor",
+      "room-qr29-heater",
+      "room-qr29-heater-sensor",
+      "room-qr29-window-actuator",
+      "room-qr29-window-sensor"
+    ]
+  },
+  "Room_QR31": {
+    "label": "QR31",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "room-qr31-colorlamp",
+      "room-qr31-door-actuator",
+      "room-qr31-door-sensor",
+      "room-qr31-heater",
+      "room-qr31-heater-sensor",
+      "room-qr31-window-actuator",
+      "room-qr31-window-sensor"
+    ]
+  },
+  "Room_QR35": {
+    "label": "QR35",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "room-qr35-colorlamp",
+      "room-qr35-door-actuator",
+      "room-qr35-door-sensor",
+      "room-qr35-heater",
+      "room-qr35-heater-sensor",
+      "room-qr35-window-actuator",
+      "room-qr35-window-sensor"
+    ]
+  },
+  "Room_QR37": {
+    "label": "QR37",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "room-qr37-colorlamp",
+      "room-qr37-door-actuator",
+      "room-qr37-door-sensor",
+      "room-qr37-heater",
+      "room-qr37-heater-sensor",
+      "room-qr37-window-actuator",
+      "room-qr37-window-sensor"
+    ]
+  },
+  "Room_RM": {
+    "label": "RM",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "room-rm-colorlamp",
+      "room-rm-door-actuator",
+      "room-rm-door-sensor",
+      "room-rm-heater",
+      "room-rm-heater-sensor",
+      "room-rm-window-actuator",
+      "room-rm-window-sensor"
+    ]
+  },
+  "Room_Reception": {
+    "label": "Reception",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-reception-colorlamp",
+      "room-reception-door-actuator",
+      "room-reception-door-sensor",
+      "room-reception-heater",
+      "room-reception-heater-sensor",
+      "room-reception-window-actuator",
+      "room-reception-window-sensor",
+      "sor42-1stflr-rec-out",
+      "sor42-gndflr-rec-out"
+    ]
+  },
+  "Room_SOR42_1_U1": {
+    "label": "SOR42_1_U1",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "room-sor42-1-u1-colorlamp",
+      "room-sor42-1-u1-door-actuator",
+      "room-sor42-1-u1-door-sensor",
+      "room-sor42-1-u1-heater",
+      "room-sor42-1-u1-heater-sensor",
+      "room-sor42-1-u1-window-actuator",
+      "room-sor42-1-u1-window-sensor"
+    ]
+  },
+  "Room_SOR42_1_U10": {
+    "label": "SOR42_1_U10",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "room-sor42-1-u10-colorlamp",
+      "room-sor42-1-u10-door-actuator",
+      "room-sor42-1-u10-door-sensor",
+      "room-sor42-1-u10-heater",
+      "room-sor42-1-u10-heater-sensor",
+      "room-sor42-1-u10-window-actuator",
+      "room-sor42-1-u10-window-sensor"
+    ]
+  },
+  "Room_SOR42_1_U11": {
+    "label": "SOR42_1_U11",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "room-sor42-1-u11-colorlamp",
+      "room-sor42-1-u11-door-actuator",
+      "room-sor42-1-u11-door-sensor",
+      "room-sor42-1-u11-heater",
+      "room-sor42-1-u11-heater-sensor",
+      "room-sor42-1-u11-window-actuator",
+      "room-sor42-1-u11-window-sensor"
+    ]
+  },
+  "Room_SOR42_1_U12": {
+    "label": "SOR42_1_U12",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "room-sor42-1-u12-colorlamp",
+      "room-sor42-1-u12-door-actuator",
+      "room-sor42-1-u12-door-sensor",
+      "room-sor42-1-u12-heater",
+      "room-sor42-1-u12-heater-sensor",
+      "room-sor42-1-u12-window-actuator",
+      "room-sor42-1-u12-window-sensor"
+    ]
+  },
+  "Room_SOR42_1_U13": {
+    "label": "SOR42_1_U13",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "room-sor42-1-u13-colorlamp",
+      "room-sor42-1-u13-door-actuator",
+      "room-sor42-1-u13-door-sensor",
+      "room-sor42-1-u13-heater",
+      "room-sor42-1-u13-heater-sensor",
+      "room-sor42-1-u13-window-actuator",
+      "room-sor42-1-u13-window-sensor"
+    ]
+  },
+  "Room_SOR42_1_U14": {
+    "label": "SOR42_1_U14",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "room-sor42-1-u14-colorlamp",
+      "room-sor42-1-u14-door-actuator",
+      "room-sor42-1-u14-door-sensor",
+      "room-sor42-1-u14-heater",
+      "room-sor42-1-u14-heater-sensor",
+      "room-sor42-1-u14-window-actuator",
+      "room-sor42-1-u14-window-sensor"
+    ]
+  },
+  "Room_SOR42_1_U15": {
+    "label": "SOR42_1_U15",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "room-sor42-1-u15-colorlamp",
+      "room-sor42-1-u15-door-actuator",
+      "room-sor42-1-u15-door-sensor",
+      "room-sor42-1-u15-heater",
+      "room-sor42-1-u15-heater-sensor",
+      "room-sor42-1-u15-window-actuator",
+      "room-sor42-1-u15-window-sensor"
+    ]
+  },
+  "Room_SOR42_1_U16": {
+    "label": "SOR42_1_U16",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "room-sor42-1-u16-colorlamp",
+      "room-sor42-1-u16-door-actuator",
+      "room-sor42-1-u16-door-sensor",
+      "room-sor42-1-u16-heater",
+      "room-sor42-1-u16-heater-sensor",
+      "room-sor42-1-u16-window-actuator",
+      "room-sor42-1-u16-window-sensor"
+    ]
+  },
+  "Room_SOR42_1_U17": {
+    "label": "SOR42_1_U17",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "room-sor42-1-u17-colorlamp",
+      "room-sor42-1-u17-door-actuator",
+      "room-sor42-1-u17-door-sensor",
+      "room-sor42-1-u17-heater",
+      "room-sor42-1-u17-heater-sensor",
+      "room-sor42-1-u17-window-actuator",
+      "room-sor42-1-u17-window-sensor"
+    ]
+  },
+  "Room_SOR42_1_U18": {
+    "label": "SOR42_1_U18",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "room-sor42-1-u18-colorlamp",
+      "room-sor42-1-u18-door-actuator",
+      "room-sor42-1-u18-door-sensor",
+      "room-sor42-1-u18-heater",
+      "room-sor42-1-u18-heater-sensor",
+      "room-sor42-1-u18-window-actuator",
+      "room-sor42-1-u18-window-sensor"
+    ]
+  },
+  "Room_SOR42_1_U19": {
+    "label": "SOR42_1_U19",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "room-sor42-1-u19-colorlamp",
+      "room-sor42-1-u19-door-actuator",
+      "room-sor42-1-u19-door-sensor",
+      "room-sor42-1-u19-heater",
+      "room-sor42-1-u19-heater-sensor",
+      "room-sor42-1-u19-window-actuator",
+      "room-sor42-1-u19-window-sensor"
+    ]
+  },
+  "Room_SOR42_1_U2": {
+    "label": "SOR42_1_U2",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "room-sor42-1-u2-colorlamp",
+      "room-sor42-1-u2-door-actuator",
+      "room-sor42-1-u2-door-sensor",
+      "room-sor42-1-u2-heater",
+      "room-sor42-1-u2-heater-sensor",
+      "room-sor42-1-u2-window-actuator",
+      "room-sor42-1-u2-window-sensor"
+    ]
+  },
+  "Room_SOR42_1_U20": {
+    "label": "SOR42_1_U20",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "room-sor42-1-u20-colorlamp",
+      "room-sor42-1-u20-door-actuator",
+      "room-sor42-1-u20-door-sensor",
+      "room-sor42-1-u20-heater",
+      "room-sor42-1-u20-heater-sensor",
+      "room-sor42-1-u20-window-actuator",
+      "room-sor42-1-u20-window-sensor"
+    ]
+  },
+  "Room_SOR42_1_U21": {
+    "label": "SOR42_1_U21",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "room-sor42-1-u21-colorlamp",
+      "room-sor42-1-u21-door-actuator",
+      "room-sor42-1-u21-door-sensor",
+      "room-sor42-1-u21-heater",
+      "room-sor42-1-u21-heater-sensor",
+      "room-sor42-1-u21-window-actuator",
+      "room-sor42-1-u21-window-sensor"
+    ]
+  },
+  "Room_SOR42_1_U22": {
+    "label": "SOR42_1_U22",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "room-sor42-1-u22-colorlamp",
+      "room-sor42-1-u22-door-actuator",
+      "room-sor42-1-u22-door-sensor",
+      "room-sor42-1-u22-heater",
+      "room-sor42-1-u22-heater-sensor",
+      "room-sor42-1-u22-window-actuator",
+      "room-sor42-1-u22-window-sensor"
+    ]
+  },
+  "Room_SOR42_1_U23": {
+    "label": "SOR42_1_U23",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "room-sor42-1-u23-colorlamp",
+      "room-sor42-1-u23-door-actuator",
+      "room-sor42-1-u23-door-sensor",
+      "room-sor42-1-u23-heater",
+      "room-sor42-1-u23-heater-sensor",
+      "room-sor42-1-u23-window-actuator",
+      "room-sor42-1-u23-window-sensor"
+    ]
+  },
+  "Room_SOR42_1_U3": {
+    "label": "SOR42_1_U3",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "room-sor42-1-u3-colorlamp",
+      "room-sor42-1-u3-door-actuator",
+      "room-sor42-1-u3-door-sensor",
+      "room-sor42-1-u3-heater",
+      "room-sor42-1-u3-heater-sensor",
+      "room-sor42-1-u3-window-actuator",
+      "room-sor42-1-u3-window-sensor"
+    ]
+  },
+  "Room_SOR42_1_U4": {
+    "label": "SOR42_1_U4",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "room-sor42-1-u4-colorlamp",
+      "room-sor42-1-u4-door-actuator",
+      "room-sor42-1-u4-door-sensor",
+      "room-sor42-1-u4-heater",
+      "room-sor42-1-u4-heater-sensor",
+      "room-sor42-1-u4-window-actuator",
+      "room-sor42-1-u4-window-sensor"
+    ]
+  },
+  "Room_SOR42_1_U5": {
+    "label": "SOR42_1_U5",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "room-sor42-1-u5-colorlamp",
+      "room-sor42-1-u5-door-actuator",
+      "room-sor42-1-u5-door-sensor",
+      "room-sor42-1-u5-heater",
+      "room-sor42-1-u5-heater-sensor",
+      "room-sor42-1-u5-window-actuator",
+      "room-sor42-1-u5-window-sensor"
+    ]
+  },
+  "Room_SOR42_1_U6": {
+    "label": "SOR42_1_U6",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "room-sor42-1-u6-colorlamp",
+      "room-sor42-1-u6-door-actuator",
+      "room-sor42-1-u6-door-sensor",
+      "room-sor42-1-u6-heater",
+      "room-sor42-1-u6-heater-sensor",
+      "room-sor42-1-u6-window-actuator",
+      "room-sor42-1-u6-window-sensor"
+    ]
+  },
+  "Room_SOR42_1_U7": {
+    "label": "SOR42_1_U7",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "room-sor42-1-u7-colorlamp",
+      "room-sor42-1-u7-door-actuator",
+      "room-sor42-1-u7-door-sensor",
+      "room-sor42-1-u7-heater",
+      "room-sor42-1-u7-heater-sensor",
+      "room-sor42-1-u7-window-actuator",
+      "room-sor42-1-u7-window-sensor"
+    ]
+  },
+  "Room_SOR42_1_U8": {
+    "label": "SOR42_1_U8",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "room-sor42-1-u8-colorlamp",
+      "room-sor42-1-u8-door-actuator",
+      "room-sor42-1-u8-door-sensor",
+      "room-sor42-1-u8-heater",
+      "room-sor42-1-u8-heater-sensor",
+      "room-sor42-1-u8-window-actuator",
+      "room-sor42-1-u8-window-sensor"
+    ]
+  },
+  "Room_SOR42_1_U9": {
+    "label": "SOR42_1_U9",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "room-sor42-1-u9-colorlamp",
+      "room-sor42-1-u9-door-actuator",
+      "room-sor42-1-u9-door-sensor",
+      "room-sor42-1-u9-heater",
+      "room-sor42-1-u9-heater-sensor",
+      "room-sor42-1-u9-window-actuator",
+      "room-sor42-1-u9-window-sensor"
+    ]
+  },
+  "Room_SOR42_F_1": {
+    "label": "SOR42_F_1",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "b3-42-1f-z3-g1-lght-load",
+      "b3-42-1f-z3-g1-m23-lux-level",
+      "b3-42-1f-z3-g2-lght-load",
+      "b3-42-1f-z3-g2-m24-lux-level",
+      "b3-42-gf-z3-g1-lght-load",
+      "b3-42-gf-z3-g2-lght-load",
+      "room-sor42-f-1-colorlamp",
+      "room-sor42-f-1-door-actuator",
+      "room-sor42-f-1-door-sensor",
+      "room-sor42-f-1-heater",
+      "room-sor42-f-1-heater-sensor",
+      "room-sor42-f-1-window-actuator",
+      "room-sor42-f-1-window-sensor",
+      "d02-z3-g2-workstation4-mm24-trigger"
+    ]
+  },
+  "Room_SOR42_F_13": {
+    "label": "SOR42_F_13",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "b3-42-1f-z4-g5-lght-load",
+      "b3-42-1f-z4-g5-m54-lux-level",
+      "b3-42-1f-z4-g6-lght-load",
+      "b3-42-1f-z4-g6-m55-lux-level",
+      "b3-42-gf-z4-g5-lght-load",
+      "b3-42-gf-z4-g6-lght-load",
+      "room-sor42-f-13-colorlamp",
+      "room-sor42-f-13-door-actuator",
+      "room-sor42-f-13-door-sensor",
+      "room-sor42-f-13-heater",
+      "room-sor42-f-13-heater-sensor",
+      "room-sor42-f-13-window-actuator",
+      "room-sor42-f-13-window-sensor",
+      "d02-z4-g5-quiet-room-mm54-trigger",
+      "d02-z4-g6-quiet-room-mm55-trigger"
+    ]
+  },
+  "Room_SOR42_F_14": {
+    "label": "SOR42_F_14",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "b3-42-1f-z4-g11-lght-load",
+      "b3-42-1f-z4-g11-m56-lux-level",
+      "b3-42-1f-z4-g12-lght-load",
+      "b3-42-1f-z4-g12-m57-lux-level",
+      "b3-42-gf-z4-g11-lght-load",
+      "b3-42-gf-z4-g12-lght-load",
+      "room-sor42-f-14-colorlamp",
+      "room-sor42-f-14-door-actuator",
+      "room-sor42-f-14-door-sensor",
+      "room-sor42-f-14-heater",
+      "room-sor42-f-14-heater-sensor",
+      "room-sor42-f-14-window-actuator",
+      "room-sor42-f-14-window-sensor",
+      "d02-z4-g11-quiet-room-mm56-trigger",
+      "d02-z4-g12-quiet-room-mm57-trigger"
+    ]
+  },
+  "Room_SOR42_F_15": {
+    "label": "SOR42_F_15",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "b3-42-1f-z2-g8-lght-load",
+      "b3-42-1f-z2-g8-m53-lux-level",
+      "room-sor42-f-15-colorlamp",
+      "room-sor42-f-15-door-actuator",
+      "room-sor42-f-15-door-sensor",
+      "room-sor42-f-15-heater",
+      "room-sor42-f-15-heater-sensor",
+      "room-sor42-f-15-window-actuator",
+      "room-sor42-f-15-window-sensor",
+      "d02-z2-g8-6p-meeting-room-mm53-trigger"
+    ]
+  },
+  "Room_SOR42_F_16": {
+    "label": "SOR42_F_16",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "b3-42-1f-z2-g9-lght-load",
+      "b3-42-1f-z2-g9-m58-lux-level",
+      "room-sor42-f-16-colorlamp",
+      "room-sor42-f-16-door-actuator",
+      "room-sor42-f-16-door-sensor",
+      "room-sor42-f-16-heater",
+      "room-sor42-f-16-heater-sensor",
+      "room-sor42-f-16-window-actuator",
+      "room-sor42-f-16-window-sensor",
+      "d02-z2-g9-6p-meeting-room-mm58-trigger"
+    ]
+  },
+  "Room_SOR42_F_17": {
+    "label": "SOR42_F_17",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "b3-42-1f-z4-g3-lght-load",
+      "b3-42-1f-z4-g3-m35-lux-level",
+      "b3-42-1f-z4-g4-lght-load",
+      "b3-42-1f-z4-g4-m36-lux-level",
+      "b3-42-gf-z4-g3-lght-load",
+      "b3-42-gf-z4-g4-lght-load",
+      "room-sor42-f-17-colorlamp",
+      "room-sor42-f-17-door-actuator",
+      "room-sor42-f-17-door-sensor",
+      "room-sor42-f-17-heater",
+      "room-sor42-f-17-heater-sensor",
+      "room-sor42-f-17-window-actuator",
+      "room-sor42-f-17-window-sensor",
+      "d02-z4-g3-workstation4-mm35-trigger",
+      "d02-z4-g4-workstation2-mm36-trigger"
+    ]
+  },
+  "Room_SOR42_F_18": {
+    "label": "SOR42_F_18",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "b3-42-1f-z4-g1-lght-load",
+      "b3-42-1f-z4-g1-m33-lux-level",
+      "b3-42-1f-z4-g2-lght-load",
+      "b3-42-1f-z4-g2-m34-lux-level",
+      "b3-42-gf-z4-g1-lght-load",
+      "b3-42-gf-z4-g2-lght-load",
+      "room-sor42-f-18-colorlamp",
+      "room-sor42-f-18-door-actuator",
+      "room-sor42-f-18-door-sensor",
+      "room-sor42-f-18-heater",
+      "room-sor42-f-18-heater-sensor",
+      "room-sor42-f-18-window-actuator",
+      "room-sor42-f-18-window-sensor",
+      "d02-z4-g1-workstation4-mm33-trigger"
+    ]
+  },
+  "Room_SOR42_F_19": {
+    "label": "SOR42_F_19",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "b3-42-1f-z4-g10-lght-load",
+      "b3-42-1f-z4-g10-m40-lux-level",
+      "b3-42-1f-z4-g9-lght-load",
+      "b3-42-1f-z4-g9-m39-lux-level",
+      "b3-42-gf-z4-g10-lght-load",
+      "b3-42-gf-z4-g9-lght-load",
+      "room-sor42-f-19-colorlamp",
+      "room-sor42-f-19-door-actuator",
+      "room-sor42-f-19-door-sensor",
+      "room-sor42-f-19-heater",
+      "room-sor42-f-19-heater-sensor",
+      "room-sor42-f-19-window-actuator",
+      "room-sor42-f-19-window-sensor",
+      "d02-z4-g9-workstation4-mm39-trigger"
+    ]
+  },
+  "Room_SOR42_F_2": {
+    "label": "SOR42_F_2",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "b3-42-1f-z3-g3-lght-load",
+      "b3-42-1f-z3-g3-m25-lux-level",
+      "b3-42-1f-z3-g4-lght-load",
+      "b3-42-1f-z3-g4-m26-lux-level",
+      "b3-42-gf-z3-g3-lght-load",
+      "b3-42-gf-z3-g4-lght-load",
+      "room-sor42-f-2-colorlamp",
+      "room-sor42-f-2-door-actuator",
+      "room-sor42-f-2-door-sensor",
+      "room-sor42-f-2-heater",
+      "room-sor42-f-2-heater-sensor",
+      "room-sor42-f-2-window-actuator",
+      "room-sor42-f-2-window-sensor",
+      "d02-z3-g3-workstation4-mm25-trigger",
+      "d02-z3-g4-workstation2-mm26-trigger"
+    ]
+  },
+  "Room_SOR42_F_20": {
+    "label": "SOR42_F_20",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "b3-42-1f-z4-g7-lght-load",
+      "b3-42-1f-z4-g7-m37-lux-level",
+      "b3-42-1f-z4-g8-lght-load",
+      "b3-42-1f-z4-g8-m38-lux-level",
+      "b3-42-gf-z4-g7-lght-load",
+      "b3-42-gf-z4-g8-lght-load",
+      "room-sor42-f-20-colorlamp",
+      "room-sor42-f-20-door-actuator",
+      "room-sor42-f-20-door-sensor",
+      "room-sor42-f-20-heater",
+      "room-sor42-f-20-heater-sensor",
+      "room-sor42-f-20-window-actuator",
+      "room-sor42-f-20-window-sensor",
+      "d02-z4-g7-workstation4-mm37-trigger",
+      "d02-z4-g8-workstation4-mm38-trigger"
+    ]
+  },
+  "Room_SOR42_F_21": {
+    "label": "SOR42_F_21",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "b3-42-1f-z2-g12-lght-load",
+      "b3-42-1f-z2-g12-m59-lux-level",
+      "room-sor42-f-21-colorlamp",
+      "room-sor42-f-21-door-actuator",
+      "room-sor42-f-21-door-sensor",
+      "room-sor42-f-21-heater",
+      "room-sor42-f-21-heater-sensor",
+      "room-sor42-f-21-window-actuator",
+      "room-sor42-f-21-window-sensor"
+    ]
+  },
+  "Room_SOR42_F_22": {
+    "label": "SOR42_F_22",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "b3-42-1f-z2-g13-lght-load",
+      "b3-42-1f-z2-g13-m60-lux-level",
+      "room-sor42-f-22-colorlamp",
+      "room-sor42-f-22-door-actuator",
+      "room-sor42-f-22-door-sensor",
+      "room-sor42-f-22-heater",
+      "room-sor42-f-22-heater-sensor",
+      "room-sor42-f-22-window-actuator",
+      "room-sor42-f-22-window-sensor",
+      "d02-z2-g13-4p-meeting-room-mm60-trigger"
+    ]
+  },
+  "Room_SOR42_F_23": {
+    "label": "SOR42_F_23",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "b3-42-1f-z2-g6-lght-load",
+      "b3-42-1f-z2-g6-m46-lux-level",
+      "b3-42-1f-z2-g7-lght-load",
+      "b3-42-1f-z2-g7-m43-lux-level",
+      "room-sor42-f-23-colorlamp",
+      "room-sor42-f-23-door-actuator",
+      "room-sor42-f-23-door-sensor",
+      "room-sor42-f-23-heater",
+      "room-sor42-f-23-heater-sensor",
+      "room-sor42-f-23-window-actuator",
+      "room-sor42-f-23-window-sensor",
+      "d02-z2-g6-business-support-mm46-trigger"
+    ]
+  },
+  "Room_SOR42_F_4": {
+    "label": "SOR42_F_4",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "b3-42-1f-z3-g5-lght-load",
+      "b3-42-1f-z3-g5-m47-lux-level",
+      "b3-42-1f-z3-g6-lght-load",
+      "b3-42-1f-z3-g6-m48-lux-level",
+      "b3-42-gf-z3-g5-lght-load",
+      "b3-42-gf-z3-g6-lght-load",
+      "room-sor42-f-4-colorlamp",
+      "room-sor42-f-4-door-actuator",
+      "room-sor42-f-4-door-sensor",
+      "room-sor42-f-4-heater",
+      "room-sor42-f-4-heater-sensor",
+      "room-sor42-f-4-window-actuator",
+      "room-sor42-f-4-window-sensor",
+      "d02-z3-g5-quiet-room-mm47-trigger",
+      "d02-z3-g6-quiet-room-mm48-trigger"
+    ]
+  },
+  "Room_SOR42_F_5": {
+    "label": "SOR42_F_5",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "b3-42-1f-z3-g11-lght-load",
+      "b3-42-1f-z3-g11-m49-lux-level",
+      "b3-42-1f-z3-g12-lght-load",
+      "b3-42-1f-z3-g12-m50-lux-level",
+      "b3-42-gf-z3-g11-lght-load",
+      "b3-42-gf-z3-g12-lght-load",
+      "room-sor42-f-5-colorlamp",
+      "room-sor42-f-5-door-actuator",
+      "room-sor42-f-5-door-sensor",
+      "room-sor42-f-5-heater",
+      "room-sor42-f-5-heater-sensor",
+      "room-sor42-f-5-window-actuator",
+      "room-sor42-f-5-window-sensor",
+      "d02-z3-g11-quiet-room-mm49-trigger",
+      "d02-z3-g12-quiet-room-mm50-trigger"
+    ]
+  },
+  "Room_SOR42_F_6": {
+    "label": "SOR42_F_6",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "b3-42-1f-z3-g7-lght-load",
+      "b3-42-1f-z3-g7-m27-lux-level",
+      "b3-42-1f-z3-g8-lght-load",
+      "b3-42-1f-z3-g8-m28-lux-level",
+      "b3-42-gf-z3-g7-lght-load",
+      "b3-42-gf-z3-g8-lght-load",
+      "room-sor42-f-6-colorlamp",
+      "room-sor42-f-6-door-actuator",
+      "room-sor42-f-6-door-sensor",
+      "room-sor42-f-6-heater",
+      "room-sor42-f-6-heater-sensor",
+      "room-sor42-f-6-window-actuator",
+      "room-sor42-f-6-window-sensor",
+      "d02-z3-g7-workstation4-mm27-trigger",
+      "d02-z3-g8-workstation4-mm28-trigger"
+    ]
+  },
+  "Room_SOR42_F_7": {
+    "label": "SOR42_F_7",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "b3-42-1f-z3-g10-lght-load",
+      "b3-42-1f-z3-g10-m30-lux-level",
+      "b3-42-1f-z3-g9-lght-load",
+      "b3-42-1f-z3-g9-m29-lux-level",
+      "b3-42-gf-z3-g10-lght-load",
+      "b3-42-gf-z3-g9-lght-load",
+      "room-sor42-f-7-colorlamp",
+      "room-sor42-f-7-door-actuator",
+      "room-sor42-f-7-door-sensor",
+      "room-sor42-f-7-heater",
+      "room-sor42-f-7-heater-sensor",
+      "room-sor42-f-7-window-actuator",
+      "room-sor42-f-7-window-sensor",
+      "d02-z3-g9-workstation4-mm-29-trigger"
+    ]
+  },
+  "Room_SOR42_F_8": {
+    "label": "SOR42_F_8",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "b3-42-1f-z3-g13-lght-load",
+      "b3-42-1f-z3-g13-m31-lux-level",
+      "b3-42-gf-z3-g13-lght-load",
+      "room-sor42-f-8-colorlamp",
+      "room-sor42-f-8-door-actuator",
+      "room-sor42-f-8-door-sensor",
+      "room-sor42-f-8-heater",
+      "room-sor42-f-8-heater-sensor",
+      "room-sor42-f-8-window-actuator",
+      "room-sor42-f-8-window-sensor"
+    ]
+  },
+  "Room_SOR42_F_9": {
+    "label": "SOR42_F_9",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "b3-42-1f-z3-g14-lght-load",
+      "b3-42-1f-z3-g14-m32-lux-level",
+      "b3-42-gf-z3-g14-lght-load",
+      "room-sor42-f-9-colorlamp",
+      "room-sor42-f-9-door-actuator",
+      "room-sor42-f-9-door-sensor",
+      "room-sor42-f-9-heater",
+      "room-sor42-f-9-heater-sensor",
+      "room-sor42-f-9-window-actuator",
+      "room-sor42-f-9-window-sensor",
+      "d02-z3-g14-workstation4-mm32-trigger"
+    ]
+  },
+  "Room_SOR42_F_WC": {
+    "label": "SOR42_F_WC",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "b3-42-1f-z2-g2-lght-load",
+      "b3-42-1f-z2-g2-m44-lux-level",
+      "b3-42-1f-z2-g3-lght-load",
+      "b3-42-1f-z2-g3-m21-lux-level",
+      "b3-42-1f-z2-g4-lght-load",
+      "b3-42-1f-z2-g4-m45-lux-level",
+      "b3-42-1f-z2-g5-lght-load",
+      "b3-42-1f-z2-g5-m22-lux-level",
+      "b3-42-gf-z2-g2-lght-load",
+      "b3-42-gf-z2-g3-lght-load",
+      "room-sor42-f-wc-colorlamp",
+      "room-sor42-f-wc-door-actuator",
+      "room-sor42-f-wc-door-sensor",
+      "room-sor42-f-wc-heater",
+      "room-sor42-f-wc-heater-sensor",
+      "room-sor42-f-wc-window-actuator",
+      "room-sor42-f-wc-window-sensor",
+      "d02-z2-g2-male-wc-lobby-mm44-trigger",
+      "d02-z2-g3-male-wc-mm21-trigger"
+    ]
+  },
+  "Room_SOR42_G_01": {
+    "label": "SOR42_G_01",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor42-g-01-colorlamp",
+      "room-sor42-g-01-door-actuator",
+      "room-sor42-g-01-door-sensor",
+      "room-sor42-g-01-heater",
+      "room-sor42-g-01-heater-sensor",
+      "room-sor42-g-01-window-actuator",
+      "room-sor42-g-01-window-sensor",
+      "d01-z3-g14-10p-meeting-mm84-trigger"
+    ]
+  },
+  "Room_SOR42_G_02": {
+    "label": "SOR42_G_02",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor42-g-02-colorlamp",
+      "room-sor42-g-02-door-actuator",
+      "room-sor42-g-02-door-sensor",
+      "room-sor42-g-02-heater",
+      "room-sor42-g-02-heater-sensor",
+      "room-sor42-g-02-window-actuator",
+      "room-sor42-g-02-window-sensor",
+      "d01-z1-g7-aisle-1-g1-10s-mm12-trigger",
+      "d01-z4-g6-workstations4-mm40-trigger"
+    ]
+  },
+  "Room_SOR42_G_03": {
+    "label": "SOR42_G_03",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor42-g-03-colorlamp",
+      "room-sor42-g-03-door-actuator",
+      "room-sor42-g-03-door-sensor",
+      "room-sor42-g-03-heater",
+      "room-sor42-g-03-heater-sensor",
+      "room-sor42-g-03-window-actuator",
+      "room-sor42-g-03-window-sensor",
+      "d01-z4-g8-workstations4-mm42-trigger"
+    ]
+  },
+  "Room_SOR42_G_04": {
+    "label": "SOR42_G_04",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor42-g-04-colorlamp",
+      "room-sor42-g-04-door-actuator",
+      "room-sor42-g-04-door-sensor",
+      "room-sor42-g-04-heater",
+      "room-sor42-g-04-heater-sensor",
+      "room-sor42-g-04-window-actuator",
+      "room-sor42-g-04-window-sensor",
+      "d01-z4-g1-workstations4-mm37-trigger"
+    ]
+  },
+  "Room_SOR42_G_05": {
+    "label": "SOR42_G_05",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor42-g-05-colorlamp",
+      "room-sor42-g-05-door-actuator",
+      "room-sor42-g-05-door-sensor",
+      "room-sor42-g-05-heater",
+      "room-sor42-g-05-heater-sensor",
+      "room-sor42-g-05-window-actuator",
+      "room-sor42-g-05-window-sensor",
+      "d01-z1-g5-aisle-1-g1-8s-sm7-trigger",
+      "d01-z4-g2-workstations4-mm38-trigger"
+    ]
+  },
+  "Room_SOR42_G_06": {
+    "label": "SOR42_G_06",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor42-g-06-colorlamp",
+      "room-sor42-g-06-door-actuator",
+      "room-sor42-g-06-door-sensor",
+      "room-sor42-g-06-heater",
+      "room-sor42-g-06-heater-sensor",
+      "room-sor42-g-06-window-actuator",
+      "room-sor42-g-06-window-sensor",
+      "d01-z4-g4-quiet-room-mm85-trigger",
+      "d01-z4-g5-quiet-room-mm86-trigger"
+    ]
+  },
+  "Room_SOR42_G_07": {
+    "label": "SOR42_G_07",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor42-g-07-colorlamp",
+      "room-sor42-g-07-door-actuator",
+      "room-sor42-g-07-door-sensor",
+      "room-sor42-g-07-heater",
+      "room-sor42-g-07-heater-sensor",
+      "room-sor42-g-07-window-actuator",
+      "room-sor42-g-07-window-sensor",
+      "d01-z4-g10-quiet-room-mm88-trigger",
+      "d01-z4-g9-quiet-room-mm87-trigger"
+    ]
+  },
+  "Room_SOR42_G_08": {
+    "label": "SOR42_G_08",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor42-g-08-colorlamp",
+      "room-sor42-g-08-door-actuator",
+      "room-sor42-g-08-door-sensor",
+      "room-sor42-g-08-heater",
+      "room-sor42-g-08-heater-sensor",
+      "room-sor42-g-08-window-actuator",
+      "room-sor42-g-08-window-sensor"
+    ]
+  },
+  "Room_SOR42_G_09": {
+    "label": "SOR42_G_09",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor42-g-09-colorlamp",
+      "room-sor42-g-09-door-actuator",
+      "room-sor42-g-09-door-sensor",
+      "room-sor42-g-09-heater",
+      "room-sor42-g-09-heater-sensor",
+      "room-sor42-g-09-window-actuator",
+      "room-sor42-g-09-window-sensor",
+      "d01-z4-g12-workstations4s-mm44-trigger"
+    ]
+  },
+  "Room_SOR42_G_10": {
+    "label": "SOR42_G_10",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor42-g-10-colorlamp",
+      "room-sor42-g-10-door-actuator",
+      "room-sor42-g-10-door-sensor",
+      "room-sor42-g-10-heater",
+      "room-sor42-g-10-heater-sensor",
+      "room-sor42-g-10-window-actuator",
+      "room-sor42-g-10-window-sensor",
+      "d01-z1-g10-aisle-1-g1-8r-mm17-trigger"
+    ]
+  },
+  "Room_SOR42_G_11": {
+    "label": "SOR42_G_11",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "b3-42-1f-z5-g2-lght-load",
+      "b3-42-gf-z5-g2-lght-load",
+      "b3-42-gf-z5-g3-lght-load",
+      "room-sor42-g-11-colorlamp",
+      "room-sor42-g-11-door-actuator",
+      "room-sor42-g-11-door-sensor",
+      "room-sor42-g-11-heater",
+      "room-sor42-g-11-heater-sensor",
+      "room-sor42-g-11-window-actuator",
+      "room-sor42-g-11-window-sensor",
+      "d01-z1-g10-aisle-1-g1-8r-sm18-trigger",
+      "d01-z5-g2-workstations4-mm47-trigger"
+    ]
+  },
+  "Room_SOR42_G_15": {
+    "label": "SOR42_G_15",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "b3-42-gf-z5-g7-lght-load",
+      "b3-42-gf-z5-g8-lght-load",
+      "room-sor42-g-15-colorlamp",
+      "room-sor42-g-15-door-actuator",
+      "room-sor42-g-15-door-sensor",
+      "room-sor42-g-15-heater",
+      "room-sor42-g-15-heater-sensor",
+      "room-sor42-g-15-window-actuator",
+      "room-sor42-g-15-window-sensor",
+      "d01-z1-g12-aisle-1-g1-3s-mm20-trigger",
+      "d01-z5-g7-quiet-room-mm89-trigger"
+    ]
+  },
+  "Room_SOR42_G_16": {
+    "label": "SOR42_G_16",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "b3-42-gf-z5-g12-lght-load",
+      "b3-42-gf-z5-g13-lght-load",
+      "room-sor42-g-16-colorlamp",
+      "room-sor42-g-16-door-actuator",
+      "room-sor42-g-16-door-sensor",
+      "room-sor42-g-16-heater",
+      "room-sor42-g-16-heater-sensor",
+      "room-sor42-g-16-window-actuator",
+      "room-sor42-g-16-window-sensor",
+      "d01-z1-g13-aisle-1-g1-5t-mm23-trigger"
+    ]
+  },
+  "Room_SOR42_G_17": {
+    "label": "SOR42_G_17",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "b3-42-gf-z5-g10-lght-load",
+      "b3-42-gf-z5-g11-lght-load",
+      "room-sor42-g-17-colorlamp",
+      "room-sor42-g-17-door-actuator",
+      "room-sor42-g-17-door-sensor",
+      "room-sor42-g-17-heater",
+      "room-sor42-g-17-heater-sensor",
+      "room-sor42-g-17-window-actuator",
+      "room-sor42-g-17-window-sensor",
+      "d01-z1-g14-aisle-1-g1-5r-mm26-trigger",
+      "d01-z5-g10-workstations4-mm53-trigger"
+    ]
+  },
+  "Room_SOR42_G_18": {
+    "label": "SOR42_G_18",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "b3-42-gf-z1-g14-lght-load",
+      "b3-42-gf-z5-g9-lght-load",
+      "room-sor42-g-18-colorlamp",
+      "room-sor42-g-18-door-actuator",
+      "room-sor42-g-18-door-sensor",
+      "room-sor42-g-18-heater",
+      "room-sor42-g-18-heater-sensor",
+      "room-sor42-g-18-window-actuator",
+      "room-sor42-g-18-window-sensor",
+      "d01-z1-g13-aisle-1-g1-5t-sm24-trigger",
+      "d01-z1-g14-aisle-1-g1-5r-sm27-trigger",
+      "d01-z5-g9-workstations4-mm52-trigger"
+    ]
+  },
+  "Room_SOR42_G_19": {
+    "label": "SOR42_G_19",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "b3-42-gf-z5-g6-lght-load",
+      "room-sor42-g-19-colorlamp",
+      "room-sor42-g-19-door-actuator",
+      "room-sor42-g-19-door-sensor",
+      "room-sor42-g-19-heater",
+      "room-sor42-g-19-heater-sensor",
+      "room-sor42-g-19-window-actuator",
+      "room-sor42-g-19-window-sensor"
+    ]
+  },
+  "Room_SOR42_G_20": {
+    "label": "SOR42_G_20",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "b3-42-gf-z1-g12-lght-load",
+      "b3-42-gf-z1-g13-lght-load",
+      "b3-42-gf-z5-g4-lght-load",
+      "b3-42-gf-z5-g5-lght-load",
+      "room-sor42-g-20-colorlamp",
+      "room-sor42-g-20-door-actuator",
+      "room-sor42-g-20-door-sensor",
+      "room-sor42-g-20-heater",
+      "room-sor42-g-20-heater-sensor",
+      "room-sor42-g-20-window-actuator",
+      "room-sor42-g-20-window-sensor",
+      "d01-z5-g5-workstations4-mm50-trigger"
+    ]
+  },
+  "Room_SOR42_G_21": {
+    "label": "SOR42_G_21",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor42-g-21-colorlamp",
+      "room-sor42-g-21-door-actuator",
+      "room-sor42-g-21-door-sensor",
+      "room-sor42-g-21-heater",
+      "room-sor42-g-21-heater-sensor",
+      "room-sor42-g-21-window-actuator",
+      "room-sor42-g-21-window-sensor"
+    ]
+  },
+  "Room_SOR42_G_22": {
+    "label": "SOR42_G_22",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor42-g-22-colorlamp",
+      "room-sor42-g-22-door-actuator",
+      "room-sor42-g-22-door-sensor",
+      "room-sor42-g-22-heater",
+      "room-sor42-g-22-heater-sensor",
+      "room-sor42-g-22-window-actuator",
+      "room-sor42-g-22-window-sensor",
+      "d01-z3-g12-6p-meeting-mm93-trigger"
+    ]
+  },
+  "Room_SOR42_G_23": {
+    "label": "SOR42_G_23",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "b3-42-gf-z6-g4-lght-load",
+      "b3-42-gf-z6-g5-lght-load",
+      "room-sor42-g-23-colorlamp",
+      "room-sor42-g-23-door-actuator",
+      "room-sor42-g-23-door-sensor",
+      "room-sor42-g-23-heater",
+      "room-sor42-g-23-heater-sensor",
+      "room-sor42-g-23-window-actuator",
+      "room-sor42-g-23-window-sensor",
+      "d01-z6-g4-quiet-room-mm82-trigger",
+      "d01-z6-g5-quiet-room-mm83-trigger"
+    ]
+  },
+  "Room_SOR42_G_24": {
+    "label": "SOR42_G_24",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor42-g-24-colorlamp",
+      "room-sor42-g-24-door-actuator",
+      "room-sor42-g-24-door-sensor",
+      "room-sor42-g-24-heater",
+      "room-sor42-g-24-heater-sensor",
+      "room-sor42-g-24-window-actuator",
+      "room-sor42-g-24-window-sensor"
+    ]
+  },
+  "Room_SOR42_G_25": {
+    "label": "SOR42_G_25",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor42-g-25-colorlamp",
+      "room-sor42-g-25-door-actuator",
+      "room-sor42-g-25-door-sensor",
+      "room-sor42-g-25-heater",
+      "room-sor42-g-25-heater-sensor",
+      "room-sor42-g-25-window-actuator",
+      "room-sor42-g-25-window-sensor",
+      "d01-z3-g5-hot-desk-onoff-mm80-trigger"
+    ]
+  },
+  "Room_SOR42_G_28": {
+    "label": "SOR42_G_28",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor42-g-28-colorlamp",
+      "room-sor42-g-28-door-actuator",
+      "room-sor42-g-28-door-sensor",
+      "room-sor42-g-28-heater",
+      "room-sor42-g-28-heater-sensor",
+      "room-sor42-g-28-window-actuator",
+      "room-sor42-g-28-window-sensor"
+    ]
+  },
+  "Room_SOR42_G_30": {
+    "label": "SOR42_G_30",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor42-g-30-colorlamp",
+      "room-sor42-g-30-door-actuator",
+      "room-sor42-g-30-door-sensor",
+      "room-sor42-g-30-heater",
+      "room-sor42-g-30-heater-sensor",
+      "room-sor42-g-30-window-actuator",
+      "room-sor42-g-30-window-sensor",
+      "d01-z3-g7-laboratory-mm75-trigger"
+    ]
+  },
+  "Room_SOR42_G_31": {
+    "label": "SOR42_G_31",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor42-g-31-colorlamp",
+      "room-sor42-g-31-door-actuator",
+      "room-sor42-g-31-door-sensor",
+      "room-sor42-g-31-heater",
+      "room-sor42-g-31-heater-sensor",
+      "room-sor42-g-31-window-actuator",
+      "room-sor42-g-31-window-sensor",
+      "d01-z3-g8-6p-meeting-mm76-trigger"
+    ]
+  },
+  "Room_SOR42_G_32": {
+    "label": "SOR42_G_32",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "b3-42-1f-z2-g1-lght-load",
+      "b3-42-gf-z2-g1-lght-load",
+      "b3-42-gf-z6-g1-lght-load",
+      "room-sor42-g-32-colorlamp",
+      "room-sor42-g-32-door-actuator",
+      "room-sor42-g-32-door-sensor",
+      "room-sor42-g-32-heater",
+      "room-sor42-g-32-heater-sensor",
+      "room-sor42-g-32-window-actuator",
+      "room-sor42-g-32-window-sensor",
+      "d01-z2-g1-aisle-2-g1-1r-sm30-trigger",
+      "d01-z6-g1-workstations4-mm55-trigger"
+    ]
+  },
+  "Room_SOR42_G_33": {
+    "label": "SOR42_G_33",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "b3-42-gf-z6-g2-lght-load",
+      "b3-42-gf-z6-g3-lght-load",
+      "room-sor42-g-33-colorlamp",
+      "room-sor42-g-33-door-actuator",
+      "room-sor42-g-33-door-sensor",
+      "room-sor42-g-33-heater",
+      "room-sor42-g-33-heater-sensor",
+      "room-sor42-g-33-window-actuator",
+      "room-sor42-g-33-window-sensor",
+      "d01-z6-g3-workstations4-mm57-trigger"
+    ]
+  },
+  "Room_SOR42_G_34": {
+    "label": "SOR42_G_34",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "b3-42-gf-z6-g6-lght-load",
+      "room-sor42-g-34-colorlamp",
+      "room-sor42-g-34-door-actuator",
+      "room-sor42-g-34-door-sensor",
+      "room-sor42-g-34-heater",
+      "room-sor42-g-34-heater-sensor",
+      "room-sor42-g-34-window-actuator",
+      "room-sor42-g-34-window-sensor",
+      "d01-z6-g6-workstations4-mm58-trigger"
+    ]
+  },
+  "Room_SOR42_G_35": {
+    "label": "SOR42_G_35",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "b3-42-gf-z6-g7-lght-load",
+      "b3-42-gf-z6-g8-lght-load",
+      "room-sor42-g-35-colorlamp",
+      "room-sor42-g-35-door-actuator",
+      "room-sor42-g-35-door-sensor",
+      "room-sor42-g-35-heater",
+      "room-sor42-g-35-heater-sensor",
+      "room-sor42-g-35-window-actuator",
+      "room-sor42-g-35-window-sensor",
+      "d01-z2-g3-aisle-2-g1-2r-mm33-trigger",
+      "d01-z2-g3-aisle-2-g1-2r-sm34-trigger",
+      "d01-z6-g7-workstations4-mm59-trigger",
+      "d01-z6-g8-workstations4-mm60-trigger"
+    ]
+  },
+  "Room_SOR42_G_36": {
+    "label": "SOR42_G_36",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "b3-42-gf-z1-g11-lght-load",
+      "b3-42-gf-z7-g5-lght-load",
+      "room-sor42-g-36-colorlamp",
+      "room-sor42-g-36-door-actuator",
+      "room-sor42-g-36-door-sensor",
+      "room-sor42-g-36-heater",
+      "room-sor42-g-36-heater-sensor",
+      "room-sor42-g-36-window-actuator",
+      "room-sor42-g-36-window-sensor",
+      "d01-z1-g11-aisle-1-g1-13t-mm19-trigger"
+    ]
+  },
+  "Room_SOR42_G_37": {
+    "label": "SOR42_G_37",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor42-g-37-colorlamp",
+      "room-sor42-g-37-door-actuator",
+      "room-sor42-g-37-door-sensor",
+      "room-sor42-g-37-heater",
+      "room-sor42-g-37-heater-sensor",
+      "room-sor42-g-37-window-actuator",
+      "room-sor42-g-37-window-sensor",
+      "d01-z1-g4-aisle-1-g1-12r-sm5-trigger"
+    ]
+  },
+  "Room_SOR42_G_38": {
+    "label": "SOR42_G_38",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "b3-42-gf-z8-g3-lght-load",
+      "room-sor42-g-38-colorlamp",
+      "room-sor42-g-38-door-actuator",
+      "room-sor42-g-38-door-sensor",
+      "room-sor42-g-38-heater",
+      "room-sor42-g-38-heater-sensor",
+      "room-sor42-g-38-window-actuator",
+      "room-sor42-g-38-window-sensor"
+    ]
+  },
+  "Room_SOR42_G_Center_Aile": {
+    "label": "SOR42_G_Center_Aile",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor42-g-center-aile-colorlamp",
+      "room-sor42-g-center-aile-door-actuator",
+      "room-sor42-g-center-aile-door-sensor",
+      "room-sor42-g-center-aile-heater",
+      "room-sor42-g-center-aile-heater-sensor",
+      "room-sor42-g-center-aile-window-actuator",
+      "room-sor42-g-center-aile-window-sensor"
+    ]
+  },
+  "Room_SOR42_G_FEMALE_WC": {
+    "label": "SOR42_G_FEMALE_WC",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "b3-42-gf-z7-g9-lght-load",
+      "b3-42-gf-z8-g11-lght-load",
+      "room-sor42-g-female-wc-colorlamp",
+      "room-sor42-g-female-wc-door-actuator",
+      "room-sor42-g-female-wc-door-sensor",
+      "room-sor42-g-female-wc-heater",
+      "room-sor42-g-female-wc-heater-sensor",
+      "room-sor42-g-female-wc-window-actuator",
+      "room-sor42-g-female-wc-window-sensor",
+      "d01-z7-g9-female-wc-mm63-trigger",
+      "d01-z8-g11-female-wc-lobby-mm78-trigger"
+    ]
+  },
+  "Room_SOR42_G_MALE_WC": {
+    "label": "SOR42_G_MALE_WC",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "b3-42-gf-z7-g1-lght-load",
+      "b3-42-gf-z8-g10-lght-load",
+      "room-sor42-g-male-wc-colorlamp",
+      "room-sor42-g-male-wc-door-actuator",
+      "room-sor42-g-male-wc-door-sensor",
+      "room-sor42-g-male-wc-heater",
+      "room-sor42-g-male-wc-heater-sensor",
+      "room-sor42-g-male-wc-window-actuator",
+      "room-sor42-g-male-wc-window-sensor",
+      "d01-z7-g1-male-wc-mm61-trigger"
+    ]
+  },
+  "Room_SOR42_G_U1": {
+    "label": "SOR42_G_U1",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor42-g-u1-colorlamp",
+      "room-sor42-g-u1-door-actuator",
+      "room-sor42-g-u1-door-sensor",
+      "room-sor42-g-u1-heater",
+      "room-sor42-g-u1-heater-sensor",
+      "room-sor42-g-u1-window-actuator",
+      "room-sor42-g-u1-window-sensor"
+    ]
+  },
+  "Room_SOR42_G_U10": {
+    "label": "SOR42_G_U10",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor42-g-u10-colorlamp",
+      "room-sor42-g-u10-door-actuator",
+      "room-sor42-g-u10-door-sensor",
+      "room-sor42-g-u10-heater",
+      "room-sor42-g-u10-heater-sensor",
+      "room-sor42-g-u10-window-actuator",
+      "room-sor42-g-u10-window-sensor"
+    ]
+  },
+  "Room_SOR42_G_U11": {
+    "label": "SOR42_G_U11",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor42-g-u11-colorlamp",
+      "room-sor42-g-u11-door-actuator",
+      "room-sor42-g-u11-door-sensor",
+      "room-sor42-g-u11-heater",
+      "room-sor42-g-u11-heater-sensor",
+      "room-sor42-g-u11-window-actuator",
+      "room-sor42-g-u11-window-sensor"
+    ]
+  },
+  "Room_SOR42_G_U12": {
+    "label": "SOR42_G_U12",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor42-g-u12-colorlamp",
+      "room-sor42-g-u12-door-actuator",
+      "room-sor42-g-u12-door-sensor",
+      "room-sor42-g-u12-heater",
+      "room-sor42-g-u12-heater-sensor",
+      "room-sor42-g-u12-window-actuator",
+      "room-sor42-g-u12-window-sensor"
+    ]
+  },
+  "Room_SOR42_G_U13": {
+    "label": "SOR42_G_U13",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor42-g-u13-colorlamp",
+      "room-sor42-g-u13-door-actuator",
+      "room-sor42-g-u13-door-sensor",
+      "room-sor42-g-u13-heater",
+      "room-sor42-g-u13-heater-sensor",
+      "room-sor42-g-u13-window-actuator",
+      "room-sor42-g-u13-window-sensor"
+    ]
+  },
+  "Room_SOR42_G_U14": {
+    "label": "SOR42_G_U14",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor42-g-u14-colorlamp",
+      "room-sor42-g-u14-door-actuator",
+      "room-sor42-g-u14-door-sensor",
+      "room-sor42-g-u14-heater",
+      "room-sor42-g-u14-heater-sensor",
+      "room-sor42-g-u14-window-actuator",
+      "room-sor42-g-u14-window-sensor"
+    ]
+  },
+  "Room_SOR42_G_U15": {
+    "label": "SOR42_G_U15",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor42-g-u15-colorlamp",
+      "room-sor42-g-u15-door-actuator",
+      "room-sor42-g-u15-door-sensor",
+      "room-sor42-g-u15-heater",
+      "room-sor42-g-u15-heater-sensor",
+      "room-sor42-g-u15-window-actuator",
+      "room-sor42-g-u15-window-sensor"
+    ]
+  },
+  "Room_SOR42_G_U16": {
+    "label": "SOR42_G_U16",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor42-g-u16-colorlamp",
+      "room-sor42-g-u16-door-actuator",
+      "room-sor42-g-u16-door-sensor",
+      "room-sor42-g-u16-heater",
+      "room-sor42-g-u16-heater-sensor",
+      "room-sor42-g-u16-window-actuator",
+      "room-sor42-g-u16-window-sensor"
+    ]
+  },
+  "Room_SOR42_G_U17": {
+    "label": "SOR42_G_U17",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor42-g-u17-colorlamp",
+      "room-sor42-g-u17-door-actuator",
+      "room-sor42-g-u17-door-sensor",
+      "room-sor42-g-u17-heater",
+      "room-sor42-g-u17-heater-sensor",
+      "room-sor42-g-u17-window-actuator",
+      "room-sor42-g-u17-window-sensor"
+    ]
+  },
+  "Room_SOR42_G_U18": {
+    "label": "SOR42_G_U18",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor42-g-u18-colorlamp",
+      "room-sor42-g-u18-door-actuator",
+      "room-sor42-g-u18-door-sensor",
+      "room-sor42-g-u18-heater",
+      "room-sor42-g-u18-heater-sensor",
+      "room-sor42-g-u18-window-actuator",
+      "room-sor42-g-u18-window-sensor"
+    ]
+  },
+  "Room_SOR42_G_U19": {
+    "label": "SOR42_G_U19",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor42-g-u19-colorlamp",
+      "room-sor42-g-u19-door-actuator",
+      "room-sor42-g-u19-door-sensor",
+      "room-sor42-g-u19-heater",
+      "room-sor42-g-u19-heater-sensor",
+      "room-sor42-g-u19-window-actuator",
+      "room-sor42-g-u19-window-sensor"
+    ]
+  },
+  "Room_SOR42_G_U2": {
+    "label": "SOR42_G_U2",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor42-g-u2-colorlamp",
+      "room-sor42-g-u2-door-actuator",
+      "room-sor42-g-u2-door-sensor",
+      "room-sor42-g-u2-heater",
+      "room-sor42-g-u2-heater-sensor",
+      "room-sor42-g-u2-window-actuator",
+      "room-sor42-g-u2-window-sensor"
+    ]
+  },
+  "Room_SOR42_G_U20": {
+    "label": "SOR42_G_U20",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor42-g-u20-colorlamp",
+      "room-sor42-g-u20-door-actuator",
+      "room-sor42-g-u20-door-sensor",
+      "room-sor42-g-u20-heater",
+      "room-sor42-g-u20-heater-sensor",
+      "room-sor42-g-u20-window-actuator",
+      "room-sor42-g-u20-window-sensor"
+    ]
+  },
+  "Room_SOR42_G_U21": {
+    "label": "SOR42_G_U21",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor42-g-u21-colorlamp",
+      "room-sor42-g-u21-door-actuator",
+      "room-sor42-g-u21-door-sensor",
+      "room-sor42-g-u21-heater",
+      "room-sor42-g-u21-heater-sensor",
+      "room-sor42-g-u21-window-actuator",
+      "room-sor42-g-u21-window-sensor"
+    ]
+  },
+  "Room_SOR42_G_U22": {
+    "label": "SOR42_G_U22",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor42-g-u22-colorlamp",
+      "room-sor42-g-u22-door-actuator",
+      "room-sor42-g-u22-door-sensor",
+      "room-sor42-g-u22-heater",
+      "room-sor42-g-u22-heater-sensor",
+      "room-sor42-g-u22-window-actuator",
+      "room-sor42-g-u22-window-sensor"
+    ]
+  },
+  "Room_SOR42_G_U23": {
+    "label": "SOR42_G_U23",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor42-g-u23-colorlamp",
+      "room-sor42-g-u23-door-actuator",
+      "room-sor42-g-u23-door-sensor",
+      "room-sor42-g-u23-heater",
+      "room-sor42-g-u23-heater-sensor",
+      "room-sor42-g-u23-window-actuator",
+      "room-sor42-g-u23-window-sensor"
+    ]
+  },
+  "Room_SOR42_G_U24": {
+    "label": "SOR42_G_U24",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor42-g-u24-colorlamp",
+      "room-sor42-g-u24-door-actuator",
+      "room-sor42-g-u24-door-sensor",
+      "room-sor42-g-u24-heater",
+      "room-sor42-g-u24-heater-sensor",
+      "room-sor42-g-u24-window-actuator",
+      "room-sor42-g-u24-window-sensor"
+    ]
+  },
+  "Room_SOR42_G_U25": {
+    "label": "SOR42_G_U25",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor42-g-u25-colorlamp",
+      "room-sor42-g-u25-door-actuator",
+      "room-sor42-g-u25-door-sensor",
+      "room-sor42-g-u25-heater",
+      "room-sor42-g-u25-heater-sensor",
+      "room-sor42-g-u25-window-actuator",
+      "room-sor42-g-u25-window-sensor"
+    ]
+  },
+  "Room_SOR42_G_U26": {
+    "label": "SOR42_G_U26",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor42-g-u26-colorlamp",
+      "room-sor42-g-u26-door-actuator",
+      "room-sor42-g-u26-door-sensor",
+      "room-sor42-g-u26-heater",
+      "room-sor42-g-u26-heater-sensor",
+      "room-sor42-g-u26-window-actuator",
+      "room-sor42-g-u26-window-sensor"
+    ]
+  },
+  "Room_SOR42_G_U27": {
+    "label": "SOR42_G_U27",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor42-g-u27-colorlamp",
+      "room-sor42-g-u27-door-actuator",
+      "room-sor42-g-u27-door-sensor",
+      "room-sor42-g-u27-heater",
+      "room-sor42-g-u27-heater-sensor",
+      "room-sor42-g-u27-window-actuator",
+      "room-sor42-g-u27-window-sensor"
+    ]
+  },
+  "Room_SOR42_G_U28": {
+    "label": "SOR42_G_U28",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor42-g-u28-colorlamp",
+      "room-sor42-g-u28-door-actuator",
+      "room-sor42-g-u28-door-sensor",
+      "room-sor42-g-u28-heater",
+      "room-sor42-g-u28-heater-sensor",
+      "room-sor42-g-u28-window-actuator",
+      "room-sor42-g-u28-window-sensor"
+    ]
+  },
+  "Room_SOR42_G_U29": {
+    "label": "SOR42_G_U29",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor42-g-u29-colorlamp",
+      "room-sor42-g-u29-door-actuator",
+      "room-sor42-g-u29-door-sensor",
+      "room-sor42-g-u29-heater",
+      "room-sor42-g-u29-heater-sensor",
+      "room-sor42-g-u29-window-actuator",
+      "room-sor42-g-u29-window-sensor"
+    ]
+  },
+  "Room_SOR42_G_U3": {
+    "label": "SOR42_G_U3",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor42-g-u3-colorlamp",
+      "room-sor42-g-u3-door-actuator",
+      "room-sor42-g-u3-door-sensor",
+      "room-sor42-g-u3-heater",
+      "room-sor42-g-u3-heater-sensor",
+      "room-sor42-g-u3-window-actuator",
+      "room-sor42-g-u3-window-sensor"
+    ]
+  },
+  "Room_SOR42_G_U30": {
+    "label": "SOR42_G_U30",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor42-g-u30-colorlamp",
+      "room-sor42-g-u30-door-actuator",
+      "room-sor42-g-u30-door-sensor",
+      "room-sor42-g-u30-heater",
+      "room-sor42-g-u30-heater-sensor",
+      "room-sor42-g-u30-window-actuator",
+      "room-sor42-g-u30-window-sensor"
+    ]
+  },
+  "Room_SOR42_G_U31": {
+    "label": "SOR42_G_U31",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor42-g-u31-colorlamp",
+      "room-sor42-g-u31-door-actuator",
+      "room-sor42-g-u31-door-sensor",
+      "room-sor42-g-u31-heater",
+      "room-sor42-g-u31-heater-sensor",
+      "room-sor42-g-u31-window-actuator",
+      "room-sor42-g-u31-window-sensor"
+    ]
+  },
+  "Room_SOR42_G_U32": {
+    "label": "SOR42_G_U32",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor42-g-u32-colorlamp",
+      "room-sor42-g-u32-door-actuator",
+      "room-sor42-g-u32-door-sensor",
+      "room-sor42-g-u32-heater",
+      "room-sor42-g-u32-heater-sensor",
+      "room-sor42-g-u32-window-actuator",
+      "room-sor42-g-u32-window-sensor"
+    ]
+  },
+  "Room_SOR42_G_U33": {
+    "label": "SOR42_G_U33",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor42-g-u33-colorlamp",
+      "room-sor42-g-u33-door-actuator",
+      "room-sor42-g-u33-door-sensor",
+      "room-sor42-g-u33-heater",
+      "room-sor42-g-u33-heater-sensor",
+      "room-sor42-g-u33-window-actuator",
+      "room-sor42-g-u33-window-sensor"
+    ]
+  },
+  "Room_SOR42_G_U34": {
+    "label": "SOR42_G_U34",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor42-g-u34-colorlamp",
+      "room-sor42-g-u34-door-actuator",
+      "room-sor42-g-u34-door-sensor",
+      "room-sor42-g-u34-heater",
+      "room-sor42-g-u34-heater-sensor",
+      "room-sor42-g-u34-window-actuator",
+      "room-sor42-g-u34-window-sensor"
+    ]
+  },
+  "Room_SOR42_G_U35": {
+    "label": "SOR42_G_U35",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor42-g-u35-colorlamp",
+      "room-sor42-g-u35-door-actuator",
+      "room-sor42-g-u35-door-sensor",
+      "room-sor42-g-u35-heater",
+      "room-sor42-g-u35-heater-sensor",
+      "room-sor42-g-u35-window-actuator",
+      "room-sor42-g-u35-window-sensor"
+    ]
+  },
+  "Room_SOR42_G_U36": {
+    "label": "SOR42_G_U36",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor42-g-u36-colorlamp",
+      "room-sor42-g-u36-door-actuator",
+      "room-sor42-g-u36-door-sensor",
+      "room-sor42-g-u36-heater",
+      "room-sor42-g-u36-heater-sensor",
+      "room-sor42-g-u36-window-actuator",
+      "room-sor42-g-u36-window-sensor"
+    ]
+  },
+  "Room_SOR42_G_U37": {
+    "label": "SOR42_G_U37",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor42-g-u37-colorlamp",
+      "room-sor42-g-u37-door-actuator",
+      "room-sor42-g-u37-door-sensor",
+      "room-sor42-g-u37-heater",
+      "room-sor42-g-u37-heater-sensor",
+      "room-sor42-g-u37-window-actuator",
+      "room-sor42-g-u37-window-sensor"
+    ]
+  },
+  "Room_SOR42_G_U38": {
+    "label": "SOR42_G_U38",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor42-g-u38-colorlamp",
+      "room-sor42-g-u38-door-actuator",
+      "room-sor42-g-u38-door-sensor",
+      "room-sor42-g-u38-heater",
+      "room-sor42-g-u38-heater-sensor",
+      "room-sor42-g-u38-window-actuator",
+      "room-sor42-g-u38-window-sensor"
+    ]
+  },
+  "Room_SOR42_G_U39": {
+    "label": "SOR42_G_U39",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor42-g-u39-colorlamp",
+      "room-sor42-g-u39-door-actuator",
+      "room-sor42-g-u39-door-sensor",
+      "room-sor42-g-u39-heater",
+      "room-sor42-g-u39-heater-sensor",
+      "room-sor42-g-u39-window-actuator",
+      "room-sor42-g-u39-window-sensor"
+    ]
+  },
+  "Room_SOR42_G_U4": {
+    "label": "SOR42_G_U4",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor42-g-u4-colorlamp",
+      "room-sor42-g-u4-door-actuator",
+      "room-sor42-g-u4-door-sensor",
+      "room-sor42-g-u4-heater",
+      "room-sor42-g-u4-heater-sensor",
+      "room-sor42-g-u4-window-actuator",
+      "room-sor42-g-u4-window-sensor"
+    ]
+  },
+  "Room_SOR42_G_U5": {
+    "label": "SOR42_G_U5",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor42-g-u5-colorlamp",
+      "room-sor42-g-u5-door-actuator",
+      "room-sor42-g-u5-door-sensor",
+      "room-sor42-g-u5-heater",
+      "room-sor42-g-u5-heater-sensor",
+      "room-sor42-g-u5-window-actuator",
+      "room-sor42-g-u5-window-sensor"
+    ]
+  },
+  "Room_SOR42_G_U6": {
+    "label": "SOR42_G_U6",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor42-g-u6-colorlamp",
+      "room-sor42-g-u6-door-actuator",
+      "room-sor42-g-u6-door-sensor",
+      "room-sor42-g-u6-heater",
+      "room-sor42-g-u6-heater-sensor",
+      "room-sor42-g-u6-window-actuator",
+      "room-sor42-g-u6-window-sensor"
+    ]
+  },
+  "Room_SOR42_G_U7": {
+    "label": "SOR42_G_U7",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor42-g-u7-colorlamp",
+      "room-sor42-g-u7-door-actuator",
+      "room-sor42-g-u7-door-sensor",
+      "room-sor42-g-u7-heater",
+      "room-sor42-g-u7-heater-sensor",
+      "room-sor42-g-u7-window-actuator",
+      "room-sor42-g-u7-window-sensor"
+    ]
+  },
+  "Room_SOR42_G_U8": {
+    "label": "SOR42_G_U8",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor42-g-u8-colorlamp",
+      "room-sor42-g-u8-door-actuator",
+      "room-sor42-g-u8-door-sensor",
+      "room-sor42-g-u8-heater",
+      "room-sor42-g-u8-heater-sensor",
+      "room-sor42-g-u8-window-actuator",
+      "room-sor42-g-u8-window-sensor"
+    ]
+  },
+  "Room_SOR42_G_U9": {
+    "label": "SOR42_G_U9",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor42-g-u9-colorlamp",
+      "room-sor42-g-u9-door-actuator",
+      "room-sor42-g-u9-door-sensor",
+      "room-sor42-g-u9-heater",
+      "room-sor42-g-u9-heater-sensor",
+      "room-sor42-g-u9-window-actuator",
+      "room-sor42-g-u9-window-sensor"
+    ]
+  },
+  "Room_SOR42_G_WC": {
+    "label": "SOR42_G_WC",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "b3-42-gf-z7-g10-lght-load",
+      "b3-42-gf-z7-g11-lght-load",
+      "room-sor42-g-wc-colorlamp",
+      "room-sor42-g-wc-door-actuator",
+      "room-sor42-g-wc-door-sensor",
+      "room-sor42-g-wc-heater",
+      "room-sor42-g-wc-heater-sensor",
+      "room-sor42-g-wc-window-actuator",
+      "room-sor42-g-wc-window-sensor",
+      "d01-z7-g11-wellness-room-mm99-trigger"
+    ]
+  },
+  "Room_SOR44_1_U1": {
+    "label": "SOR44_1_U1",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "room-sor44-1-u1-colorlamp",
+      "room-sor44-1-u1-door-actuator",
+      "room-sor44-1-u1-door-sensor",
+      "room-sor44-1-u1-heater",
+      "room-sor44-1-u1-heater-sensor",
+      "room-sor44-1-u1-window-actuator",
+      "room-sor44-1-u1-window-sensor"
+    ]
+  },
+  "Room_SOR44_1_U10": {
+    "label": "SOR44_1_U10",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "room-sor44-1-u10-colorlamp",
+      "room-sor44-1-u10-door-actuator",
+      "room-sor44-1-u10-door-sensor",
+      "room-sor44-1-u10-heater",
+      "room-sor44-1-u10-heater-sensor",
+      "room-sor44-1-u10-window-actuator",
+      "room-sor44-1-u10-window-sensor"
+    ]
+  },
+  "Room_SOR44_1_U11": {
+    "label": "SOR44_1_U11",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "room-sor44-1-u11-colorlamp",
+      "room-sor44-1-u11-door-actuator",
+      "room-sor44-1-u11-door-sensor",
+      "room-sor44-1-u11-heater",
+      "room-sor44-1-u11-heater-sensor",
+      "room-sor44-1-u11-window-actuator",
+      "room-sor44-1-u11-window-sensor"
+    ]
+  },
+  "Room_SOR44_1_U12": {
+    "label": "SOR44_1_U12",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "room-sor44-1-u12-colorlamp",
+      "room-sor44-1-u12-door-actuator",
+      "room-sor44-1-u12-door-sensor",
+      "room-sor44-1-u12-heater",
+      "room-sor44-1-u12-heater-sensor",
+      "room-sor44-1-u12-window-actuator",
+      "room-sor44-1-u12-window-sensor"
+    ]
+  },
+  "Room_SOR44_1_U13": {
+    "label": "SOR44_1_U13",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "room-sor44-1-u13-colorlamp",
+      "room-sor44-1-u13-door-actuator",
+      "room-sor44-1-u13-door-sensor",
+      "room-sor44-1-u13-heater",
+      "room-sor44-1-u13-heater-sensor",
+      "room-sor44-1-u13-window-actuator",
+      "room-sor44-1-u13-window-sensor"
+    ]
+  },
+  "Room_SOR44_1_U14": {
+    "label": "SOR44_1_U14",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "room-sor44-1-u14-colorlamp",
+      "room-sor44-1-u14-door-actuator",
+      "room-sor44-1-u14-door-sensor",
+      "room-sor44-1-u14-heater",
+      "room-sor44-1-u14-heater-sensor",
+      "room-sor44-1-u14-window-actuator",
+      "room-sor44-1-u14-window-sensor"
+    ]
+  },
+  "Room_SOR44_1_U15": {
+    "label": "SOR44_1_U15",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "room-sor44-1-u15-colorlamp",
+      "room-sor44-1-u15-door-actuator",
+      "room-sor44-1-u15-door-sensor",
+      "room-sor44-1-u15-heater",
+      "room-sor44-1-u15-heater-sensor",
+      "room-sor44-1-u15-window-actuator",
+      "room-sor44-1-u15-window-sensor"
+    ]
+  },
+  "Room_SOR44_1_U16": {
+    "label": "SOR44_1_U16",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "room-sor44-1-u16-colorlamp",
+      "room-sor44-1-u16-door-actuator",
+      "room-sor44-1-u16-door-sensor",
+      "room-sor44-1-u16-heater",
+      "room-sor44-1-u16-heater-sensor",
+      "room-sor44-1-u16-window-actuator",
+      "room-sor44-1-u16-window-sensor"
+    ]
+  },
+  "Room_SOR44_1_U17": {
+    "label": "SOR44_1_U17",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "room-sor44-1-u17-colorlamp",
+      "room-sor44-1-u17-door-actuator",
+      "room-sor44-1-u17-door-sensor",
+      "room-sor44-1-u17-heater",
+      "room-sor44-1-u17-heater-sensor",
+      "room-sor44-1-u17-window-actuator",
+      "room-sor44-1-u17-window-sensor"
+    ]
+  },
+  "Room_SOR44_1_U18": {
+    "label": "SOR44_1_U18",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "room-sor44-1-u18-colorlamp",
+      "room-sor44-1-u18-door-actuator",
+      "room-sor44-1-u18-door-sensor",
+      "room-sor44-1-u18-heater",
+      "room-sor44-1-u18-heater-sensor",
+      "room-sor44-1-u18-window-actuator",
+      "room-sor44-1-u18-window-sensor"
+    ]
+  },
+  "Room_SOR44_1_U19": {
+    "label": "SOR44_1_U19",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "room-sor44-1-u19-colorlamp",
+      "room-sor44-1-u19-door-actuator",
+      "room-sor44-1-u19-door-sensor",
+      "room-sor44-1-u19-heater",
+      "room-sor44-1-u19-heater-sensor",
+      "room-sor44-1-u19-window-actuator",
+      "room-sor44-1-u19-window-sensor"
+    ]
+  },
+  "Room_SOR44_1_U2": {
+    "label": "SOR44_1_U2",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "room-sor44-1-u2-colorlamp",
+      "room-sor44-1-u2-door-actuator",
+      "room-sor44-1-u2-door-sensor",
+      "room-sor44-1-u2-heater",
+      "room-sor44-1-u2-heater-sensor",
+      "room-sor44-1-u2-window-actuator",
+      "room-sor44-1-u2-window-sensor"
+    ]
+  },
+  "Room_SOR44_1_U3": {
+    "label": "SOR44_1_U3",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "room-sor44-1-u3-colorlamp",
+      "room-sor44-1-u3-door-actuator",
+      "room-sor44-1-u3-door-sensor",
+      "room-sor44-1-u3-heater",
+      "room-sor44-1-u3-heater-sensor",
+      "room-sor44-1-u3-window-actuator",
+      "room-sor44-1-u3-window-sensor"
+    ]
+  },
+  "Room_SOR44_1_U4": {
+    "label": "SOR44_1_U4",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "room-sor44-1-u4-colorlamp",
+      "room-sor44-1-u4-door-actuator",
+      "room-sor44-1-u4-door-sensor",
+      "room-sor44-1-u4-heater",
+      "room-sor44-1-u4-heater-sensor",
+      "room-sor44-1-u4-window-actuator",
+      "room-sor44-1-u4-window-sensor"
+    ]
+  },
+  "Room_SOR44_1_U5": {
+    "label": "SOR44_1_U5",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "room-sor44-1-u5-colorlamp",
+      "room-sor44-1-u5-door-actuator",
+      "room-sor44-1-u5-door-sensor",
+      "room-sor44-1-u5-heater",
+      "room-sor44-1-u5-heater-sensor",
+      "room-sor44-1-u5-window-actuator",
+      "room-sor44-1-u5-window-sensor"
+    ]
+  },
+  "Room_SOR44_1_U6": {
+    "label": "SOR44_1_U6",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "room-sor44-1-u6-colorlamp",
+      "room-sor44-1-u6-door-actuator",
+      "room-sor44-1-u6-door-sensor",
+      "room-sor44-1-u6-heater",
+      "room-sor44-1-u6-heater-sensor",
+      "room-sor44-1-u6-window-actuator",
+      "room-sor44-1-u6-window-sensor"
+    ]
+  },
+  "Room_SOR44_1_U7": {
+    "label": "SOR44_1_U7",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "room-sor44-1-u7-colorlamp",
+      "room-sor44-1-u7-door-actuator",
+      "room-sor44-1-u7-door-sensor",
+      "room-sor44-1-u7-heater",
+      "room-sor44-1-u7-heater-sensor",
+      "room-sor44-1-u7-window-actuator",
+      "room-sor44-1-u7-window-sensor"
+    ]
+  },
+  "Room_SOR44_1_U8": {
+    "label": "SOR44_1_U8",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "room-sor44-1-u8-colorlamp",
+      "room-sor44-1-u8-door-actuator",
+      "room-sor44-1-u8-door-sensor",
+      "room-sor44-1-u8-heater",
+      "room-sor44-1-u8-heater-sensor",
+      "room-sor44-1-u8-window-actuator",
+      "room-sor44-1-u8-window-sensor"
+    ]
+  },
+  "Room_SOR44_1_U9": {
+    "label": "SOR44_1_U9",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "room-sor44-1-u9-colorlamp",
+      "room-sor44-1-u9-door-actuator",
+      "room-sor44-1-u9-door-sensor",
+      "room-sor44-1-u9-heater",
+      "room-sor44-1-u9-heater-sensor",
+      "room-sor44-1-u9-window-actuator",
+      "room-sor44-1-u9-window-sensor"
+    ]
+  },
+  "Room_SOR44_G_Entrance": {
+    "label": "SOR44_G_Entrance",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor44-g-entrance-colorlamp",
+      "room-sor44-g-entrance-door-actuator",
+      "room-sor44-g-entrance-door-sensor",
+      "room-sor44-g-entrance-heater",
+      "room-sor44-g-entrance-heater-sensor",
+      "room-sor44-g-entrance-window-actuator",
+      "room-sor44-g-entrance-window-sensor",
+      "d01-z1-g2-aisle-1-g1-16r-sm2-trigger"
+    ]
+  },
+  "Room_SOR44_G_U1": {
+    "label": "SOR44_G_U1",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor44-g-u1-colorlamp",
+      "room-sor44-g-u1-door-actuator",
+      "room-sor44-g-u1-door-sensor",
+      "room-sor44-g-u1-heater",
+      "room-sor44-g-u1-heater-sensor",
+      "room-sor44-g-u1-window-actuator",
+      "room-sor44-g-u1-window-sensor"
+    ]
+  },
+  "Room_SOR44_G_U10": {
+    "label": "SOR44_G_U10",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor44-g-u10-colorlamp",
+      "room-sor44-g-u10-door-actuator",
+      "room-sor44-g-u10-door-sensor",
+      "room-sor44-g-u10-heater",
+      "room-sor44-g-u10-heater-sensor",
+      "room-sor44-g-u10-window-actuator",
+      "room-sor44-g-u10-window-sensor"
+    ]
+  },
+  "Room_SOR44_G_U11": {
+    "label": "SOR44_G_U11",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor44-g-u11-colorlamp",
+      "room-sor44-g-u11-door-actuator",
+      "room-sor44-g-u11-door-sensor",
+      "room-sor44-g-u11-heater",
+      "room-sor44-g-u11-heater-sensor",
+      "room-sor44-g-u11-window-actuator",
+      "room-sor44-g-u11-window-sensor"
+    ]
+  },
+  "Room_SOR44_G_U12": {
+    "label": "SOR44_G_U12",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor44-g-u12-colorlamp",
+      "room-sor44-g-u12-door-actuator",
+      "room-sor44-g-u12-door-sensor",
+      "room-sor44-g-u12-heater",
+      "room-sor44-g-u12-heater-sensor",
+      "room-sor44-g-u12-window-actuator",
+      "room-sor44-g-u12-window-sensor"
+    ]
+  },
+  "Room_SOR44_G_U13": {
+    "label": "SOR44_G_U13",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor44-g-u13-colorlamp",
+      "room-sor44-g-u13-door-actuator",
+      "room-sor44-g-u13-door-sensor",
+      "room-sor44-g-u13-heater",
+      "room-sor44-g-u13-heater-sensor",
+      "room-sor44-g-u13-window-actuator",
+      "room-sor44-g-u13-window-sensor"
+    ]
+  },
+  "Room_SOR44_G_U14": {
+    "label": "SOR44_G_U14",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor44-g-u14-colorlamp",
+      "room-sor44-g-u14-door-actuator",
+      "room-sor44-g-u14-door-sensor",
+      "room-sor44-g-u14-heater",
+      "room-sor44-g-u14-heater-sensor",
+      "room-sor44-g-u14-window-actuator",
+      "room-sor44-g-u14-window-sensor"
+    ]
+  },
+  "Room_SOR44_G_U15": {
+    "label": "SOR44_G_U15",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor44-g-u15-colorlamp",
+      "room-sor44-g-u15-door-actuator",
+      "room-sor44-g-u15-door-sensor",
+      "room-sor44-g-u15-heater",
+      "room-sor44-g-u15-heater-sensor",
+      "room-sor44-g-u15-window-actuator",
+      "room-sor44-g-u15-window-sensor"
+    ]
+  },
+  "Room_SOR44_G_U16": {
+    "label": "SOR44_G_U16",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor44-g-u16-colorlamp",
+      "room-sor44-g-u16-door-actuator",
+      "room-sor44-g-u16-door-sensor",
+      "room-sor44-g-u16-heater",
+      "room-sor44-g-u16-heater-sensor",
+      "room-sor44-g-u16-window-actuator",
+      "room-sor44-g-u16-window-sensor"
+    ]
+  },
+  "Room_SOR44_G_U17": {
+    "label": "SOR44_G_U17",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor44-g-u17-colorlamp",
+      "room-sor44-g-u17-door-actuator",
+      "room-sor44-g-u17-door-sensor",
+      "room-sor44-g-u17-heater",
+      "room-sor44-g-u17-heater-sensor",
+      "room-sor44-g-u17-window-actuator",
+      "room-sor44-g-u17-window-sensor"
+    ]
+  },
+  "Room_SOR44_G_U18": {
+    "label": "SOR44_G_U18",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor44-g-u18-colorlamp",
+      "room-sor44-g-u18-door-actuator",
+      "room-sor44-g-u18-door-sensor",
+      "room-sor44-g-u18-heater",
+      "room-sor44-g-u18-heater-sensor",
+      "room-sor44-g-u18-window-actuator",
+      "room-sor44-g-u18-window-sensor"
+    ]
+  },
+  "Room_SOR44_G_U19": {
+    "label": "SOR44_G_U19",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor44-g-u19-colorlamp",
+      "room-sor44-g-u19-door-actuator",
+      "room-sor44-g-u19-door-sensor",
+      "room-sor44-g-u19-heater",
+      "room-sor44-g-u19-heater-sensor",
+      "room-sor44-g-u19-window-actuator",
+      "room-sor44-g-u19-window-sensor"
+    ]
+  },
+  "Room_SOR44_G_U2": {
+    "label": "SOR44_G_U2",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor44-g-u2-colorlamp",
+      "room-sor44-g-u2-door-actuator",
+      "room-sor44-g-u2-door-sensor",
+      "room-sor44-g-u2-heater",
+      "room-sor44-g-u2-heater-sensor",
+      "room-sor44-g-u2-window-actuator",
+      "room-sor44-g-u2-window-sensor"
+    ]
+  },
+  "Room_SOR44_G_U20": {
+    "label": "SOR44_G_U20",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor44-g-u20-colorlamp",
+      "room-sor44-g-u20-door-actuator",
+      "room-sor44-g-u20-door-sensor",
+      "room-sor44-g-u20-heater",
+      "room-sor44-g-u20-heater-sensor",
+      "room-sor44-g-u20-window-actuator",
+      "room-sor44-g-u20-window-sensor"
+    ]
+  },
+  "Room_SOR44_G_U21": {
+    "label": "SOR44_G_U21",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor44-g-u21-colorlamp",
+      "room-sor44-g-u21-door-actuator",
+      "room-sor44-g-u21-door-sensor",
+      "room-sor44-g-u21-heater",
+      "room-sor44-g-u21-heater-sensor",
+      "room-sor44-g-u21-window-actuator",
+      "room-sor44-g-u21-window-sensor"
+    ]
+  },
+  "Room_SOR44_G_U22": {
+    "label": "SOR44_G_U22",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor44-g-u22-colorlamp",
+      "room-sor44-g-u22-door-actuator",
+      "room-sor44-g-u22-door-sensor",
+      "room-sor44-g-u22-heater",
+      "room-sor44-g-u22-heater-sensor",
+      "room-sor44-g-u22-window-actuator",
+      "room-sor44-g-u22-window-sensor"
+    ]
+  },
+  "Room_SOR44_G_U23": {
+    "label": "SOR44_G_U23",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor44-g-u23-colorlamp",
+      "room-sor44-g-u23-door-actuator",
+      "room-sor44-g-u23-door-sensor",
+      "room-sor44-g-u23-heater",
+      "room-sor44-g-u23-heater-sensor",
+      "room-sor44-g-u23-window-actuator",
+      "room-sor44-g-u23-window-sensor"
+    ]
+  },
+  "Room_SOR44_G_U24": {
+    "label": "SOR44_G_U24",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor44-g-u24-colorlamp",
+      "room-sor44-g-u24-door-actuator",
+      "room-sor44-g-u24-door-sensor",
+      "room-sor44-g-u24-heater",
+      "room-sor44-g-u24-heater-sensor",
+      "room-sor44-g-u24-window-actuator",
+      "room-sor44-g-u24-window-sensor"
+    ]
+  },
+  "Room_SOR44_G_U25": {
+    "label": "SOR44_G_U25",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor44-g-u25-colorlamp",
+      "room-sor44-g-u25-door-actuator",
+      "room-sor44-g-u25-door-sensor",
+      "room-sor44-g-u25-heater",
+      "room-sor44-g-u25-heater-sensor",
+      "room-sor44-g-u25-window-actuator",
+      "room-sor44-g-u25-window-sensor"
+    ]
+  },
+  "Room_SOR44_G_U26": {
+    "label": "SOR44_G_U26",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor44-g-u26-colorlamp",
+      "room-sor44-g-u26-door-actuator",
+      "room-sor44-g-u26-door-sensor",
+      "room-sor44-g-u26-heater",
+      "room-sor44-g-u26-heater-sensor",
+      "room-sor44-g-u26-window-actuator",
+      "room-sor44-g-u26-window-sensor"
+    ]
+  },
+  "Room_SOR44_G_U27": {
+    "label": "SOR44_G_U27",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor44-g-u27-colorlamp",
+      "room-sor44-g-u27-door-actuator",
+      "room-sor44-g-u27-door-sensor",
+      "room-sor44-g-u27-heater",
+      "room-sor44-g-u27-heater-sensor",
+      "room-sor44-g-u27-window-actuator",
+      "room-sor44-g-u27-window-sensor"
+    ]
+  },
+  "Room_SOR44_G_U28": {
+    "label": "SOR44_G_U28",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor44-g-u28-colorlamp",
+      "room-sor44-g-u28-door-actuator",
+      "room-sor44-g-u28-door-sensor",
+      "room-sor44-g-u28-heater",
+      "room-sor44-g-u28-heater-sensor",
+      "room-sor44-g-u28-window-actuator",
+      "room-sor44-g-u28-window-sensor"
+    ]
+  },
+  "Room_SOR44_G_U29": {
+    "label": "SOR44_G_U29",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor44-g-u29-colorlamp",
+      "room-sor44-g-u29-door-actuator",
+      "room-sor44-g-u29-door-sensor",
+      "room-sor44-g-u29-heater",
+      "room-sor44-g-u29-heater-sensor",
+      "room-sor44-g-u29-window-actuator",
+      "room-sor44-g-u29-window-sensor"
+    ]
+  },
+  "Room_SOR44_G_U3": {
+    "label": "SOR44_G_U3",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor44-g-u3-colorlamp",
+      "room-sor44-g-u3-door-actuator",
+      "room-sor44-g-u3-door-sensor",
+      "room-sor44-g-u3-heater",
+      "room-sor44-g-u3-heater-sensor",
+      "room-sor44-g-u3-window-actuator",
+      "room-sor44-g-u3-window-sensor"
+    ]
+  },
+  "Room_SOR44_G_U30": {
+    "label": "SOR44_G_U30",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor44-g-u30-colorlamp",
+      "room-sor44-g-u30-door-actuator",
+      "room-sor44-g-u30-door-sensor",
+      "room-sor44-g-u30-heater",
+      "room-sor44-g-u30-heater-sensor",
+      "room-sor44-g-u30-window-actuator",
+      "room-sor44-g-u30-window-sensor"
+    ]
+  },
+  "Room_SOR44_G_U31": {
+    "label": "SOR44_G_U31",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor44-g-u31-colorlamp",
+      "room-sor44-g-u31-door-actuator",
+      "room-sor44-g-u31-door-sensor",
+      "room-sor44-g-u31-heater",
+      "room-sor44-g-u31-heater-sensor",
+      "room-sor44-g-u31-window-actuator",
+      "room-sor44-g-u31-window-sensor"
+    ]
+  },
+  "Room_SOR44_G_U32": {
+    "label": "SOR44_G_U32",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor44-g-u32-colorlamp",
+      "room-sor44-g-u32-door-actuator",
+      "room-sor44-g-u32-door-sensor",
+      "room-sor44-g-u32-heater",
+      "room-sor44-g-u32-heater-sensor",
+      "room-sor44-g-u32-window-actuator",
+      "room-sor44-g-u32-window-sensor"
+    ]
+  },
+  "Room_SOR44_G_U33": {
+    "label": "SOR44_G_U33",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor44-g-u33-colorlamp",
+      "room-sor44-g-u33-door-actuator",
+      "room-sor44-g-u33-door-sensor",
+      "room-sor44-g-u33-heater",
+      "room-sor44-g-u33-heater-sensor",
+      "room-sor44-g-u33-window-actuator",
+      "room-sor44-g-u33-window-sensor"
+    ]
+  },
+  "Room_SOR44_G_U34": {
+    "label": "SOR44_G_U34",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor44-g-u34-colorlamp",
+      "room-sor44-g-u34-door-actuator",
+      "room-sor44-g-u34-door-sensor",
+      "room-sor44-g-u34-heater",
+      "room-sor44-g-u34-heater-sensor",
+      "room-sor44-g-u34-window-actuator",
+      "room-sor44-g-u34-window-sensor"
+    ]
+  },
+  "Room_SOR44_G_U35": {
+    "label": "SOR44_G_U35",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor44-g-u35-colorlamp",
+      "room-sor44-g-u35-door-actuator",
+      "room-sor44-g-u35-door-sensor",
+      "room-sor44-g-u35-heater",
+      "room-sor44-g-u35-heater-sensor",
+      "room-sor44-g-u35-window-actuator",
+      "room-sor44-g-u35-window-sensor"
+    ]
+  },
+  "Room_SOR44_G_U36": {
+    "label": "SOR44_G_U36",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor44-g-u36-colorlamp",
+      "room-sor44-g-u36-door-actuator",
+      "room-sor44-g-u36-door-sensor",
+      "room-sor44-g-u36-heater",
+      "room-sor44-g-u36-heater-sensor",
+      "room-sor44-g-u36-window-actuator",
+      "room-sor44-g-u36-window-sensor"
+    ]
+  },
+  "Room_SOR44_G_U37": {
+    "label": "SOR44_G_U37",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor44-g-u37-colorlamp",
+      "room-sor44-g-u37-door-actuator",
+      "room-sor44-g-u37-door-sensor",
+      "room-sor44-g-u37-heater",
+      "room-sor44-g-u37-heater-sensor",
+      "room-sor44-g-u37-window-actuator",
+      "room-sor44-g-u37-window-sensor"
+    ]
+  },
+  "Room_SOR44_G_U4": {
+    "label": "SOR44_G_U4",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor44-g-u4-colorlamp",
+      "room-sor44-g-u4-door-actuator",
+      "room-sor44-g-u4-door-sensor",
+      "room-sor44-g-u4-heater",
+      "room-sor44-g-u4-heater-sensor",
+      "room-sor44-g-u4-window-actuator",
+      "room-sor44-g-u4-window-sensor"
+    ]
+  },
+  "Room_SOR44_G_U5": {
+    "label": "SOR44_G_U5",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor44-g-u5-colorlamp",
+      "room-sor44-g-u5-door-actuator",
+      "room-sor44-g-u5-door-sensor",
+      "room-sor44-g-u5-heater",
+      "room-sor44-g-u5-heater-sensor",
+      "room-sor44-g-u5-window-actuator",
+      "room-sor44-g-u5-window-sensor"
+    ]
+  },
+  "Room_SOR44_G_U6": {
+    "label": "SOR44_G_U6",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor44-g-u6-colorlamp",
+      "room-sor44-g-u6-door-actuator",
+      "room-sor44-g-u6-door-sensor",
+      "room-sor44-g-u6-heater",
+      "room-sor44-g-u6-heater-sensor",
+      "room-sor44-g-u6-window-actuator",
+      "room-sor44-g-u6-window-sensor"
+    ]
+  },
+  "Room_SOR44_G_U7": {
+    "label": "SOR44_G_U7",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor44-g-u7-colorlamp",
+      "room-sor44-g-u7-door-actuator",
+      "room-sor44-g-u7-door-sensor",
+      "room-sor44-g-u7-heater",
+      "room-sor44-g-u7-heater-sensor",
+      "room-sor44-g-u7-window-actuator",
+      "room-sor44-g-u7-window-sensor"
+    ]
+  },
+  "Room_SOR44_G_U8": {
+    "label": "SOR44_G_U8",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor44-g-u8-colorlamp",
+      "room-sor44-g-u8-door-actuator",
+      "room-sor44-g-u8-door-sensor",
+      "room-sor44-g-u8-heater",
+      "room-sor44-g-u8-heater-sensor",
+      "room-sor44-g-u8-window-actuator",
+      "room-sor44-g-u8-window-sensor"
+    ]
+  },
+  "Room_SOR44_G_U9": {
+    "label": "SOR44_G_U9",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor44-g-u9-colorlamp",
+      "room-sor44-g-u9-door-actuator",
+      "room-sor44-g-u9-door-sensor",
+      "room-sor44-g-u9-heater",
+      "room-sor44-g-u9-heater-sensor",
+      "room-sor44-g-u9-window-actuator",
+      "room-sor44-g-u9-window-sensor"
+    ]
+  },
+  "Room_SOR46_AHU46": {
+    "label": "SOR46_AHU46",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor46-ahu46-colorlamp",
+      "room-sor46-ahu46-door-actuator",
+      "room-sor46-ahu46-door-sensor",
+      "room-sor46-ahu46-heater",
+      "room-sor46-ahu46-heater-sensor",
+      "room-sor46-ahu46-window-actuator",
+      "room-sor46-ahu46-window-sensor"
+    ]
+  },
+  "Room_SOR46_G_Expo_WC": {
+    "label": "SOR46_G_Expo_WC",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "b3-42-gf-z8-g5-lght-load",
+      "b3-42-gf-z8-g6-lght-load",
+      "b3-42-gf-z8-g7-lght-load",
+      "b3-42-gf-z8-g8-lght-load",
+      "room-sor46-g-expo-wc-colorlamp",
+      "room-sor46-g-expo-wc-door-actuator",
+      "room-sor46-g-expo-wc-door-sensor",
+      "room-sor46-g-expo-wc-heater",
+      "room-sor46-g-expo-wc-heater-sensor",
+      "room-sor46-g-expo-wc-window-actuator",
+      "room-sor46-g-expo-wc-window-sensor",
+      "d01-z8-g5-reception-wc-1-mm68-trigger",
+      "d01-z8-g7-reception-wc-2-mm66-trigger"
+    ]
+  },
+  "Room_SOR46_G_U00": {
+    "label": "SOR46_G_U00",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor46-g-u00-colorlamp",
+      "room-sor46-g-u00-door-actuator",
+      "room-sor46-g-u00-door-sensor",
+      "room-sor46-g-u00-heater",
+      "room-sor46-g-u00-heater-sensor",
+      "room-sor46-g-u00-window-actuator",
+      "room-sor46-g-u00-window-sensor"
+    ]
+  },
+  "Room_SOR46_G_U1": {
+    "label": "SOR46_G_U1",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor46-g-u1-colorlamp",
+      "room-sor46-g-u1-door-actuator",
+      "room-sor46-g-u1-door-sensor",
+      "room-sor46-g-u1-heater",
+      "room-sor46-g-u1-heater-sensor",
+      "room-sor46-g-u1-window-actuator",
+      "room-sor46-g-u1-window-sensor"
+    ]
+  },
+  "Room_SOR46_G_U10": {
+    "label": "SOR46_G_U10",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor46-g-u10-colorlamp",
+      "room-sor46-g-u10-door-actuator",
+      "room-sor46-g-u10-door-sensor",
+      "room-sor46-g-u10-heater",
+      "room-sor46-g-u10-heater-sensor",
+      "room-sor46-g-u10-window-actuator",
+      "room-sor46-g-u10-window-sensor"
+    ]
+  },
+  "Room_SOR46_G_U11": {
+    "label": "SOR46_G_U11",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor46-g-u11-colorlamp",
+      "room-sor46-g-u11-door-actuator",
+      "room-sor46-g-u11-door-sensor",
+      "room-sor46-g-u11-heater",
+      "room-sor46-g-u11-heater-sensor",
+      "room-sor46-g-u11-window-actuator",
+      "room-sor46-g-u11-window-sensor"
+    ]
+  },
+  "Room_SOR46_G_U12": {
+    "label": "SOR46_G_U12",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor46-g-u12-colorlamp",
+      "room-sor46-g-u12-door-actuator",
+      "room-sor46-g-u12-door-sensor",
+      "room-sor46-g-u12-heater",
+      "room-sor46-g-u12-heater-sensor",
+      "room-sor46-g-u12-window-actuator",
+      "room-sor46-g-u12-window-sensor"
+    ]
+  },
+  "Room_SOR46_G_U13": {
+    "label": "SOR46_G_U13",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor46-g-u13-colorlamp",
+      "room-sor46-g-u13-door-actuator",
+      "room-sor46-g-u13-door-sensor",
+      "room-sor46-g-u13-heater",
+      "room-sor46-g-u13-heater-sensor",
+      "room-sor46-g-u13-window-actuator",
+      "room-sor46-g-u13-window-sensor"
+    ]
+  },
+  "Room_SOR46_G_U14": {
+    "label": "SOR46_G_U14",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor46-g-u14-colorlamp",
+      "room-sor46-g-u14-door-actuator",
+      "room-sor46-g-u14-door-sensor",
+      "room-sor46-g-u14-heater",
+      "room-sor46-g-u14-heater-sensor",
+      "room-sor46-g-u14-window-actuator",
+      "room-sor46-g-u14-window-sensor"
+    ]
+  },
+  "Room_SOR46_G_U15": {
+    "label": "SOR46_G_U15",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor46-g-u15-colorlamp",
+      "room-sor46-g-u15-door-actuator",
+      "room-sor46-g-u15-door-sensor",
+      "room-sor46-g-u15-heater",
+      "room-sor46-g-u15-heater-sensor",
+      "room-sor46-g-u15-window-actuator",
+      "room-sor46-g-u15-window-sensor"
+    ]
+  },
+  "Room_SOR46_G_U16": {
+    "label": "SOR46_G_U16",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor46-g-u16-colorlamp",
+      "room-sor46-g-u16-door-actuator",
+      "room-sor46-g-u16-door-sensor",
+      "room-sor46-g-u16-heater",
+      "room-sor46-g-u16-heater-sensor",
+      "room-sor46-g-u16-window-actuator",
+      "room-sor46-g-u16-window-sensor"
+    ]
+  },
+  "Room_SOR46_G_U17": {
+    "label": "SOR46_G_U17",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor46-g-u17-colorlamp",
+      "room-sor46-g-u17-door-actuator",
+      "room-sor46-g-u17-door-sensor",
+      "room-sor46-g-u17-heater",
+      "room-sor46-g-u17-heater-sensor",
+      "room-sor46-g-u17-window-actuator",
+      "room-sor46-g-u17-window-sensor"
+    ]
+  },
+  "Room_SOR46_G_U18": {
+    "label": "SOR46_G_U18",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor46-g-u18-colorlamp",
+      "room-sor46-g-u18-door-actuator",
+      "room-sor46-g-u18-door-sensor",
+      "room-sor46-g-u18-heater",
+      "room-sor46-g-u18-heater-sensor",
+      "room-sor46-g-u18-window-actuator",
+      "room-sor46-g-u18-window-sensor"
+    ]
+  },
+  "Room_SOR46_G_U19": {
+    "label": "SOR46_G_U19",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor46-g-u19-colorlamp",
+      "room-sor46-g-u19-door-actuator",
+      "room-sor46-g-u19-door-sensor",
+      "room-sor46-g-u19-heater",
+      "room-sor46-g-u19-heater-sensor",
+      "room-sor46-g-u19-window-actuator",
+      "room-sor46-g-u19-window-sensor"
+    ]
+  },
+  "Room_SOR46_G_U2": {
+    "label": "SOR46_G_U2",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor46-g-u2-colorlamp",
+      "room-sor46-g-u2-door-actuator",
+      "room-sor46-g-u2-door-sensor",
+      "room-sor46-g-u2-heater",
+      "room-sor46-g-u2-heater-sensor",
+      "room-sor46-g-u2-window-actuator",
+      "room-sor46-g-u2-window-sensor"
+    ]
+  },
+  "Room_SOR46_G_U20": {
+    "label": "SOR46_G_U20",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor46-g-u20-colorlamp",
+      "room-sor46-g-u20-door-actuator",
+      "room-sor46-g-u20-door-sensor",
+      "room-sor46-g-u20-heater",
+      "room-sor46-g-u20-heater-sensor",
+      "room-sor46-g-u20-window-actuator",
+      "room-sor46-g-u20-window-sensor"
+    ]
+  },
+  "Room_SOR46_G_U21": {
+    "label": "SOR46_G_U21",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor46-g-u21-colorlamp",
+      "room-sor46-g-u21-door-actuator",
+      "room-sor46-g-u21-door-sensor",
+      "room-sor46-g-u21-heater",
+      "room-sor46-g-u21-heater-sensor",
+      "room-sor46-g-u21-window-actuator",
+      "room-sor46-g-u21-window-sensor"
+    ]
+  },
+  "Room_SOR46_G_U22": {
+    "label": "SOR46_G_U22",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor46-g-u22-colorlamp",
+      "room-sor46-g-u22-door-actuator",
+      "room-sor46-g-u22-door-sensor",
+      "room-sor46-g-u22-heater",
+      "room-sor46-g-u22-heater-sensor",
+      "room-sor46-g-u22-window-actuator",
+      "room-sor46-g-u22-window-sensor"
+    ]
+  },
+  "Room_SOR46_G_U23": {
+    "label": "SOR46_G_U23",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor46-g-u23-colorlamp",
+      "room-sor46-g-u23-door-actuator",
+      "room-sor46-g-u23-door-sensor",
+      "room-sor46-g-u23-heater",
+      "room-sor46-g-u23-heater-sensor",
+      "room-sor46-g-u23-window-actuator",
+      "room-sor46-g-u23-window-sensor"
+    ]
+  },
+  "Room_SOR46_G_U24A": {
+    "label": "SOR46_G_U24A",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor46-g-u24a-colorlamp",
+      "room-sor46-g-u24a-door-actuator",
+      "room-sor46-g-u24a-door-sensor",
+      "room-sor46-g-u24a-heater",
+      "room-sor46-g-u24a-heater-sensor",
+      "room-sor46-g-u24a-window-actuator",
+      "room-sor46-g-u24a-window-sensor"
+    ]
+  },
+  "Room_SOR46_G_U24B": {
+    "label": "SOR46_G_U24B",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor46-g-u24b-colorlamp",
+      "room-sor46-g-u24b-door-actuator",
+      "room-sor46-g-u24b-door-sensor",
+      "room-sor46-g-u24b-heater",
+      "room-sor46-g-u24b-heater-sensor",
+      "room-sor46-g-u24b-window-actuator",
+      "room-sor46-g-u24b-window-sensor"
+    ]
+  },
+  "Room_SOR46_G_U25": {
+    "label": "SOR46_G_U25",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor46-g-u25-colorlamp",
+      "room-sor46-g-u25-door-actuator",
+      "room-sor46-g-u25-door-sensor",
+      "room-sor46-g-u25-heater",
+      "room-sor46-g-u25-heater-sensor",
+      "room-sor46-g-u25-window-actuator",
+      "room-sor46-g-u25-window-sensor"
+    ]
+  },
+  "Room_SOR46_G_U26A": {
+    "label": "SOR46_G_U26A",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor46-g-u26a-colorlamp",
+      "room-sor46-g-u26a-door-actuator",
+      "room-sor46-g-u26a-door-sensor",
+      "room-sor46-g-u26a-heater",
+      "room-sor46-g-u26a-heater-sensor",
+      "room-sor46-g-u26a-window-actuator",
+      "room-sor46-g-u26a-window-sensor"
+    ]
+  },
+  "Room_SOR46_G_U26B": {
+    "label": "SOR46_G_U26B",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor46-g-u26b-colorlamp",
+      "room-sor46-g-u26b-door-actuator",
+      "room-sor46-g-u26b-door-sensor",
+      "room-sor46-g-u26b-heater",
+      "room-sor46-g-u26b-heater-sensor",
+      "room-sor46-g-u26b-window-actuator",
+      "room-sor46-g-u26b-window-sensor"
+    ]
+  },
+  "Room_SOR46_G_U27": {
+    "label": "SOR46_G_U27",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor46-g-u27-colorlamp",
+      "room-sor46-g-u27-door-actuator",
+      "room-sor46-g-u27-door-sensor",
+      "room-sor46-g-u27-heater",
+      "room-sor46-g-u27-heater-sensor",
+      "room-sor46-g-u27-window-actuator",
+      "room-sor46-g-u27-window-sensor"
+    ]
+  },
+  "Room_SOR46_G_U28": {
+    "label": "SOR46_G_U28",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor46-g-u28-colorlamp",
+      "room-sor46-g-u28-door-actuator",
+      "room-sor46-g-u28-door-sensor",
+      "room-sor46-g-u28-heater",
+      "room-sor46-g-u28-heater-sensor",
+      "room-sor46-g-u28-window-actuator",
+      "room-sor46-g-u28-window-sensor"
+    ]
+  },
+  "Room_SOR46_G_U29": {
+    "label": "SOR46_G_U29",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor46-g-u29-colorlamp",
+      "room-sor46-g-u29-door-actuator",
+      "room-sor46-g-u29-door-sensor",
+      "room-sor46-g-u29-heater",
+      "room-sor46-g-u29-heater-sensor",
+      "room-sor46-g-u29-window-actuator",
+      "room-sor46-g-u29-window-sensor"
+    ]
+  },
+  "Room_SOR46_G_U3": {
+    "label": "SOR46_G_U3",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor46-g-u3-colorlamp",
+      "room-sor46-g-u3-door-actuator",
+      "room-sor46-g-u3-door-sensor",
+      "room-sor46-g-u3-heater",
+      "room-sor46-g-u3-heater-sensor",
+      "room-sor46-g-u3-window-actuator",
+      "room-sor46-g-u3-window-sensor"
+    ]
+  },
+  "Room_SOR46_G_U30": {
+    "label": "SOR46_G_U30",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor46-g-u30-colorlamp",
+      "room-sor46-g-u30-door-actuator",
+      "room-sor46-g-u30-door-sensor",
+      "room-sor46-g-u30-heater",
+      "room-sor46-g-u30-heater-sensor",
+      "room-sor46-g-u30-window-actuator",
+      "room-sor46-g-u30-window-sensor"
+    ]
+  },
+  "Room_SOR46_G_U31": {
+    "label": "SOR46_G_U31",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor46-g-u31-colorlamp",
+      "room-sor46-g-u31-door-actuator",
+      "room-sor46-g-u31-door-sensor",
+      "room-sor46-g-u31-heater",
+      "room-sor46-g-u31-heater-sensor",
+      "room-sor46-g-u31-window-actuator",
+      "room-sor46-g-u31-window-sensor"
+    ]
+  },
+  "Room_SOR46_G_U31A": {
+    "label": "SOR46_G_U31A",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor46-g-u31a-colorlamp",
+      "room-sor46-g-u31a-door-actuator",
+      "room-sor46-g-u31a-door-sensor",
+      "room-sor46-g-u31a-heater",
+      "room-sor46-g-u31a-heater-sensor",
+      "room-sor46-g-u31a-window-actuator",
+      "room-sor46-g-u31a-window-sensor"
+    ]
+  },
+  "Room_SOR46_G_U31B": {
+    "label": "SOR46_G_U31B",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor46-g-u31b-colorlamp",
+      "room-sor46-g-u31b-door-actuator",
+      "room-sor46-g-u31b-door-sensor",
+      "room-sor46-g-u31b-heater",
+      "room-sor46-g-u31b-heater-sensor",
+      "room-sor46-g-u31b-window-actuator",
+      "room-sor46-g-u31b-window-sensor"
+    ]
+  },
+  "Room_SOR46_G_U32": {
+    "label": "SOR46_G_U32",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor46-g-u32-colorlamp",
+      "room-sor46-g-u32-door-actuator",
+      "room-sor46-g-u32-door-sensor",
+      "room-sor46-g-u32-heater",
+      "room-sor46-g-u32-heater-sensor",
+      "room-sor46-g-u32-window-actuator",
+      "room-sor46-g-u32-window-sensor"
+    ]
+  },
+  "Room_SOR46_G_U33": {
+    "label": "SOR46_G_U33",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor46-g-u33-colorlamp",
+      "room-sor46-g-u33-door-actuator",
+      "room-sor46-g-u33-door-sensor",
+      "room-sor46-g-u33-heater",
+      "room-sor46-g-u33-heater-sensor",
+      "room-sor46-g-u33-window-actuator",
+      "room-sor46-g-u33-window-sensor"
+    ]
+  },
+  "Room_SOR46_G_U34": {
+    "label": "SOR46_G_U34",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor46-g-u34-colorlamp",
+      "room-sor46-g-u34-door-actuator",
+      "room-sor46-g-u34-door-sensor",
+      "room-sor46-g-u34-heater",
+      "room-sor46-g-u34-heater-sensor",
+      "room-sor46-g-u34-window-actuator",
+      "room-sor46-g-u34-window-sensor"
+    ]
+  },
+  "Room_SOR46_G_U35": {
+    "label": "SOR46_G_U35",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor46-g-u35-colorlamp",
+      "room-sor46-g-u35-door-actuator",
+      "room-sor46-g-u35-door-sensor",
+      "room-sor46-g-u35-heater",
+      "room-sor46-g-u35-heater-sensor",
+      "room-sor46-g-u35-window-actuator",
+      "room-sor46-g-u35-window-sensor"
+    ]
+  },
+  "Room_SOR46_G_U4": {
+    "label": "SOR46_G_U4",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor46-g-u4-colorlamp",
+      "room-sor46-g-u4-door-actuator",
+      "room-sor46-g-u4-door-sensor",
+      "room-sor46-g-u4-heater",
+      "room-sor46-g-u4-heater-sensor",
+      "room-sor46-g-u4-window-actuator",
+      "room-sor46-g-u4-window-sensor"
+    ]
+  },
+  "Room_SOR46_G_U5": {
+    "label": "SOR46_G_U5",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor46-g-u5-colorlamp",
+      "room-sor46-g-u5-door-actuator",
+      "room-sor46-g-u5-door-sensor",
+      "room-sor46-g-u5-heater",
+      "room-sor46-g-u5-heater-sensor",
+      "room-sor46-g-u5-window-actuator",
+      "room-sor46-g-u5-window-sensor"
+    ]
+  },
+  "Room_SOR46_G_U6": {
+    "label": "SOR46_G_U6",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor46-g-u6-colorlamp",
+      "room-sor46-g-u6-door-actuator",
+      "room-sor46-g-u6-door-sensor",
+      "room-sor46-g-u6-heater",
+      "room-sor46-g-u6-heater-sensor",
+      "room-sor46-g-u6-window-actuator",
+      "room-sor46-g-u6-window-sensor"
+    ]
+  },
+  "Room_SOR46_G_U7": {
+    "label": "SOR46_G_U7",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor46-g-u7-colorlamp",
+      "room-sor46-g-u7-door-actuator",
+      "room-sor46-g-u7-door-sensor",
+      "room-sor46-g-u7-heater",
+      "room-sor46-g-u7-heater-sensor",
+      "room-sor46-g-u7-window-actuator",
+      "room-sor46-g-u7-window-sensor"
+    ]
+  },
+  "Room_SOR46_G_U8": {
+    "label": "SOR46_G_U8",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor46-g-u8-colorlamp",
+      "room-sor46-g-u8-door-actuator",
+      "room-sor46-g-u8-door-sensor",
+      "room-sor46-g-u8-heater",
+      "room-sor46-g-u8-heater-sensor",
+      "room-sor46-g-u8-window-actuator",
+      "room-sor46-g-u8-window-sensor"
+    ]
+  },
+  "Room_SOR46_G_U9": {
+    "label": "SOR46_G_U9",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-sor46-g-u9-colorlamp",
+      "room-sor46-g-u9-door-actuator",
+      "room-sor46-g-u9-door-sensor",
+      "room-sor46-g-u9-heater",
+      "room-sor46-g-u9-heater-sensor",
+      "room-sor46-g-u9-window-actuator",
+      "room-sor46-g-u9-window-sensor"
+    ]
+  },
+  "Room_Secpanel": {
+    "label": "Secpanel",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "room-secpanel-colorlamp",
+      "room-secpanel-door-actuator",
+      "room-secpanel-door-sensor",
+      "room-secpanel-heater",
+      "room-secpanel-heater-sensor",
+      "room-secpanel-window-actuator",
+      "room-secpanel-window-sensor"
+    ]
+  },
+  "Room_Shower": {
+    "label": "Shower",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-shower-colorlamp",
+      "room-shower-door-actuator",
+      "room-shower-door-sensor",
+      "room-shower-heater",
+      "room-shower-heater-sensor",
+      "room-shower-window-actuator",
+      "room-shower-window-sensor"
+    ]
+  },
+  "Room_SmokeDetector": {
+    "label": "SmokeDetector",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-smokedetector-colorlamp",
+      "room-smokedetector-door-actuator",
+      "room-smokedetector-door-sensor",
+      "room-smokedetector-heater",
+      "room-smokedetector-heater-sensor",
+      "room-smokedetector-window-actuator",
+      "room-smokedetector-window-sensor"
+    ]
+  },
+  "Room_StaircaseA": {
+    "label": "StaircaseA",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "room-staircasea-colorlamp",
+      "room-staircasea-door-actuator",
+      "room-staircasea-door-sensor",
+      "room-staircasea-heater",
+      "room-staircasea-heater-sensor",
+      "room-staircasea-window-actuator",
+      "room-staircasea-window-sensor"
+    ]
+  },
+  "Room_StaircaseD": {
+    "label": "StaircaseD",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "room-staircased-colorlamp",
+      "room-staircased-door-actuator",
+      "room-staircased-door-sensor",
+      "room-staircased-heater",
+      "room-staircased-heater-sensor",
+      "room-staircased-window-actuator",
+      "room-staircased-window-sensor"
+    ]
+  },
+  "Room_Supply": {
+    "label": "Supply",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-supply-colorlamp",
+      "room-supply-door-actuator",
+      "room-supply-door-sensor",
+      "room-supply-heater",
+      "room-supply-heater-sensor",
+      "room-supply-window-actuator",
+      "room-supply-window-sensor"
+    ]
+  },
+  "Room_TO": {
+    "label": "TO",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "room-to-colorlamp",
+      "room-to-door-actuator",
+      "room-to-door-sensor",
+      "room-to-heater",
+      "room-to-heater-sensor",
+      "room-to-window-actuator",
+      "room-to-window-sensor"
+    ]
+  },
+  "Room_TopAisle": {
+    "label": "TopAisle",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-topaisle-colorlamp",
+      "room-topaisle-door-actuator",
+      "room-topaisle-door-sensor",
+      "room-topaisle-heater",
+      "room-topaisle-heater-sensor",
+      "room-topaisle-window-actuator",
+      "room-topaisle-window-sensor"
+    ]
+  },
+  "Room_TraceHeat": {
+    "label": "TraceHeat",
+    "floor": null,
+    "things": [
+      "room-traceheat-colorlamp",
+      "room-traceheat-door-actuator",
+      "room-traceheat-door-sensor",
+      "room-traceheat-heater",
+      "room-traceheat-heater-sensor",
+      "room-traceheat-window-actuator",
+      "room-traceheat-window-sensor"
+    ]
+  },
+  "Room_Training": {
+    "label": "Training",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-training-colorlamp",
+      "room-training-door-actuator",
+      "room-training-door-sensor",
+      "room-training-heater",
+      "room-training-heater-sensor",
+      "room-training-window-actuator",
+      "room-training-window-sensor",
+      "d01-z3-g6-24p-training-sm74-trigger"
+    ]
+  },
+  "Room_UPSRM": {
+    "label": "UPSRM",
+    "floor": "Floor_FirstFloor",
+    "things": [
+      "room-upsrm-colorlamp",
+      "room-upsrm-door-actuator",
+      "room-upsrm-door-sensor",
+      "room-upsrm-heater",
+      "room-upsrm-heater-sensor",
+      "room-upsrm-window-actuator",
+      "room-upsrm-window-sensor"
+    ]
+  },
+  "Room_Vesda": {
+    "label": "Vesda",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-vesda-colorlamp",
+      "room-vesda-door-actuator",
+      "room-vesda-door-sensor",
+      "room-vesda-heater",
+      "room-vesda-heater-sensor",
+      "room-vesda-window-actuator",
+      "room-vesda-window-sensor"
+    ]
+  },
+  "Room_WELLNS": {
+    "label": "WELLNS",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-wellns-colorlamp",
+      "room-wellns-door-actuator",
+      "room-wellns-door-sensor",
+      "room-wellns-heater",
+      "room-wellns-heater-sensor",
+      "room-wellns-window-actuator",
+      "room-wellns-window-sensor"
+    ]
+  },
+  "Room_Water_Meter": {
+    "label": "Water_Meter",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-water-meter-colorlamp",
+      "room-water-meter-door-actuator",
+      "room-water-meter-door-sensor",
+      "room-water-meter-heater",
+      "room-water-meter-heater-sensor",
+      "room-water-meter-window-actuator",
+      "room-water-meter-window-sensor"
+    ]
+  },
+  "Room_Wilde": {
+    "label": "Wilde",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-wilde-colorlamp",
+      "room-wilde-door-actuator",
+      "room-wilde-door-sensor",
+      "room-wilde-heater",
+      "room-wilde-heater-sensor",
+      "room-wilde-window-actuator",
+      "room-wilde-window-sensor",
+      "d01-z3-g2-teleconference-mm71-trigger"
+    ]
+  },
+  "Room_Yeats": {
+    "label": "Yeats",
+    "floor": "Floor_GroundFloor",
+    "things": [
+      "room-yeats-colorlamp",
+      "room-yeats-door-actuator",
+      "room-yeats-door-sensor",
+      "room-yeats-heater",
+      "room-yeats-heater-sensor",
+      "room-yeats-window-actuator",
+      "room-yeats-window-sensor",
+      "d01-z3-g1-18p-board-mm69-trigger",
+      "d01-z3-g1-18p-board-sm70-trigger"
+    ]
+  }
+}

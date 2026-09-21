@@ -1,0 +1,100 @@
+{
+  "@context": [
+    "https://www.w3.org/2022/wot/td/v1.1",
+    {
+      "brick": "http://buildsys.org/ontologies/Brick#"
+    }
+  ],
+  "@type": "brick:Electric_Radiator",
+  "title": "Electric radiator",
+  "description": "The radiator of one room. It raises the room temperature by one degree per invocation, but only while the room's door and window are both shut and the temperature is still below the setpoint. The temperature it raises is the one the room's temperature sensor reports, so heating is a cross-Thing effect.",
+  "securityDefinitions": {
+    "nosec_sc": {
+      "scheme": "nosec"
+    }
+  },
+  "security": "nosec_sc",
+  "properties": {
+    "temperatureSensor": {
+      "type": "string",
+      "format": "uri-reference",
+      "title": "The temperature sensor of this room",
+      "readOnly": true,
+      "writeOnly": false,
+      "observable": true
+    },
+    "doorSensor": {
+      "type": "string",
+      "format": "uri-reference",
+      "title": "The door contact sensor of this room",
+      "readOnly": true,
+      "writeOnly": false,
+      "observable": true
+    },
+    "windowSensor": {
+      "type": "string",
+      "format": "uri-reference",
+      "title": "The window contact sensor of this room",
+      "readOnly": true,
+      "writeOnly": false,
+      "observable": true
+    },
+    "desiredTemperature": {
+      "title": "Setpoint the radiator heats towards; null while no setpoint is set",
+      "readOnly": true,
+      "writeOnly": false,
+      "observable": true,
+      "@type": "brick:Temperature_Setpoint",
+      "oneOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "actions": {
+    "setDesiredTemperature": {
+      "title": "Set desired temperature",
+      "description": "Set the setpoint the radiator heats towards.",
+      "input": {
+        "type": "number",
+        "title": "value"
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "desiredTemperature": {
+            "type": "number"
+          }
+        }
+      },
+      "safe": false,
+      "idempotent": false,
+      "vre:effects": "desiredTemperature' = value;\noutput.success = true;\noutput.desiredTemperature = desiredTemperature';"
+    },
+    "increaseTemperature": {
+      "title": "Increase temperature",
+      "description": "Heat the room by one degree. Has no effect while the door or the window is open, or while the setpoint is unset or already reached.",
+      "output": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "temperature": {
+            "type": "number"
+          }
+        }
+      },
+      "safe": false,
+      "idempotent": false,
+      "vre:effects": "temperatureSensor.temperature' = !doorSensor.isOpen\n  && !windowSensor.isOpen\n  && desiredTemperature != null\n  && desiredTemperature > temperatureSensor.temperature\n  ? temperatureSensor.temperature + 1\n  : temperatureSensor.temperature;\noutput.success = !doorSensor.isOpen\n  && !windowSensor.isOpen\n  && desiredTemperature != null\n  && desiredTemperature > temperatureSensor.temperature;\noutput.temperature = temperatureSensor.temperature';"
+    }
+  }
+}

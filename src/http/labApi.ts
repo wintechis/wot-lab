@@ -3,8 +3,7 @@ import { URL } from 'url';
 import { formatThingsFlag } from '../config/options.js';
 import { createLoggers } from '../utils/debug.js';
 import { ThingRegistry } from '../things/ThingRegistry.js';
-import { listEnvironments, loadEnvironmentManifest } from '../things/environments.js';
-import { advanceClock, clockStatus, setVirtualTime, useRealClock } from '../things/clock.js';
+import { listEnvironments, loadEnvironmentManifest, loadEnvironmentTasks } from '../things/environments.js';
 import {
   ThingDraft,
   ThingSpec,
@@ -106,13 +105,17 @@ function draftFromBody(body: Record<string, unknown>): ThingDraft {
 
 async function thingsPayload(registry: ThingRegistry) {
   const requests = registry.startupRequests();
+  const environment = registry.environment();
+  // The flags that reproduce this session — the replacement for a config file.
+  // An environment's Things come back through `--env`, which pins their ids and
+  // state; `--things` would allocate new ones. An empty lab needs no flag at all.
+  const flags = [
+    ...(environment ? [`--env ${environment}`] : []),
+    ...(requests.length ? [`--things ${formatThingsFlag(requests)}`] : [])
+  ];
   return {
     things: registry.listThings(),
-    // The flag that reproduces this session — the replacement for a config file.
-    // An empty lab is reproduced by starting with no flag at all.
-    startCommand: requests.length
-      ? `bun run dev -- --things ${formatThingsFlag(requests)}`
-      : 'bun run dev'
+    startCommand: flags.length ? `bun run dev -- ${flags.join(' ')}` : 'bun run dev'
   };
 }
 
@@ -131,7 +134,7 @@ export function createLabApi(registry: ThingRegistry) {
     segments: string[],
     url: URL
   ): Promise<boolean> {
-    const [resource, id] = segments;
+    const [resource, id, member] = segments;
     const method = req.method ?? 'GET';
 
     if (method !== 'GET' && !isWriteAllowed(req)) {
@@ -173,6 +176,12 @@ export function createLabApi(registry: ThingRegistry) {
         return true;
       }
 
+      // Without an id, DELETE empties the lab.
+      if (method === 'DELETE' && resource === 'things' && !id) {
+        sendJson(res, 200, { removed: await registry.removeAll() });
+        return true;
+      }
+
       if (method === 'DELETE' && resource === 'things' && id) {
         const removed = await registry.remove(decodeURIComponent(id));
         if (!removed) {
@@ -193,8 +202,19 @@ export function createLabApi(registry: ThingRegistry) {
 
       // Environments: named bundles of Things with fixed ids. GET lists what is
       // on disk; POST brings one online (the benchmark's start command).
-      if (method === 'GET' && resource === 'environments') {
-        sendJson(res, 200, { environments: await listEnvironments() });
+      // The benchmark tasks of one environment: what a run is replayed against.
+      if (method === 'GET' && resource === 'environments' && id && member === 'tasks') {
+        sendJson(res, 200, { tasks: await loadEnvironmentTasks(decodeURIComponent(id)) });
+        return true;
+      }
+
+      if (method === 'GET' && resource === 'environments' && !id) {
+        // `current` is what a task runner checks before replaying a plan: the
+        // list says what could run, this says what is running.
+        sendJson(res, 200, {
+          current: registry.environment(),
+          environments: await listEnvironments()
+        });
         return true;
       }
 
@@ -206,7 +226,9 @@ export function createLabApi(registry: ThingRegistry) {
           return true;
         }
         const manifest = await loadEnvironmentManifest(name);
-        const things = await registry.instantiateEnvironment(manifest);
+        // `replace` takes whatever is running offline first; without it a start
+        // is refused when any of the manifest's ids is in use.
+        const things = await registry.instantiateEnvironment(manifest, { replace: body.replace === true });
         sendJson(res, 201, { environment: manifest.name, things });
         return true;
       }
@@ -221,32 +243,6 @@ export function createLabApi(registry: ThingRegistry) {
           return true;
         }
         sendJson(res, 200, { reset: registry.resetAll() });
-        return true;
-      }
-
-      // The controllable clock. GET reports it; POST sets a virtual time
-      // ({"iso": ...} or {"millis": ...}), advances it ({"advanceMs": ...}), or
-      // returns to real time ({"real": true}).
-      if (method === 'GET' && resource === 'clock') {
-        sendJson(res, 200, clockStatus());
-        return true;
-      }
-
-      if (method === 'POST' && resource === 'clock') {
-        const body = await readJsonBody(req);
-        if (body.real === true) {
-          useRealClock();
-        } else if (body.iso !== undefined) {
-          setVirtualTime(String(body.iso));
-        } else if (body.millis !== undefined) {
-          setVirtualTime(Number(body.millis));
-        } else if (body.advanceMs !== undefined) {
-          advanceClock(Number(body.advanceMs));
-        } else {
-          sendJson(res, 400, { error: 'Expected {"iso"|"millis"|"advanceMs": ...} or {"real": true}' });
-          return true;
-        }
-        sendJson(res, 200, clockStatus());
         return true;
       }
 

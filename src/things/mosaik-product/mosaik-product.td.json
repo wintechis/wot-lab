@@ -1,0 +1,47 @@
+{
+  "@context": [
+    "https://www.w3.org/2022/wot/td/v1.1",
+    {
+      "arena": "https://solid.ti.rw.fau.de/public/ns/arena#"
+    }
+  ],
+  "@type": "arena:Product",
+  "title": "Product",
+  "description": "A product on the shopfloor. Its position is where it currently lies and its state is 'initialState' once it exists as a physical item and 'uninitialised' while it has not been produced yet. Only workstations and the transporter change these Properties.",
+  "securityDefinitions": {
+    "nosec_sc": {
+      "scheme": "nosec"
+    }
+  },
+  "security": "nosec_sc",
+  "properties": {
+    "xpos": {
+      "type": "number",
+      "title": "Position on the x axis",
+      "readOnly": true,
+      "writeOnly": false,
+      "observable": true,
+      "@type": "arena:XPosition"
+    },
+    "ypos": {
+      "type": "number",
+      "title": "Position on the y axis",
+      "readOnly": true,
+      "writeOnly": false,
+      "observable": true,
+      "@type": "arena:YPosition"
+    },
+    "state": {
+      "type": "string",
+      "enum": [
+        "uninitialised",
+        "initialState"
+      ],
+      "title": "Production state",
+      "readOnly": true,
+      "writeOnly": false,
+      "observable": true,
+      "@type": "arena:State"
+    }
+  }
+}

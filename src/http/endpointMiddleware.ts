@@ -501,6 +501,12 @@ export function createEndpointMiddleware(
       return;
     }
 
+    // The dashboard's own pages. A Thing id cannot start with `_`, so like
+    // `_lab` this can never shadow a Thing.
+    if (pathParts[0] === '_replay' && acceptsHtml(req) && await serveFrontend(req, '/', res)) {
+      return;
+    }
+
     const thing = [...things.values()].find(candidate => thingId(candidate) === decodeURIComponent(pathParts[0]));
     if (thing && acceptsHtml(req)) {
       if (await serveFrontend(req, '/', res)) {
