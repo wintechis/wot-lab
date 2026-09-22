@@ -1,6 +1,6 @@
 {
   "name": "wot-lab",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "private": true,
   "description": "A Web of Things (WoT) development framework for rapid IoT device prototyping and testing",
   "main": "src/main.ts",
