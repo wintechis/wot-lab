@@ -1,15 +1,19 @@
-# WoT Lab
+# WoT-Lab
 
-> A Web of Things (WoT) development framework for rapid IoT device prototyping and testing.
+> Reusable Web of Things environments and goal-directed tasks for evaluating service-consuming agents.
 
-WoT Lab creates a new Thing from a folder of convention-named files:
+Language-model agents increasingly act on a user's behalf across online services, and whether they succeed shows only in the state they leave those services in — so benchmarking them needs *stateful* services. In existing benchmarks both the services and the scoring checks are code, so the suite grows only as fast as developers program it, and a service's real behaviour stays hidden from the agent: its description says how to call an operation and, at best, summarizes the effect in prose.
 
-- **Thing Description** (`.td.json`) — capabilities in W3C WoT format. **Required.**
-- **State** (`state.json`) — initial property values / device state. **Required.**
-- **Logic** (`logic.js`) — imperative behavior and interaction handlers. **Optional.**
-- **Effects** (`vre:effects` in action affordances) — declarative action effects in the VRE language. **Optional.**
+WoT-Lab closes both gaps by **executing the very description the agent fetches**. Every service is a W3C **Web of Things** *Thing*, and each **Action** in its **Thing Description** carries an executable *effect specification* — so behaviour read is behaviour met. A Thing, an environment, or a task is authored **as data, not code**.
 
-A Thing needs only its TD and state; behavior can come from `logic.js`, `vre:effects` annotations, or both. With neither, property handlers are generated from the TD — reads for every property, writes for the ones it does not mark `readOnly` — so the Thing is usable without any code. See [Creating Things](#creating-things) for detailed examples.
+A Thing is a folder of convention-named files:
+
+- **Thing Description** (`.td.json`) — Properties, Actions and Events in W3C WoT format, each Action's effect declared inline. **Required.**
+- **State** (`state.json`) — initial Property values. **Required.**
+- **Effects** (`vre:effects` on an Action) — the declarative effect specification, written in VRE. **Optional.**
+- **Logic** (`logic.js`) — imperative behavior, for the little that a declarative effect cannot express. **Optional.**
+
+A Thing needs only its Thing Description and state; behavior can come from `vre:effects` specifications, `logic.js`, or both. With neither, Property handlers are generated from the Thing Description — reads for every Property, writes for the ones it does not mark `readOnly` — so the Thing is usable without any code. See [Creating Things](#creating-things) for detailed examples.
 
 ## Table of Contents
 
@@ -24,7 +28,9 @@ A Thing needs only its TD and state; behavior can come from `logic.js`, `vre:eff
 
 ## Overview
 
-WoT Lab provides a simplified development environment for creating virtual **Web of Things** - devices that follow W3C Web of Things standards.
+WoT-Lab is a benchmark for service-consuming agents and the framework that runs it. Each service is a virtual **Web of Things** Thing that follows W3C WoT standards and is served over the standard WoT HTTP protocol, so an agent interacts with it exactly as it would a real device — fetching its Thing Description, reading Properties, invoking Actions. Because an Action's effect is declared in the Thing Description and executed from there, one file both documents and implements the behaviour, and an environment or task is a JSON artifact rather than a program.
+
+An **environment** is a JSON manifest bundling Things with fixed identifiers and initial state; a **task** is a JSON record of an environment, an instruction, and a goal, scored by the share of its goal predicates the final state satisfies. Six environments and 76 tasks ship; see [Environments](#environments). If you are citing WoT-Lab, see [Citation](#citation).
 
 ## Quick Start
 
@@ -58,7 +64,7 @@ environment and shows how much of the task's goal holds after every step — see
 
 ### State Management
 
-WoT Lab provides two ways to interact with your IoT Things:
+WoT-Lab provides two ways to interact with your IoT Things:
 
 1. **Global State Tracking**: All Thing states tracked in [`globalState`](./src/globalState.ts#L10) using [Valtio proxies](https://valtio.dev/docs/api/basic/proxy) for reactivity (in-process only)
 
@@ -99,7 +105,7 @@ A Thing Model directory contains:
 2. **State** — JSON object defining initial properties. **Required.**
 3. **Logic** — JavaScript code defining behavior. **Optional.**
 
-Provide behavior with `logic.js`, `vre:effects` annotations, or both. With neither, WoT Lab generates property handlers from the TD: a read handler for every property, and a write handler for each one not marked `readOnly`, so a writable property can actually be set. The Thing's state is readable, writable and observable without a line of code.
+Provide behavior with `logic.js`, `vre:effects` annotations, or both. With neither, WoT-Lab generates property handlers from the TD: a read handler for every property, and a write handler for each one not marked `readOnly`, so a writable property can actually be set. The Thing's state is readable, writable and observable without a line of code.
 
 ### Folder Structure
 
@@ -183,9 +189,10 @@ console.log("mydevice logic initialized");
 
 #### 4. Effects (`vre:effects`) — optional
 
-Instead of (or alongside) hand-written action handlers, an action's behavior can
-be declared on the affordance itself with a `vre:effects` annotation, written in
-**VRE**, the V-Realm effect language:
+An Action's effect specification is declared on the affordance itself, so the
+Thing Description the agent fetches is also what executes: behaviour read is
+behaviour met. The specification is written in **VRE**, the declarative effect
+language, in a `vre:effects` annotation, and needs no hand-written handler:
 
 ```json
 "actions": {
@@ -238,7 +245,7 @@ be declared on the affordance itself with a `vre:effects` annotation, written in
 
 ## API Reference
 
-WoT Lab exposes one HTTP server from `@node-wot/binding-http`. It listens on port `8081` by default; use `--port` or `WOT_LAB_PORT` to change it.
+WoT-Lab exposes one HTTP server from `@node-wot/binding-http`. It listens on port `8081` by default; use `--port` or `WOT_LAB_PORT` to change it.
 
 The root path is content-negotiated: request `Accept: application/json` for a machine-readable list of Things, or `Accept: text/html` for a browsable directory. A Thing path requested with `Accept: text/html` shows links for its Thing Description, properties, observations, actions, and events. Requests with other `Accept` values continue to the standard WoT routes below.
 
@@ -313,20 +320,24 @@ curl -X POST localhost:8081/_lab/reset          # reset every Thing to initial s
 curl -X POST localhost:8081/_lab/state  -d '{"id":"bank-alice","values":{"balance":1000}}'
 ```
 
-Seven environments ship, each built from Thing Models under `src/things/` with
+Six environments make up the benchmark — **76 tasks across seven difficulty
+levels** (L0–L5 and S) — each built from Thing Models under `src/things/` with
 cross-Thing `vre:effects` (and `logic.js` only where VRE can't reach):
 
-| Environment | Things | Tasks | |
+| Environment | Things | Tasks | Description |
 | --- | --- | --- | --- |
 | `e-commerce` | 4 | 14 | A shopping cart and three bank accounts; checkout and transfer are cross-Thing effects. |
 | `supply-chain` | 6 | 16 | Three warehouses, their aggregate, a company budget and a supplier; orders charge the budget, transfers move stock. |
 | `social-media` | 3 | 14 | Three pages of a decentralized social network; following and liking are cross-Thing effects. |
 | `smart-home` | 7 | 15 | A home energy hub, thermostat, washer, dryer, car charger, and a plug powering a lamp. |
-| `ibm-building3` | 2279 | 11 | An office building: 281 rooms, each with a colour lamp, radiator, temperature sensor, and door and window sensors and actuators. |
-| `ibm-building3-small` | 17 | 4 | Two rooms of the same building, for iterating without the wait. |
-| `mosaik` | 37 | 6 | A shopfloor: 25 products, ten workstations, a transporter and the recipe book. |
+| `ibm-building3` | 2279 | 11 | The **smart office**: an office building of 281 rooms, each with a colour lamp, radiator, temperature sensor, and door and window sensors and actuators. From the IBM Dublin building model. |
+| `mosaik` | 37 | 6 | The **factory**: a MOSAIK shopfloor of 25 products, ten workstations, a transporter and the recipe book; a plan can run to 618 invocations. |
 
-The last three are converted from the tee-wip paper repository by
+A seventh manifest, `ibm-building3-small` (17 Things, 4 tasks), is a two-room
+subset of the smart office for iterating without the full building's start-up;
+it is a convenience variant, not one of the six benchmark environments.
+
+The smart office and factory are converted from the tee-wip paper repository by
 `tools/tee2wotlab.py`; [`NOTICE.md`](NOTICE.md) records where their data comes from.
 Each environment's benchmark tasks live in
 `src/environments/<name>/tasks.json`; see [`tools/README.md`](tools/README.md).
@@ -347,7 +358,7 @@ deliberately shared lab.
 
 ### Included Things
 
-WoT Lab comes with example Things:
+WoT-Lab comes with example Things:
 
 #### Brightness Sensor
 - **Properties**: `brightness`, `lastUpdated`
@@ -382,7 +393,7 @@ WoT Lab comes with example Things:
 
 ## Security
 
-WoT Lab is a development tool, and it is built to be run on a machine you trust, for people you trust.
+WoT-Lab is a development tool, and it is built to be run on a machine you trust, for people you trust.
 
 - **A Thing Model is code.** `logic.js` is `eval`'d in the lab's process with no isolation. Treat a
   Thing Model from someone else like any other script you are about to run. (`vre:effects` are
@@ -421,7 +432,7 @@ An example unit; adjust the user, paths, port and Things to your host.
 
 ```ini
 [Unit]
-Description=WoT Lab
+Description=WoT-Lab
 After=network.target
 
 [Service]
