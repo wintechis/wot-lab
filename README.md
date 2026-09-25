@@ -2,18 +2,16 @@
 
 > Reusable Web of Things environments and goal-directed tasks for evaluating service-consuming agents.
 
-Language-model agents increasingly act on a user's behalf across online services, and whether they succeed shows only in the state they leave those services in — so benchmarking them needs *stateful* services. In existing benchmarks both the services and the scoring checks are code, so the suite grows only as fast as developers program it, and a service's real behaviour stays hidden from the agent: its description says how to call an operation and, at best, summarizes the effect in prose.
-
-WoT-Lab closes both gaps by **executing the very description the agent fetches**. Every service is a W3C **Web of Things** *Thing*, and each **Action** in its **Thing Description** carries an executable *effect specification* — so behaviour read is behaviour met. A Thing, an environment, or a task is authored **as data, not code**.
+WoT-Lab is a benchmark for service-consuming agents, and the framework that runs it. Every service is a W3C **Web of Things** *Thing* served over the standard WoT HTTP protocol; each **Action** in its **Thing Description** carries an executable *effect specification*, so the description an agent fetches is also what runs. Things, environments, and tasks are authored **as data, not code**.
 
 A Thing is a folder of convention-named files:
 
-- **Thing Description** (`.td.json`) — Properties, Actions and Events in W3C WoT format, each Action's effect declared inline. **Required.**
-- **State** (`state.json`) — initial Property values. **Required.**
-- **Effects** (`vre:effects` on an Action) — the declarative effect specification, written in VRE. **Optional.**
-- **Logic** (`logic.js`) — imperative behavior, for the little that a declarative effect cannot express. **Optional.**
+- **Thing Description** (`.td.json`) - Properties, Actions and Events in W3C WoT format, each Action's effect declared inline. **Required.**
+- **State** (`state.json`) - initial Property values. **Required.**
+- **Effects** (`vre:effects` on an Action) - the declarative effect specification, written in VRE. **Optional.**
+- **Logic** (`logic.js`) - imperative behavior, for the little that a declarative effect cannot express. **Optional.**
 
-A Thing needs only its Thing Description and state; behavior can come from `vre:effects` specifications, `logic.js`, or both. With neither, Property handlers are generated from the Thing Description — reads for every Property, writes for the ones it does not mark `readOnly` — so the Thing is usable without any code. See [Creating Things](#creating-things) for detailed examples.
+A Thing needs only its Thing Description and state; behavior can come from `vre:effects` specifications, `logic.js`, or both. With neither, Property handlers are generated from the Thing Description - reads for every Property, writes for the ones it does not mark `readOnly` - so the Thing is usable without any code. See [Creating Things](#creating-things) for detailed examples.
 
 ## Table of Contents
 
@@ -28,9 +26,9 @@ A Thing needs only its Thing Description and state; behavior can come from `vre:
 
 ## Overview
 
-WoT-Lab is a benchmark for service-consuming agents and the framework that runs it. Each service is a virtual **Web of Things** Thing that follows W3C WoT standards and is served over the standard WoT HTTP protocol, so an agent interacts with it exactly as it would a real device — fetching its Thing Description, reading Properties, invoking Actions. Because an Action's effect is declared in the Thing Description and executed from there, one file both documents and implements the behaviour, and an environment or task is a JSON artifact rather than a program.
+Each service is a virtual **Web of Things** Thing served over the standard WoT HTTP protocol, so an agent interacts with it exactly as it would a real device - fetching its Thing Description, reading Properties, invoking Actions. An Action's effect is declared in the Thing Description and executed from there, so one file both documents and implements the behaviour, and an environment or task is a JSON artifact rather than a program.
 
-An **environment** is a JSON manifest bundling Things with fixed identifiers and initial state; a **task** is a JSON record of an environment, an instruction, and a goal, scored by the share of its goal predicates the final state satisfies. Six environments and 76 tasks ship; see [Environments](#environments). If you are citing WoT-Lab, see [Citation](#citation).
+An **environment** is a JSON manifest bundling Things with fixed identifiers and initial state; a **task** is a JSON record of an environment, an instruction, and a goal, scored by the share of its goal predicates the final state satisfies. Six environments and 76 tasks ship; see [Environments](#environments).
 
 ## Quick Start
 
@@ -38,7 +36,7 @@ An **environment** is a JSON manifest bundling Things with fixed identifiers and
 # Install dependencies
 bun install
 
-# Start the lab (no Things running yet — add them in the dashboard)
+# Start the lab (no Things running yet - add them in the dashboard)
 bun run dev
 
 # Or start some Things straight away
@@ -59,7 +57,7 @@ Things, inspects each one's properties, actions, events and Thing Description, a
 **Add Thing** allows you to create a new Thing off of a pre-defined or new Thing Model.
 **Environment** starts one of the manifests in `src/environments/`, replacing whatever is
 running. **Replay a run** opens a run file (or a task's plan), replays it against the reset
-environment and shows how much of the task's goal holds after every step — see
+environment and shows how much of the task's goal holds after every step - see
 [`tools/README.md`](tools/README.md#run-files-runschemajson) for the file format.
 
 ### State Management
@@ -80,14 +78,14 @@ bun run dev -- --env e-commerce           # a whole scenario in one command
 bun run dev -- --port 9000                # or WOT_LAB_PORT=9000
 ```
 
-- `--things <model>[:<count>],…` — Things to start, named by the Thing Model they
+- `--things <model>[:<count>],...` - Things to start, named by the Thing Model they
   are built from. The count is optional and defaults to 1. Omit the flag entirely
   to start empty.
-- `--env <name>` — an [environment](#environments) to bring online: a named
+- `--env <name>` - an [environment](#environments) to bring online: a named
   bundle of Thing Models with fixed instance ids and initial state (or
   `WOT_LAB_ENV`).
-- `--port <number>` — HTTP port. Defaults to `8081`, or `WOT_LAB_PORT`.
-- `--models-dir <path>` — where Thing Models authored in the dashboard are
+- `--port <number>` - HTTP port. Defaults to `8081`, or `WOT_LAB_PORT`.
+- `--models-dir <path>` - where Thing Models authored in the dashboard are
   written (or `WOT_LAB_MODELS_DIR`). Unset, they are written alongside the
   bundled ones in `src/things/`. 
 
@@ -101,9 +99,9 @@ writes exactly the files described below, so you can add them via the dashboard 
 
 A Thing Model directory contains:
 
-1. **Thing Description** (TD) — JSON file describing capabilities. With `vre:effects`, describing the Thing's behavior. **Required.**
-2. **State** — JSON object defining initial properties. **Required.**
-3. **Logic** — JavaScript code defining behavior. **Optional.**
+1. **Thing Description** (TD) - JSON file describing capabilities. With `vre:effects`, describing the Thing's behavior. **Required.**
+2. **State** - JSON object defining initial properties. **Required.**
+3. **Logic** - JavaScript code defining behavior. **Optional.**
 
 Provide behavior with `logic.js`, `vre:effects` annotations, or both. With neither, WoT-Lab generates property handlers from the TD: a read handler for every property, and a write handler for each one not marked `readOnly`, so a writable property can actually be set. The Thing's state is readable, writable and observable without a line of code.
 
@@ -157,12 +155,12 @@ JSON object literal defining initial state:
 }
 ```
 
-#### 3. Logic (`logic.js`) — optional
+#### 3. Logic (`logic.js`) - optional
 
 JavaScript code with handler functions and helpers. It is read as text and `eval`'d with `thing`, `state`, `http`, `URL`, and `createLoggers` in scope (no imports needed).
 
 > **`logic.js` is trusted code, not a sandbox.** It runs inside the lab's process with the lab's
-> privileges — it can read files, open sockets and reach anything the process can. Only start
+> privileges - it can read files, open sockets and reach anything the process can. Only start
 > Thing Models you would run as a script. See [Security](#security).
 
 ```javascript
@@ -187,7 +185,7 @@ thing.setActionHandler("toggle", async () => {
 console.log("mydevice logic initialized");
 ```
 
-#### 4. Effects (`vre:effects`) — optional
+#### 4. Effects (`vre:effects`) - optional
 
 An Action's effect specification is declared on the affordance itself, so the
 Thing Description the agent fetches is also what executes: behaviour read is
@@ -212,12 +210,12 @@ language, in a `vre:effects` annotation, and needs no hand-written handler:
   readable. The right-hand side supports arithmetic, boolean and comparison
   operators, `?:`, and `[]` / `append` / `remove`.
 - **Snapshot semantics**: every effect's right-hand side is evaluated against a
-  pre-state snapshot, then all effects apply at once — so an effect can read a
+  pre-state snapshot, then all effects apply at once - so an effect can read a
   value another effect in the same action overwrites (V-Realm's flat effects).
 - **Pre/post references**: in expressions, an unprimed reference is the
   **pre-state** value and a primed reference (`x'`) is the **post-state** value;
   primes are not allowed on the right-hand side of an effect. (That is why the
-  `toggle` example emits `status'` — the new value.)
+  `toggle` example emits `status'` - the new value.)
 - **References**: a bare identifier naming one of the action's input parameters
   resolves to that input; otherwise it resolves to a Thing property. Effect
   targets (left of `'`) must be Thing properties. `this.id` is the running
@@ -226,8 +224,8 @@ language, in a `vre:effects` annotation, and needs no hand-written handler:
   a property on *another* Thing, where `handle` is a static binding
   (`const bank = <bank-id>`), an action input parameter carrying a Thing
   reference, or a Thing property whose value is a Thing reference (so one shared
-  model can target a per-instance device — a plug's `device.poweredOn'`).
-  Everything is in-process — the write lands on the other Thing's state and fires
+  model can target a per-instance device - a plug's `device.poweredOn'`).
+  Everything is in-process - the write lands on the other Thing's state and fires
   its change notification, no remote call. Used for the bank
   `transfer`, cart `checkout`, warehouse `orderStock`/`transferStock`, and the
   social follow/like effects (see [Environments](#environments)).
@@ -236,7 +234,7 @@ language, in a `vre:effects` annotation, and needs no hand-written handler:
   (array lookups, sums, object construction) stays in `logic.js`, which composes
   with `vre:effects`.
 - **No functions**: an effect reads the Thing's state and the action's input and
-  nothing else — no time, no calls — so a run is reproducible from its initial
+  nothing else - no time, no calls - so a run is reproducible from its initial
   state alone. Behaviour that needs more belongs in `logic.js`.
 - **Input parameters**: an object `input` schema exposes each of its properties
   by name; a scalar `input` is referred to as `input`.
@@ -294,7 +292,7 @@ more from a Thing Model.
 An **environment** is a named bundle of Thing Models with **fixed instance ids**,
 optional per-Thing `state` overrides and per-instance `links` (one shared model
 can point at a different related Thing per instance), and optional URI→id
-aliases — one JSON manifest in
+aliases - one JSON manifest in
 `src/environments/<name>.json`. It is the
 reproducible unit a benchmark runs against: the same Things, ids and initial
 state, started by one command. (Unlike `--things` and the dashboard's **Add Thing**,
@@ -320,8 +318,8 @@ curl -X POST localhost:8081/_lab/reset          # reset every Thing to initial s
 curl -X POST localhost:8081/_lab/state  -d '{"id":"bank-alice","values":{"balance":1000}}'
 ```
 
-Six environments make up the benchmark — **76 tasks across seven difficulty
-levels** (L0–L5 and S) — each built from Thing Models under `src/things/` with
+Six environments make up the benchmark - **76 tasks across seven difficulty
+levels** (L0-L5 and S) - each built from Thing Models under `src/things/` with
 cross-Thing `vre:effects` (and `logic.js` only where VRE can't reach):
 
 | Environment | Things | Tasks | Description |
@@ -348,7 +346,7 @@ A new Thing Model is sent either as a `spec` (the shape the dashboard form
 produces) or as a `draft` (the two files verbatim). Both go through the same
 validation: names must be slugs, every property and nested member needs a type,
 every property needs an initial state value of that type, and any `vre:effects`
-program must compile — so a Thing that would not work never reaches disk.
+program must compile - so a Thing that would not work never reaches disk.
 
 Writes are refused from anywhere but localhost, since this API creates files and
 the WoT server binds every interface. Set `WOT_LAB_ALLOW_REMOTE_WRITE=1` for a
@@ -397,10 +395,10 @@ WoT-Lab is a development tool, and it is built to be run on a machine you trust,
 
 - **A Thing Model is code.** `logic.js` is `eval`'d in the lab's process with no isolation. Treat a
   Thing Model from someone else like any other script you are about to run. (`vre:effects` are
-  narrower: they are parsed, and only what the parser accepts is compiled — literals and names are
-  emitted as quoted strings — so an effect can change state but cannot call out of it.)
-- **The server listens on every interface** (`*:8081`), so the Things — their Thing Descriptions,
-  properties, actions and events — are reachable by anyone who can reach the port. There is no
+  narrower: they are parsed, and only what the parser accepts is compiled - literals and names are
+  emitted as quoted strings - so an effect can change state but cannot call out of it.)
+- **The server listens on every interface** (`*:8081`), so the Things - their Thing Descriptions,
+  properties, actions and events - are reachable by anyone who can reach the port. There is no
   authentication; every Thing is served with the `nosec` security scheme.
 - **The lab API (`/_lab`) accepts writes from this machine only.** It creates files and starts
   Things, so requests that change anything are refused unless they come from a loopback address.
@@ -413,8 +411,8 @@ To report a vulnerability, see [`SECURITY.md`](SECURITY.md).
 
 ## Deployment
 
-`.github/workflows/cd.yml` deploys `main`. It packages **code only** — `src`,
-`frontend/dist`, and the manifests — and unpacks each release side by side on
+`.github/workflows/cd.yml` deploys `main`. It packages **code only** - `src`,
+`frontend/dist`, and the manifests - and unpacks each release side by side on
 the server, switching between them with one symlink:
 
 ```
