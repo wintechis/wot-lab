@@ -8,6 +8,7 @@ import { parseArgs } from './config/options.js';
 import { createLoggers } from './utils/debug.js';
 import { createEndpointMiddleware, LabRequestHandler } from './http/endpointMiddleware.js';
 import { createLabApi } from './http/labApi.js';
+import { configureStateSink, flushStateSink } from './solid/stateSink.js';
 
 if (!process.env.DEBUG) {
   enable('wot-lab:system:*');
@@ -24,6 +25,10 @@ const usage = `wot-lab
   --port <number>   HTTP port (default 8081, or WOT_LAB_PORT)
   --models-dir <p>  Where authored Thing Models are written
                     (default: alongside the bundled ones, or WOT_LAB_MODELS_DIR)
+  --solid-container <url>
+                    An LDP container (a Solid pod's) to post a Thing's resulting
+                    state to after every WoT interaction with it
+                    (or WOT_LAB_SOLID_CONTAINER). Unset posts nothing.
 
 Starting without --things is normal: Things are created from the dashboard.`;
 
@@ -58,6 +63,17 @@ servient.addServer(httpServer);
 const wot = await servient.start();
 const registry = new ThingRegistry(wot, servient);
 labRef.current = createLabApi(registry);
+
+// Configured after the registry exists, because a snapshot names the environment
+// running when it was taken, and only the registry knows that. Left unconfigured
+// without a container, so the default lab makes no outbound requests.
+if (options.solidContainer) {
+  configureStateSink({
+    container: options.solidContainer,
+    thingBaseUrl: `http://localhost:${options.port}`,
+    environment: () => registry.environment()
+  });
+}
 
 // Nothing is created implicitly. A Thing exists because the command line asked
 // for it or because someone created it in the dashboard — one way in, through
@@ -100,9 +116,16 @@ debug(`- Lab API:             http://localhost:${options.port}/_lab/thing-models
 if (options.modelsDir) {
   debug(`- Authored models:     ${options.modelsDir}`);
 }
+if (options.solidContainer) {
+  debug(`- State snapshots:     POST ${options.solidContainer}`);
+}
 
 // Graceful shutdown
-process.on('SIGINT', () => {
+process.on('SIGINT', async () => {
   debug('\nShutting down gracefully...');
+  // Snapshots already queued are in flight to the pod; losing them would leave
+  // its record of the session ending before the session did. Briefly — a pod that
+  // has stopped answering must not turn Ctrl-C into a hang.
+  await flushStateSink();
   process.exit(0);
 });

@@ -20,6 +20,7 @@ A Thing needs only its Thing Description and state; behavior can come from `vre:
 - [Features](#features)
 - [Configuration](#configuration)
 - [Creating Things](#creating-things)
+- [Publishing state to a Solid pod](#publishing-state-to-a-solid-pod)
 - [API Reference](#api-reference)
 - [Security](#security)
 - [Examples](#examples)
@@ -68,6 +69,9 @@ WoT-Lab provides two ways to interact with your IoT Things:
 
 2. **WoT Protocol**: Standard Web of Things interaction patterns via Thing Descriptions served by `@node-wot`
 
+3. **Solid pod** (opt-in): with `--solid-container`, every interaction with a Thing posts the state it
+   left behind to an LDP container as RDF - see [Publishing state to a Solid pod](#publishing-state-to-a-solid-pod)
+
 ## Configuration
 
 ### Command line
@@ -87,7 +91,11 @@ bun run dev -- --port 9000                # or WOT_LAB_PORT=9000
 - `--port <number>` - HTTP port. Defaults to `8081`, or `WOT_LAB_PORT`.
 - `--models-dir <path>` - where Thing Models authored in the dashboard are
   written (or `WOT_LAB_MODELS_DIR`). Unset, they are written alongside the
-  bundled ones in `src/things/`. 
+  bundled ones in `src/things/`.
+- `--solid-container <url>` - an LDP container (a Solid pod's, typically) to post
+  a Thing's resulting state to after every interaction with it (or
+  `WOT_LAB_SOLID_CONTAINER`). Unset, nothing is posted and the lab makes no
+  outbound requests - see [Publishing state to a Solid pod](#publishing-state-to-a-solid-pod). 
 
 
 ## Creating Things
@@ -240,6 +248,104 @@ language, in a `vre:effects` annotation, and needs no hand-written handler:
   by name; a scalar `input` is referred to as `input`.
 - **Events** are emitted with `emitEvent("name", value)`.
 
+
+## Publishing state to a Solid pod
+
+Point the lab at an LDP container and every WoT interaction with a Thing publishes
+the state it left behind there, as one Turtle resource per interaction:
+
+```bash
+bun run dev -- --env smart-home --solid-container https://solid.example.org/alice/wot-lab/
+```
+
+The container is the only configuration, and without it nothing is posted: the
+default lab makes no outbound requests. Requests are unauthenticated, so the
+container has to grant append to the public; the lab sends no credentials.
+
+### What is posted, and when
+
+One `POST` per **affordance** request - a Property read or write, an Action
+invocation, a Property observation, an Event subscription - fired after the
+response has been written, so the state it reports is the state the request
+produced. A Thing Description fetch posts nothing (it reads no state), nor do the
+dashboard, its assets, or the [lab API](#lab-api-_lab). A long-poll observation
+the client abandons posts nothing either: it changed nothing.
+
+A refused interaction is recorded like any other, with its status in
+`lab:responseStatus` and the state it did not change - an agent's rejected write is
+as much a part of a run as an accepted one. Only a request naming no running Thing
+posts nothing, because there is no state to report.
+
+The pod is never in the request's path. Snapshots queue in the lab and drain
+behind the response down four connections, so a slow or unreachable pod costs a
+warning (`DEBUG=wot-lab:solid:*`) and never a slow WoT response. The queue is
+bounded at 256; past that, snapshots are dropped and the drop is logged, because
+an observer that runs the lab out of memory is worse than one that misses a
+reading.
+
+### The resource
+
+```turtle
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix lab:  <https://wintechis.github.io/wot-lab/ns#> .
+@prefix prop: <https://wintechis.github.io/wot-lab/ns/property#> .
+
+<#snapshot>
+    a lab:StateSnapshot, prov:Entity ;
+    prov:generatedAtTime "2026-09-30T10:11:29.265Z"^^xsd:dateTime ;
+    lab:thing <http://localhost:8081/lamp> ;
+    lab:thingId "lamp" ;
+    lab:environment "smart-home" ;
+    lab:trigger <#request> ;
+    lab:state <#state> .
+
+<#request>
+    a lab:Interaction ;
+    lab:operation "invokeaction" ;
+    lab:affordance "toggle" ;
+    lab:method "POST" ;
+    lab:requestTarget "/lamp/actions/toggle" ;
+    lab:responseStatus 204 .
+
+<#state>
+    a lab:ThingState ;
+    prop:on true ;
+    prop:brightness 100 .
+```
+
+`lab:operation` is named as a Thing Description's `op` values are:
+`readproperty`, `writeproperty`, `readallproperties`, `writeallproperties`,
+`observeproperty`, `invokeaction`, `subscribeevent`. `lab:environment` appears
+only while an [environment](#environments) is running. The three subjects are
+hash URIs of the resource the pod mints, so the snapshot needs no identifier of
+its own; each carries `prov:generatedAtTime`, which is what orders a session
+rather than the order the pod received them.
+
+Property values are serialised faithfully, so a snapshot reads back as the state
+it recorded:
+
+| State value | Turtle |
+|-------------|--------|
+| boolean, integer | `true`, `42` |
+| other number | `"3.5"^^xsd:double` |
+| string | `"text"`, or `<https://...>` when it reads as an http(s) IRI, so a cross-Thing reference stays followable |
+| array | an RDF collection, `( "a" "b" )` - ordered, because order carries meaning in a state like a recipe's `inputs` |
+| object | a blank node with the same `prop:` predicates |
+| `null` | omitted at predicate position; `lab:null` inside a collection, where dropping it would shift everything after it |
+
+Property names are minted into `prop:` (a namespace of their own, so a Property
+called `state` cannot collide with `lab:state`); a name Turtle cannot abbreviate
+is written as a full percent-encoded IRI.
+
+### What configuring a container exposes
+
+Two things change when a container is configured. The lab starts making outbound
+requests to a host you named, carrying **every Property value of every Thing that
+is interacted with** - so point it at a container whose contents may be as public
+as the container's append permission is. And the resources accumulate: one per
+interaction, which a benchmark replay produces by the hundred. Neither the lab
+nor the pod prunes them.
 
 ## API Reference
 
@@ -406,6 +512,9 @@ WoT-Lab is a development tool, and it is built to be run on a machine you trust,
   network where everyone who can reach the port may write Thing Models to the models directory,
   start and stop Things, and overwrite their state. The API writes a Thing Description and a
   `state.json`, never a `logic.js`.
+- **`--solid-container` sends Thing state off-box.** It is unset by default; set, the lab posts every
+  interacted-with Thing's full state, unauthenticated, to the container you name - see
+  [Publishing state to a Solid pod](#publishing-state-to-a-solid-pod).
 
 To report a vulnerability, see [`SECURITY.md`](SECURITY.md).
 

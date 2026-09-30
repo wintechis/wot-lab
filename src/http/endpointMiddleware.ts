@@ -3,6 +3,8 @@ import { URL } from 'url';
 import { labPrefix } from './labApi.js';
 import { brotliCompressSync, constants as zlibConstants, gzipSync } from 'zlib';
 import * as WoT from 'wot-typescript-definitions';
+import { Interaction, WotOperation } from '../solid/stateResource.js';
+import { isStateSinkEnabled, publishThingState } from '../solid/stateSink.js';
 
 interface Endpoint {
   name: string;
@@ -448,6 +450,78 @@ function renderThing(thing: WoT.ExposedThing, html: boolean, res: ServerResponse
     `<table><thead><tr><th>Method</th><th>Endpoint</th><th>Operation</th><th>Description</th></tr></thead><tbody>${rows}</tbody></table>`);
 }
 
+/**
+ * Which WoT operation, if any, a request path and method name.
+ *
+ * Only the affordance routes count: a Thing Description fetch reads no state and
+ * the dashboard's own pages are not interactions with a Thing at all. An
+ * unrecognised shape returns `undefined` and is never reported.
+ */
+function operationFor(method: string, pathParts: string[]): WotOperation | undefined {
+  const [thing, kind, , modifier] = pathParts;
+  const named = pathParts.length > 2;
+
+  // `_lab` and `_replay` are reserved prefixes, so a path under them addresses
+  // no Thing however it is shaped.
+  if (!thing || thing.startsWith('_')) {
+    return undefined;
+  }
+
+  if (kind === 'properties') {
+    if (modifier === 'observable') {
+      return method === 'GET' ? 'observeproperty' : undefined;
+    }
+    if (pathParts.length > 3) {
+      return undefined;
+    }
+    if (method === 'GET') {
+      return named ? 'readproperty' : 'readallproperties';
+    }
+    if (method === 'PUT') {
+      return named ? 'writeproperty' : 'writeallproperties';
+    }
+    return undefined;
+  }
+  if (kind === 'actions' && method === 'POST' && pathParts.length === 3) {
+    return 'invokeaction';
+  }
+  if (kind === 'events' && method === 'GET' && pathParts.length === 3) {
+    return 'subscribeevent';
+  }
+  return undefined;
+}
+
+/**
+ * Arrange for the state a request leaves behind to be posted to the pod.
+ *
+ * Hooked on `finish` rather than posted here: this middleware runs before
+ * node-wot handles the request, so the state that matters does not exist yet.
+ * `finish` and not `close`, so an aborted request — a long-poll observation the
+ * client walked away from — records nothing; it changed nothing either.
+ */
+function reportInteraction(req: IncomingMessage, res: ServerResponse, pathParts: string[]): void {
+  if (!isStateSinkEnabled()) {
+    return;
+  }
+  const method = req.method ?? 'GET';
+  const operation = operationFor(method, pathParts);
+  if (!operation) {
+    return;
+  }
+
+  const interaction: Omit<Interaction, 'status'> = {
+    thingId: decodeURIComponent(pathParts[0]),
+    operation,
+    affordance: pathParts[2] ? decodeURIComponent(pathParts[2]) : undefined,
+    method,
+    target: req.url ?? '/'
+  };
+
+  res.once('finish', () => {
+    publishThingState({ ...interaction, status: res.statusCode });
+  });
+}
+
 // The lab API handles its own routes for every method; `false` means it did not
 // claim the request. It is passed as a getter because the HTTP server has to
 // exist before the servient starts, and the registry only exists after.
@@ -471,6 +545,14 @@ export function createEndpointMiddleware(
     const requestUrl = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`);
     const pathParts = requestUrl.pathname.split('/').filter(Boolean);
 
+    // Every `next()` below hands the request to node-wot's own routes, which is
+    // exactly the set of requests that reach a Thing: what this middleware
+    // answers itself — the dashboard, its assets, the lab API — never does.
+    const forwardToWot = (): void => {
+      reportInteraction(req, res, pathParts);
+      next();
+    };
+
     // Checked before the method filter and before any Thing lookup: this prefix
     // is reserved (see reservedNames), so it can never shadow a Thing.
     if (pathParts[0] === labPrefix) {
@@ -478,12 +560,12 @@ export function createEndpointMiddleware(
       if (handleLab && await handleLab(req, res, pathParts.slice(1), requestUrl)) {
         return;
       }
-      next();
+      forwardToWot();
       return;
     }
 
     if (req.method !== 'GET') {
-      next();
+      forwardToWot();
       return;
     }
 
@@ -516,6 +598,6 @@ export function createEndpointMiddleware(
       return;
     }
 
-    next();
+    forwardToWot();
   };
 }

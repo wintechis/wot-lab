@@ -26,6 +26,12 @@ export interface LabOptions {
    * points it outside the release directory so authored models survive it.
    */
   modelsDir?: string;
+  /**
+   * An LDP container — a Solid pod's, typically — that every WoT interaction's
+   * resulting Thing state is posted to. Unset means nothing is posted: the lab
+   * makes no outbound requests unless asked to.
+   */
+  solidContainer?: string;
 }
 
 /**
@@ -68,6 +74,29 @@ function parseThings(value: string): ThingRequest[] {
   return things;
 }
 
+/**
+ * Check and normalise a container URL.
+ *
+ * The trailing slash is added rather than demanded: POSTing to an LDP container
+ * without it is a redirect at best and a 404 at worst, and a missing slash is a
+ * typo every time, never an intent.
+ */
+function parseContainer(value: string): string {
+  let url: URL;
+  try {
+    url = new URL(value);
+  } catch {
+    throw new Error(`Invalid --solid-container: '${value}' is not a URL`);
+  }
+  if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+    throw new Error(`Invalid --solid-container: '${value}' must be http(s)`);
+  }
+  if (url.search || url.hash) {
+    throw new Error(`Invalid --solid-container: '${value}' must be a plain container URL`);
+  }
+  return url.pathname.endsWith('/') ? url.href : `${url.href}/`;
+}
+
 function flagValue(argv: string[], flag: string): string | undefined {
   const index = argv.indexOf(flag);
   if (index === -1) {
@@ -92,6 +121,7 @@ export function parseArgs(argv: string[] = process.argv): LabOptions {
   const env = flagValue(argv, '--env') ?? process.env.WOT_LAB_ENV;
   const portFlag = flagValue(argv, '--port') ?? process.env.WOT_LAB_PORT;
   const modelsDir = flagValue(argv, '--models-dir') ?? process.env.WOT_LAB_MODELS_DIR;
+  const container = flagValue(argv, '--solid-container') ?? process.env.WOT_LAB_SOLID_CONTAINER;
 
   const port = portFlag === undefined ? DEFAULT_PORT : Number.parseInt(portFlag, 10);
   if (!Number.isInteger(port) || port < 1 || port > 65535) {
@@ -113,5 +143,10 @@ export function parseArgs(argv: string[] = process.argv): LabOptions {
     debug(`Startup environment: ${env}`);
   }
 
-  return { things: requested, env, port, modelsDir };
+  const solidContainer = container ? parseContainer(container) : undefined;
+  if (solidContainer) {
+    debug(`Thing state is posted to ${solidContainer}`);
+  }
+
+  return { things: requested, env, port, modelsDir, solidContainer };
 }
