@@ -7,7 +7,7 @@ import { loadEnvironmentManifest } from './things/environments.js';
 import { parseArgs } from './config/options.js';
 import { createLoggers } from './utils/debug.js';
 import { createEndpointMiddleware, LabRequestHandler } from './http/endpointMiddleware.js';
-import { createLabApi } from './http/labApi.js';
+import { createLabApi, labPrefix } from './http/labApi.js';
 import { configureStateSink, flushStateSink } from './solid/stateSink.js';
 
 if (!process.env.DEBUG) {
@@ -69,15 +69,21 @@ const wot = await servient.start();
 const registry = new ThingRegistry(wot, servient);
 labRef.current = createLabApi(registry);
 
-// Configured after the registry exists, because a record names the environment
-// running when it was taken, and only the registry knows that. Left unconfigured
-// without a container, so the default lab makes no outbound requests.
+// Configured after the registry exists, because a record links to the environment
+// running when it was taken, and only the registry knows which that is. Left
+// unconfigured without a container, so the default lab makes no outbound requests.
 if (options.solidContainer) {
+  const baseUrl = `http://localhost:${options.port}`;
   configureStateSink({
     container: options.solidContainer,
-    thingBaseUrl: `http://localhost:${options.port}`,
+    thingBaseUrl: baseUrl,
     agentHeader: options.agentHeader,
-    environment: () => registry.environment()
+    environmentIri: () => {
+      const environment = registry.environment();
+      return environment
+        ? `${baseUrl}/${labPrefix}/environments/${encodeURIComponent(environment)}`
+        : undefined;
+    }
   });
 }
 

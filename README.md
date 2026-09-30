@@ -277,9 +277,9 @@ produced. A Thing Description fetch posts nothing (it reads no state), nor do th
 dashboard, its assets, or the [lab API](#lab-api-_lab). A long-poll observation
 the client abandons posts nothing either: it changed nothing.
 
-A refused interaction is recorded like any other, with its status in
-`lab:responseStatus` and the state it did not change - an agent's rejected write is
-as much a part of a run as an accepted one. Only a request naming no running Thing
+A refused interaction is recorded like any other, with its status on the response it
+produced and the state it did not change - an agent's rejected write is as much a
+part of a run as an accepted one. Only a request naming no running Thing
 posts nothing: there is no interaction to report, even though the environment
 around it has a state.
 
@@ -292,68 +292,103 @@ that runs the lab out of memory is worse than one that misses a reading.
 ### The resource
 
 ```turtle
-@prefix xsd:   <http://www.w3.org/2001/XMLSchema#> .
-@prefix prov:  <http://www.w3.org/ns/prov#> .
-@prefix http:  <http://www.w3.org/2011/http#> .
-@prefix httpm: <http://www.w3.org/2011/http-methods#> .
-@prefix lab:   <https://wintechis.github.io/wot-lab/ns#> .
-@prefix prop:  <https://wintechis.github.io/wot-lab/ns/property#> .
+@prefix xsd:        <http://www.w3.org/2001/XMLSchema#> .
+@prefix prov:       <http://www.w3.org/ns/prov#> .
+@prefix dcterms:    <http://purl.org/dc/terms/> .
+@prefix foaf:       <http://xmlns.com/foaf/0.1/> .
+@prefix htv:        <http://www.w3.org/2011/http#> .
+@prefix httpm:      <http://www.w3.org/2011/http-methods#> .
+@prefix httpsc:     <http://www.w3.org/2011/http-statusCodes#> .
+@prefix td:         <https://www.w3.org/2019/wot/td#> .
+@prefix hctl:       <https://www.w3.org/2019/wot/hypermedia#> .
+@prefix jsonschema: <https://www.w3.org/2019/wot/json-schema#> .
 
 <#request>
-    a prov:Entity, http:Request ;
-    http:mthd httpm:POST ;
-    http:requestURI "http://localhost:8081/lamp/actions/setBrightness" ;
-    http:body [ prov:value "{\"level\":40}" ] .
+    a prov:Entity, htv:Request ;
+    htv:mthd httpm:POST ;
+    htv:requestURI "http://localhost:8081/lamp/actions/setBrightness" ;
+    htv:resp <#response> ;
+    htv:body [ prov:value "{\"level\":40}" ] .
+
+<#response>
+    a prov:Entity, htv:Response ;
+    htv:statusCodeValue 200 ;
+    htv:sc httpsc:OK .
 
 <#interaction>
     a prov:Activity ;
     prov:wasAssociatedWith <https://pod.example.org/alice/profile/card#me> ;
-    prov:used <#request> ;
-    prov:generated <#state> ;
-    lab:thing <http://localhost:8081/lamp> ;
-    lab:thingId "lamp" ;
-    lab:operation "invokeaction" ;
-    lab:affordance "setBrightness" ;
-    lab:responseStatus 200 ;
+    prov:used <#request>, <#form>, <#affordance>, <http://localhost:8081/lamp> ;
+    prov:generated <#response>, <#state> ;
     prov:startedAtTime "2026-09-30T10:11:29.251Z"^^xsd:dateTime ;
     prov:endedAtTime   "2026-09-30T10:11:29.265Z"^^xsd:dateTime .
 
+<#form>
+    a hctl:Form ;
+    hctl:hasOperationType td:invokeAction ;
+    hctl:hasTarget <http://localhost:8081/lamp/actions/setBrightness> ;
+    htv:methodName "POST" .
+
+<#affordance>
+    a td:ActionAffordance ;
+    td:name "setBrightness" ;
+    td:hasForm <#form> .
+
 <#state>
-    a prov:Entity, prov:Collection, lab:EnvironmentState ;
+    a prov:Entity, prov:Collection ;
     prov:generatedAtTime "2026-09-30T10:11:29.265Z"^^xsd:dateTime ;
-    lab:environment "smart-home" ;
+    dcterms:isPartOf <http://localhost:8081/_lab/environments/smart-home> ;
     prov:hadMember
         <#state-lamp>,
         <#state-thermostat> .
 
 <#state-lamp>
-    a prov:Entity, lab:ThingState ;
-    lab:thing <http://localhost:8081/lamp> ;
-    lab:thingId "lamp" ;
-    prop:poweredOn true ;
-    prop:brightness 40 .
+    a prov:Entity, prov:Collection ;
+    prov:specializationOf <http://localhost:8081/lamp> ;
+    dcterms:identifier "lamp" ;
+    prov:hadMember
+        [ td:name "poweredOn" ; prov:value true ] ,
+        [ td:name "brightness" ; prov:value 40 ] .
 
 <#state-thermostat>
-    a prov:Entity, lab:ThingState ;
-    lab:thing <http://localhost:8081/thermostat> ;
-    lab:thingId "thermostat" ;
-    prop:target 21 .
+    a prov:Entity, prov:Collection ;
+    prov:specializationOf <http://localhost:8081/thermostat> ;
+    dcterms:identifier "thermostat" ;
+    prov:hadMember
+        [ td:name "target" ; prov:value 21 ] .
 ```
 
-PROV-O and the [W3C HTTP vocabulary](https://www.w3.org/TR/HTTP-in-RDF10/) carry
-the provenance, so a log reads the same way as anyone else's. The lab's own
-vocabulary is left with what PROV has no term for: `lab:operation`, named as a
-Thing Description's `op` values are (`readproperty`, `writeproperty`,
-`readallproperties`, `writeallproperties`, `observeproperty`, `invokeaction`,
-`subscribeevent`), the affordance it named, the response status, and the Property
-values that make up a state. `lab:environment` appears only while an
-[environment](#environments) is running.
+Every term is someone else's, so a record needs no documentation but the
+specifications it is written in - there is no wot-lab vocabulary to look up:
+
+| What it says | Term | From |
+|---|---|---|
+| who did it, when, what came out | `prov:Activity`, `prov:used`, `prov:generated`, `prov:startedAtTime`, `prov:endedAtTime` | [PROV-O](https://www.w3.org/TR/prov-o/) |
+| the request and its response | `htv:Request`, `htv:mthd`, `htv:requestURI`, `htv:body`, `htv:resp`, `htv:Response`, `htv:statusCodeValue`, `htv:sc` | [HTTP in RDF](https://www.w3.org/TR/HTTP-in-RDF10/) |
+| the WoT operation and what it addressed | `hctl:Form`, `hctl:hasOperationType`, `hctl:hasTarget`, `td:ActionAffordance`, `td:name`, `td:hasForm` | [WoT TD 1.1](https://www.w3.org/TR/wot-thing-description11/) |
+| a state, and one Thing's part of it | `prov:Collection`, `prov:hadMember`, `prov:specializationOf`, `prov:generatedAtTime`, `prov:value` | PROV-O |
+| identity and names | `foaf:name`, `prov:atLocation`, `dcterms:identifier`, `dcterms:isPartOf` | [FOAF](http://xmlns.com/foaf/spec/), [DCMI Terms](https://www.dublincore.org/specifications/dublin-core/dcmi-terms/) |
+
+The operation is the Thing Description's own IRI for it (`td:invokeAction`, not the
+string `"invokeaction"`), hung off a `hctl:Form` because that is what a TD hangs it
+off - together with the target and the method, so the form in a record has the shape
+of the form in the Thing Description it came from. The `all` operations
+(`td:readAllProperties`, `td:writeAllProperties`) address the Thing itself and name
+no affordance, so those records carry no `<#affordance>`.
+
+`htv:sc` links the [status-code vocabulary's](http://www.w3.org/2011/http-statusCodes)
+own individual for the code, beside the plain `htv:statusCodeValue`; a refused
+interaction therefore reads `htv:statusCodeValue 405 ; htv:sc httpsc:MethodNotAllowed`.
+`dcterms:isPartOf` appears only while an [environment](#environments) is running,
+and points at the environment's own resource in the [lab API](#lab-api-_lab), so the
+manifest a run came from is one hop from any record of it.
 
 `<#state>` is the state of the **whole environment**: a `prov:Collection` whose
-members are one `lab:ThingState` per running Thing, in the order the Things were
-created, each carrying that Thing's Property values after the interaction. The
-Thing the request addressed is named on the activity instead (`lab:thing`,
-`lab:thingId`), because that is a fact about the request, not about the state.
+members are one state per running Thing, in the order the Things were created, each
+a `prov:specializationOf` its Thing - the same Thing, as this record found it -
+carrying the Property values the interaction left. The Thing the request addressed
+is what the activity `prov:used`, because that is a fact about the request, not
+about the state.
 
 Recording every Thing is what makes a cross-Thing `vre:effects` effect legible: a
 MOSAIK station's `produce` Action places a new product and consumes the ones it
@@ -386,13 +421,18 @@ case the address the request came from is all there is to go on - becomes a blan
 node, which still says who without minting a URI that nothing would resolve:
 
 ```turtle
-prov:wasAssociatedWith [ a prov:Agent ; lab:agentId "planner-3" ] ;
-prov:wasAssociatedWith [ a prov:Agent ; lab:ip "127.0.0.1" ] ;
+prov:wasAssociatedWith [ a prov:Agent, foaf:Agent ; foaf:name "planner-3" ] ;
+prov:wasAssociatedWith [ a prov:Agent ;
+    prov:atLocation [ a prov:Location ; dcterms:identifier "127.0.0.1" ] ] ;
 ```
+
+A name the client gave itself is a name (`foaf:name`); an address it never gave is
+where the request came from, so it is recorded as a location rather than as
+something the agent calls itself.
 
 ### The request body
 
-`http:body` records what the client sent, so a log says what was asked for and not
+`htv:body` records what the client sent, so a log says what was asked for and not
 merely that something was asked. The body is read before the Thing is handed the
 request - most Actions never look at their input, and a body nobody reads does not
 survive the response - and replayed to it unchanged, so recording one cannot change
@@ -415,19 +455,29 @@ recorded:
 | other number | `"3.5"^^xsd:double` |
 | string | `"text"`, or `<https://...>` when it reads as an http(s) IRI, so a cross-Thing reference stays followable |
 | array | an RDF collection, `( "a" "b" )` - ordered, because order carries meaning in a state like a recipe's `inputs` |
-| object | a blank node with the same `prop:` predicates |
-| `null` | omitted at predicate position; `lab:null` inside a collection, where dropping it would shift everything after it |
+| object | `[ a prov:Collection ; prov:hadMember [ jsonschema:propertyName "label" ; prov:value "battery" ] ... ]` |
+| `null` | omitted at predicate position; a blank node inside a collection, where dropping it would shift everything after it |
 
-Property names are minted into `prop:` (a namespace of their own, so a Property
-called `state` cannot collide with a term of the record vocabulary); a name Turtle
-cannot abbreviate is written as a full percent-encoded IRI.
+A Property is a member of its Thing's state carrying the name it is stored under
+and its value: `[ td:name "brightness" ; prov:value 40 ]`. Both naming terms are
+the indexing properties the WoT specifications define for exactly this - `td:name`
+for a Thing's own Property (what a Thing Description calls an affordance's name)
+and `jsonschema:propertyName` for a member inside a structured value (what it calls
+an object member's name) - so no Property name has to be minted into a namespace,
+and a name Turtle could not abbreviate needs no special case.
+
+`null` is the one thing no standard vocabulary has a term for. At predicate position
+that is no loss: saying nothing *is* how RDF says absent, which is why a product
+with no position simply has no `xpos` member. Inside a collection the place is held
+by a blank node, which says "an element RDF cannot state" - the closest a standard
+vocabulary gets.
 
 ### What configuring a container exposes
 
 Two things change when a container is configured. The lab starts making outbound
-requests to a host you named, carrying **every Property value of every Thing that
-is interacted with**, the request that reached it - including its body - and the
-agent or address behind it, so point it at a container whose contents may be as
+requests to a host you named, carrying **every Property value of every running
+Thing**, not only the one interacted with, the request that reached it - including
+its body - and the agent or address behind it, so point it at a container whose contents may be as
 public as the container's append permission is. And the resources accumulate: one
 per interaction, which a benchmark replay produces by the hundred. Neither the lab
 nor the pod prunes them.
@@ -471,6 +521,7 @@ routes. `_lab` is a reserved path segment, so it can never shadow a Thing.
 | Create a Thing Model | `/_lab/thing-models` | `POST` | Writes `src/things/<name>/` and creates one Thing from it. |
 | List environments | `/_lab/environments` | `GET` | The scenario manifests on disk. |
 | Start an environment | `/_lab/environments` | `POST` | `{"name": "e-commerce"}`. Refused if any of its ids is in use, unless `"replace": true` takes everything running offline first. |
+| One environment | `/_lab/environments/{name}` | `GET` | Its manifest - description, the Things it pins, whether it is the one running. This is the URI a provenance record's `dcterms:isPartOf` points at. `404` for a name no manifest matches. |
 | List an environment's tasks | `/_lab/environments/{name}/tasks` | `GET` | The records of its `tasks.json`. |
 | Reset to initial state | `/_lab/reset` | `POST` | All Things, or one with `{"id": ...}`. |
 | Inject property values | `/_lab/state` | `POST` | `{"id": ..., "values": {...}}`; bypasses TD writability. |
@@ -504,6 +555,7 @@ references resolve to the same instances every run.)
 bun run dev -- --env e-commerce                 # start a scenario
 curl localhost:8081/_lab/environments           # list what's available, and which one is running
 curl -X POST localhost:8081/_lab/environments -d '{"name":"smart-home","replace":true}'   # swap the running lab for it
+curl localhost:8081/_lab/environments/smart-home         # one environment's manifest
 curl localhost:8081/_lab/environments/smart-home/tasks   # its benchmark tasks
 curl -X POST localhost:8081/_lab/reset          # reset every Thing to initial state
 curl -X POST localhost:8081/_lab/state  -d '{"id":"bank-alice","values":{"balance":1000}}'

@@ -22,9 +22,14 @@ export interface StateSinkOptions {
   thingBaseUrl: string;
   /** The header naming the requesting agent; `defaultAgentHeader` when unset. */
   agentHeader?: string;
-  /** The environment currently running, read at post time rather than captured. */
+  /**
+   * The URI of the environment currently running, read at post time rather than
+   * captured — an environment can be started and replaced while the lab runs.
+   * A URI rather than a name so a record links to the manifest a run came from;
+   * the caller knows where that is served, this module does not.
+   */
   // eslint-disable-next-line no-unused-vars
-  environment?: () => string | undefined;
+  environmentIri?: () => string | undefined;
 }
 
 // A pod is a remote server on the far side of a network, so posting is never in
@@ -86,6 +91,7 @@ function slugFor(interaction: Interaction): string {
 function thingIri(sink: StateSinkOptions, id: string): string {
   return `${sink.thingBaseUrl}/${encodeURIComponent(id)}`;
 }
+
 
 /**
  * Every running Thing's state, in creation order.
@@ -166,7 +172,7 @@ export function publishThingState(interaction: Interaction): void {
   const snapshot: StateSnapshot = {
     interaction: { ...interaction, thingId: id },
     thingIri: thingIri(sink, id),
-    environment: sink.environment?.(),
+    environmentIri: sink.environmentIri?.(),
     // Read now, not when the POST runs: by then the next interaction may have
     // changed it, and this resource claims to be the state *this* request left.
     // Serialising through JSON also flattens the Valtio proxies the Things' own

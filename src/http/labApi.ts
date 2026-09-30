@@ -208,6 +208,28 @@ export function createLabApi(registry: ThingRegistry) {
         return true;
       }
 
+      // One environment, as a resource of its own. A provenance record links its
+      // state to this URI (`dcterms:isPartOf`), so it has to resolve: a reader
+      // follows it to the manifest the run came from.
+      if (method === 'GET' && resource === 'environments' && id && !member) {
+        const name = decodeURIComponent(id);
+        const manifest = await loadEnvironmentManifest(name).catch(() => null);
+        if (!manifest) {
+          sendJson(res, 404, { error: `Unknown environment '${name}'` });
+          return true;
+        }
+        sendJson(res, 200, {
+          environment: manifest.name,
+          description: manifest.description,
+          // Whether this is the environment currently online, which is what a
+          // record's link needs to be read against.
+          running: registry.environment() === manifest.name,
+          things: manifest.things.map(spec => ({ id: spec.id, model: spec.model, title: spec.title ?? spec.id })),
+          tasks: `/${labPrefix}/environments/${encodeURIComponent(manifest.name)}/tasks`
+        });
+        return true;
+      }
+
       if (method === 'GET' && resource === 'environments' && !id) {
         // `current` is what a task runner checks before replaying a plan: the
         // list says what could run, this says what is running.
