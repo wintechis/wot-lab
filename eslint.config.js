@@ -22,6 +22,10 @@ export default [
         global: 'readonly',
         NodeJS: 'readonly',
         setTimeout: 'readonly',
+        clearTimeout: 'readonly',
+        fetch: 'readonly',
+        URL: 'readonly',
+        AbortSignal: 'readonly',
         Bun: 'readonly'
       }
     },

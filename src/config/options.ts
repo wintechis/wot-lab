@@ -28,10 +28,15 @@ export interface LabOptions {
   modelsDir?: string;
   /**
    * An LDP container — a Solid pod's, typically — that every WoT interaction's
-   * resulting Thing state is posted to. Unset means nothing is posted: the lab
-   * makes no outbound requests unless asked to.
+   * provenance is posted to. Unset means nothing is posted: the lab makes no
+   * outbound requests unless asked to.
    */
   solidContainer?: string;
+  /**
+   * The request header a client names itself in, which a provenance record
+   * reports as the agent. Unset means `x-agent`.
+   */
+  agentHeader?: string;
 }
 
 /**
@@ -97,6 +102,18 @@ function parseContainer(value: string): string {
   return url.pathname.endsWith('/') ? url.href : `${url.href}/`;
 }
 
+// RFC 9110 field names: a token, and nothing a header name cannot be. Checked
+// because a name with a space or a colon in it would never match a header and
+// would silently leave every record with an address for an agent.
+const headerName = /^[A-Za-z0-9!#$%&'*+.^_`|~-]+$/;
+
+function parseHeaderName(value: string): string {
+  if (!headerName.test(value)) {
+    throw new Error(`Invalid --agent-header: '${value}' is not a header name`);
+  }
+  return value.toLowerCase();
+}
+
 function flagValue(argv: string[], flag: string): string | undefined {
   const index = argv.indexOf(flag);
   if (index === -1) {
@@ -122,6 +139,7 @@ export function parseArgs(argv: string[] = process.argv): LabOptions {
   const portFlag = flagValue(argv, '--port') ?? process.env.WOT_LAB_PORT;
   const modelsDir = flagValue(argv, '--models-dir') ?? process.env.WOT_LAB_MODELS_DIR;
   const container = flagValue(argv, '--solid-container') ?? process.env.WOT_LAB_SOLID_CONTAINER;
+  const agentHeaderFlag = flagValue(argv, '--agent-header') ?? process.env.WOT_LAB_AGENT_HEADER;
 
   const port = portFlag === undefined ? DEFAULT_PORT : Number.parseInt(portFlag, 10);
   if (!Number.isInteger(port) || port < 1 || port > 65535) {
@@ -145,8 +163,13 @@ export function parseArgs(argv: string[] = process.argv): LabOptions {
 
   const solidContainer = container ? parseContainer(container) : undefined;
   if (solidContainer) {
-    debug(`Thing state is posted to ${solidContainer}`);
+    debug(`Interaction provenance is posted to ${solidContainer}`);
   }
 
-  return { things: requested, env, port, modelsDir, solidContainer };
+  const agentHeader = agentHeaderFlag ? parseHeaderName(agentHeaderFlag) : undefined;
+  if (agentHeader) {
+    debug(`Requesting agents are read from the '${agentHeader}' header`);
+  }
+
+  return { things: requested, env, port, modelsDir, solidContainer, agentHeader };
 }

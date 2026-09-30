@@ -1,5 +1,5 @@
 {
-  "xpos": -1.0,
-  "ypos": -1.0,
-  "state": "initialState"
+  "xpos": null,
+  "ypos": null,
+  "state": "uninitialised"
 }

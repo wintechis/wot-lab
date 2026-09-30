@@ -10,7 +10,7 @@
     "arena:Workstation"
   ],
   "title": "fixing",
-  "description": "A station at a fixed position on the shopfloor that realises one service. Each of its Actions runs one recipe: it produces the recipe's output product at the station's own position, but only while every input product of that recipe already lies at the station. The Actions themselves differ per station and are given in the instance Thing Descriptions.",
+  "description": "A station at a fixed position on the shopfloor that realises one service. Each of its Actions runs one recipe: it produces the recipe's output product at the station's own position and consumes the recipe's inputs, whose state becomes 'consumed' and whose position becomes null. An Action has no effect unless every input product of that recipe already lies at the station. The Actions themselves differ per station and are given in the instance Thing Descriptions.",
   "securityDefinitions": {
     "nosec_sc": {
       "scheme": "nosec"
@@ -63,7 +63,7 @@
       },
       "safe": false,
       "idempotent": false,
-      "vre:effects": "const mainModule = <mainmodule>;\nconst port = <port>;\nconst mainModuleWithPorts = <mainmodulewithports>;\nmainModuleWithPorts.xpos' = mainModule.xpos == xpos && mainModule.ypos == ypos\n  && port.xpos == xpos && port.ypos == ypos ? xpos : mainModuleWithPorts.xpos;\nmainModuleWithPorts.ypos' = mainModule.xpos == xpos && mainModule.ypos == ypos\n  && port.xpos == xpos && port.ypos == ypos ? ypos : mainModuleWithPorts.ypos;\nmainModuleWithPorts.state' = mainModule.xpos == xpos && mainModule.ypos == ypos\n  && port.xpos == xpos && port.ypos == ypos ? \"initialState\" : mainModuleWithPorts.state;\noutput.success = mainModule.xpos == xpos && mainModule.ypos == ypos\n  && port.xpos == xpos && port.ypos == ypos;"
+      "vre:effects": "const mainModule = <mainmodule>;\nconst port = <port>;\nconst mainModuleWithPorts = <mainmodulewithports>;\nmainModuleWithPorts.xpos' = mainModule.xpos == xpos && mainModule.ypos == ypos\n  && port.xpos == xpos && port.ypos == ypos ? xpos : mainModuleWithPorts.xpos;\nmainModuleWithPorts.ypos' = mainModule.xpos == xpos && mainModule.ypos == ypos\n  && port.xpos == xpos && port.ypos == ypos ? ypos : mainModuleWithPorts.ypos;\nmainModuleWithPorts.state' = mainModule.xpos == xpos && mainModule.ypos == ypos\n  && port.xpos == xpos && port.ypos == ypos ? \"initialState\" : mainModuleWithPorts.state;\nmainModule.xpos' = mainModule.xpos == xpos && mainModule.ypos == ypos\n  && port.xpos == xpos && port.ypos == ypos ? null : mainModule.xpos;\nmainModule.ypos' = mainModule.xpos == xpos && mainModule.ypos == ypos\n  && port.xpos == xpos && port.ypos == ypos ? null : mainModule.ypos;\nmainModule.state' = mainModule.xpos == xpos && mainModule.ypos == ypos\n  && port.xpos == xpos && port.ypos == ypos ? \"consumed\" : mainModule.state;\nport.xpos' = mainModule.xpos == xpos && mainModule.ypos == ypos\n  && port.xpos == xpos && port.ypos == ypos ? null : port.xpos;\nport.ypos' = mainModule.xpos == xpos && mainModule.ypos == ypos\n  && port.xpos == xpos && port.ypos == ypos ? null : port.ypos;\nport.state' = mainModule.xpos == xpos && mainModule.ypos == ypos\n  && port.xpos == xpos && port.ypos == ypos ? \"consumed\" : port.state;\noutput.success = mainModule.xpos == xpos && mainModule.ypos == ypos\n  && port.xpos == xpos && port.ypos == ypos;"
     }
   }
 }

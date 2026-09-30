@@ -26,9 +26,14 @@ const usage = `wot-lab
   --models-dir <p>  Where authored Thing Models are written
                     (default: alongside the bundled ones, or WOT_LAB_MODELS_DIR)
   --solid-container <url>
-                    An LDP container (a Solid pod's) to post a Thing's resulting
-                    state to after every WoT interaction with it
+                    An LDP container (a Solid pod's) to post a PROV-O record of
+                    every WoT interaction to — the request, the activity and the
+                    Thing state it left behind
                     (or WOT_LAB_SOLID_CONTAINER). Unset posts nothing.
+  --agent-header <name>
+                    The request header a client names itself in, reported as the
+                    activity's agent (default x-agent, or WOT_LAB_AGENT_HEADER).
+                    A request naming none is attributed to its address.
 
 Starting without --things is normal: Things are created from the dashboard.`;
 
@@ -64,13 +69,14 @@ const wot = await servient.start();
 const registry = new ThingRegistry(wot, servient);
 labRef.current = createLabApi(registry);
 
-// Configured after the registry exists, because a snapshot names the environment
+// Configured after the registry exists, because a record names the environment
 // running when it was taken, and only the registry knows that. Left unconfigured
 // without a container, so the default lab makes no outbound requests.
 if (options.solidContainer) {
   configureStateSink({
     container: options.solidContainer,
     thingBaseUrl: `http://localhost:${options.port}`,
+    agentHeader: options.agentHeader,
     environment: () => registry.environment()
   });
 }
@@ -117,7 +123,7 @@ if (options.modelsDir) {
   debug(`- Authored models:     ${options.modelsDir}`);
 }
 if (options.solidContainer) {
-  debug(`- State snapshots:     POST ${options.solidContainer}`);
+  debug(`- Provenance records:  POST ${options.solidContainer}`);
 }
 
 // Graceful shutdown

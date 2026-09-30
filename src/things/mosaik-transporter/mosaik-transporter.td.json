@@ -101,7 +101,7 @@
   "actions": {
     "pickup": {
       "title": "pick a product up",
-      "description": "Take the given product, but only while the transporter carries nothing and stands on the product's position.",
+      "description": "Take the given product, but only while the transporter carries nothing and stands on the product's position. A product that does not exist has no position, so it cannot be picked up.",
       "input": {
         "type": "string",
         "title": "product",
@@ -166,7 +166,7 @@
     },
     "moveLeft": {
       "title": "move transporter left",
-      "description": "Move one unit left along the x axis. A product the transporter carries moves with it; writing through 'carrying' has no effect while nothing is carried.",
+      "description": "Move one unit left along the x axis. A product the transporter carries moves with it; writing through 'carrying' has no effect while nothing is carried, and a carried product a station has consumed in the meantime is let go instead of dragged along.",
       "output": {
         "type": "object",
         "properties": {
@@ -180,11 +180,11 @@
       },
       "safe": false,
       "idempotent": false,
-      "vre:effects": "xpos' = xpos - 1;\ncarrying.xpos' = (xpos - 1);\noutput.success = true;\noutput.xpos = xpos';"
+      "vre:effects": "xpos' = xpos - 1;\ncarrying' = carrying.state == \"initialState\" ? carrying : false;\ncarrying.xpos' = carrying.state == \"initialState\" ? (xpos - 1) : carrying.xpos;\noutput.success = true;\noutput.xpos = xpos';"
     },
     "moveRight": {
       "title": "move transporter right",
-      "description": "Move one unit right along the x axis. A product the transporter carries moves with it; writing through 'carrying' has no effect while nothing is carried.",
+      "description": "Move one unit right along the x axis. A product the transporter carries moves with it; writing through 'carrying' has no effect while nothing is carried, and a carried product a station has consumed in the meantime is let go instead of dragged along.",
       "output": {
         "type": "object",
         "properties": {
@@ -198,11 +198,11 @@
       },
       "safe": false,
       "idempotent": false,
-      "vre:effects": "xpos' = xpos + 1;\ncarrying.xpos' = (xpos + 1);\noutput.success = true;\noutput.xpos = xpos';"
+      "vre:effects": "xpos' = xpos + 1;\ncarrying' = carrying.state == \"initialState\" ? carrying : false;\ncarrying.xpos' = carrying.state == \"initialState\" ? (xpos + 1) : carrying.xpos;\noutput.success = true;\noutput.xpos = xpos';"
     },
     "moveUp": {
       "title": "move transporter up",
-      "description": "Move one unit up along the y axis. A product the transporter carries moves with it; writing through 'carrying' has no effect while nothing is carried.",
+      "description": "Move one unit up along the y axis. A product the transporter carries moves with it; writing through 'carrying' has no effect while nothing is carried, and a carried product a station has consumed in the meantime is let go instead of dragged along.",
       "output": {
         "type": "object",
         "properties": {
@@ -216,11 +216,11 @@
       },
       "safe": false,
       "idempotent": false,
-      "vre:effects": "ypos' = ypos - 1;\ncarrying.ypos' = (ypos - 1);\noutput.success = true;\noutput.ypos = ypos';"
+      "vre:effects": "ypos' = ypos - 1;\ncarrying' = carrying.state == \"initialState\" ? carrying : false;\ncarrying.ypos' = carrying.state == \"initialState\" ? (ypos - 1) : carrying.ypos;\noutput.success = true;\noutput.ypos = ypos';"
     },
     "moveDown": {
       "title": "move transporter down",
-      "description": "Move one unit down along the y axis. A product the transporter carries moves with it; writing through 'carrying' has no effect while nothing is carried.",
+      "description": "Move one unit down along the y axis. A product the transporter carries moves with it; writing through 'carrying' has no effect while nothing is carried, and a carried product a station has consumed in the meantime is let go instead of dragged along.",
       "output": {
         "type": "object",
         "properties": {
@@ -234,7 +234,7 @@
       },
       "safe": false,
       "idempotent": false,
-      "vre:effects": "ypos' = ypos + 1;\ncarrying.ypos' = (ypos + 1);\noutput.success = true;\noutput.ypos = ypos';"
+      "vre:effects": "ypos' = ypos + 1;\ncarrying' = carrying.state == \"initialState\" ? carrying : false;\ncarrying.ypos' = carrying.state == \"initialState\" ? (ypos + 1) : carrying.ypos;\noutput.success = true;\noutput.ypos = ypos';"
     }
   }
 }

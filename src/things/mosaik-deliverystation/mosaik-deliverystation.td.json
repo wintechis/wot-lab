@@ -10,7 +10,7 @@
     "arena:Workstation"
   ],
   "title": "deliveryStation",
-  "description": "A station at a fixed position on the shopfloor that realises one service. Each of its Actions runs one recipe: it produces the recipe's output product at the station's own position, but only while every input product of that recipe already lies at the station. The Actions themselves differ per station and are given in the instance Thing Descriptions.",
+  "description": "A station at a fixed position on the shopfloor that realises one service. Each of its Actions runs one recipe: it produces the recipe's output product at the station's own position and consumes the recipe's inputs, whose state becomes 'consumed' and whose position becomes null. An Action has no effect unless every input product of that recipe already lies at the station. The Actions themselves differ per station and are given in the instance Thing Descriptions.",
   "securityDefinitions": {
     "nosec_sc": {
       "scheme": "nosec"

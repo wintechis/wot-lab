@@ -1,16 +1,27 @@
 import { globalState, normalizeThingId } from '../globalState.js';
 import { createLoggers } from '../utils/debug.js';
-import { Interaction, StateSnapshot, snapshotToTurtle } from './stateResource.js';
+import { Interaction, provenanceToTurtle, StateSnapshot, ThingState } from './stateResource.js';
 
 const { debug, warn } = createLoggers('solid');
 
 const clone = <T>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
 
+/**
+ * The header a client names itself in, lowercased as Node presents headers.
+ *
+ * A header rather than anything cleverer because the client of a WoT lab is
+ * usually a script: one line of curl is the whole cost of appearing in the log
+ * as yourself instead of as an address.
+ */
+export const defaultAgentHeader = 'x-agent';
+
 export interface StateSinkOptions {
-  /** The LDP container every snapshot is POSTed to. Always ends in a slash. */
+  /** The LDP container every record is POSTed to. Always ends in a slash. */
   container: string;
   /** Where this lab's Things are served from, e.g. `http://localhost:8081`. */
   thingBaseUrl: string;
+  /** The header naming the requesting agent; `defaultAgentHeader` when unset. */
+  agentHeader?: string;
   /** The environment currently running, read at post time rather than captured. */
   // eslint-disable-next-line no-unused-vars
   environment?: () => string | undefined;
@@ -56,26 +67,53 @@ export function isStateSinkEnabled(): boolean {
   return options !== undefined;
 }
 
+/** Lowercased, because that is how Node keys `req.headers`. */
+export function agentHeaderName(): string {
+  return (options?.agentHeader ?? defaultAgentHeader).toLowerCase();
+}
+
 /**
  * The name suggested to the pod. A `Slug` is a request, not an instruction — the
  * server may adjust it or ignore it and mint its own name — so nothing here
  * depends on the resulting URI having this shape. Colons and dots are replaced
  * because a slug becomes a path segment.
  */
-function slugFor(interaction: Interaction, at: Date): string {
-  const stamp = at.toISOString().replace(/[:.]/g, '-');
+function slugFor(interaction: Interaction): string {
+  const stamp = interaction.endedAt.toISOString().replace(/[:.]/g, '-');
   return `${interaction.thingId}-${stamp}`;
 }
 
+function thingIri(sink: StateSinkOptions, id: string): string {
+  return `${sink.thingBaseUrl}/${encodeURIComponent(id)}`;
+}
+
+/**
+ * Every running Thing's state, in creation order.
+ *
+ * The whole environment rather than the addressed Thing alone, because a WoT
+ * interaction is not confined to the Thing it names: a cross-Thing VRE effect
+ * changes others, and those changes belong to the interaction that caused them.
+ * The cost is one record's size — a record now grows with the environment — and
+ * it is paid once per interaction, off the request's path.
+ */
+function everyThingState(sink: StateSinkOptions): ThingState[] {
+  const things = globalState.things as Record<string, Record<string, unknown>>;
+  return Object.keys(things).map(id => ({
+    id,
+    iri: thingIri(sink, id),
+    state: clone(things[id])
+  }));
+}
+
 async function post(snapshot: StateSnapshot, container: string): Promise<void> {
-  const body = snapshotToTurtle(snapshot);
+  const body = provenanceToTurtle(snapshot);
   const response = await fetch(container, {
     method: 'POST',
     headers: {
       'Content-Type': 'text/turtle',
       // Asks the container for a plain RDF source rather than a new container.
       Link: '<http://www.w3.org/ns/ldp#Resource>; rel="type"',
-      Slug: slugFor(snapshot.interaction, snapshot.at)
+      Slug: slugFor(snapshot.interaction)
     },
     body,
     signal: AbortSignal.timeout(requestTimeoutMs)
@@ -94,7 +132,7 @@ async function post(snapshot: StateSnapshot, container: string): Promise<void> {
 }
 
 /**
- * Publish the state a WoT interaction left behind.
+ * Publish the provenance of one WoT interaction.
  *
  * Returns immediately: the caller is an HTTP handler, and a pod's latency is not
  * the client's problem. Nothing here can throw into the request — a pod that is
@@ -127,14 +165,13 @@ export function publishThingState(interaction: Interaction): void {
 
   const snapshot: StateSnapshot = {
     interaction: { ...interaction, thingId: id },
-    thingIri: `${sink.thingBaseUrl}/${encodeURIComponent(id)}`,
+    thingIri: thingIri(sink, id),
     environment: sink.environment?.(),
     // Read now, not when the POST runs: by then the next interaction may have
     // changed it, and this resource claims to be the state *this* request left.
-    // Serialising through JSON also flattens the Valtio proxy the Thing's own
+    // Serialising through JSON also flattens the Valtio proxies the Things' own
     // handlers serve, which is what the rest of the lab does to detach state.
-    state: clone(state),
-    at: new Date()
+    things: everyThingState(sink)
   };
 
   pending += 1;

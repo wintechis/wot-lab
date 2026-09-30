@@ -3,8 +3,8 @@ import { URL } from 'url';
 import { labPrefix } from './labApi.js';
 import { brotliCompressSync, constants as zlibConstants, gzipSync } from 'zlib';
 import * as WoT from 'wot-typescript-definitions';
-import { Interaction, WotOperation } from '../solid/stateResource.js';
-import { isStateSinkEnabled, publishThingState } from '../solid/stateSink.js';
+import { isAgentIri, RequestAgent, WotOperation } from '../solid/stateResource.js';
+import { agentHeaderName, isStateSinkEnabled, publishThingState } from '../solid/stateSink.js';
 
 interface Endpoint {
   name: string;
@@ -492,14 +492,164 @@ function operationFor(method: string, pathParts: string[]): WotOperation | undef
 }
 
 /**
- * Arrange for the state a request leaves behind to be posted to the pod.
+ * Who the request says it is: the agent URI it named, or, naming none, the
+ * address it came from. A provenance log without an agent answers half the
+ * question it exists to answer, so the address stands in rather than nothing.
+ */
+function agentFor(req: IncomingMessage): RequestAgent | undefined {
+  const header = req.headers[agentHeaderName()];
+  const named = (Array.isArray(header) ? header[0] : header)?.trim();
+  if (named) {
+    return isAgentIri(named) ? { iri: named } : { id: named };
+  }
+  const address = req.socket.remoteAddress;
+  return address ? { address } : undefined;
+}
+
+// A body is recorded so a log says what was asked for and not merely that
+// something was. 64 KiB is far past any WoT affordance input, and it is the limit
+// that bounds all of this: the lab holds at most this much per request in flight,
+// reads no larger body at all, and so never records a partial one.
+const maxCapturedBodyBytes = 64 * 1024;
+
+/**
+ * Decode a recorded body as text, or nothing when it is not text.
+ *
+ * Bytes that are not UTF-8 are left out: a Turtle literal that does not read
+ * back as what arrived is worse than no literal at all.
+ */
+function decodeBody(buffer: Buffer): string | undefined {
+  const text = buffer.toString('utf8');
+  return Buffer.from(text, 'utf8').equals(buffer) ? text : undefined;
+}
+
+/**
+ * Make a request that has already been read replay its body to whoever
+ * subscribes to it next.
+ *
+ * node-wot reads a body exactly once, with `on('data')`, `on('end')` and
+ * `on('error')` — every route funnels through `Content.toBuffer()`. Subscribing
+ * is therefore the signal that it wants the body, and the recorded one is handed
+ * over instead of the drained stream. The request object is what node-wot is
+ * given, so the replay has to live on it; there is nothing else to substitute.
+ */
+function replayBody(req: IncomingMessage, read: () => Buffer | undefined): void {
+  let delivered = false;
+
+  const deliver = (): void => {
+    if (delivered) {
+      return;
+    }
+    delivered = true;
+    // Deferred, because a consumer registers its `data`, `error` and `end`
+    // listeners one after another: emitting from inside the first registration
+    // would reach a consumer not yet listening for the end of what it asked for.
+    void Promise.resolve().then(() => {
+      const buffer = read();
+      if (!buffer) {
+        req.emit('error', new Error('The request ended before its body arrived'));
+        return;
+      }
+      if (buffer.byteLength) {
+        req.emit('data', buffer);
+      }
+      req.emit('end');
+    });
+  };
+
+  type Subscribe = (
+    // eslint-disable-next-line no-unused-vars
+    event: string | symbol,
+    // eslint-disable-next-line no-unused-vars
+    listener: (..._args: never[]) => void
+  ) => IncomingMessage;
+
+  for (const name of ['on', 'once', 'addListener'] as const) {
+    const subscribe = req[name].bind(req) as Subscribe;
+    // The original is still what registers the listener — `once` keeps removing
+    // its listener, and nothing but the extra trigger changes.
+    const patched: Subscribe = (event, listener) => {
+      const result = subscribe(event, listener);
+      if (event === 'data' || event === 'end') {
+        deliver();
+      }
+      return result;
+    };
+    req[name] = patched as typeof req[typeof name];
+  }
+}
+
+/**
+ * Read the request body, and return it as it will be recorded.
+ *
+ * Read here, and awaited before node-wot is handed the request, because a body
+ * nobody reads does not survive the response: Bun's HTTP server discards what is
+ * left of a request once its response is sent, and most Actions never look at
+ * their input. Recording only the bodies a Thing happened to care about would
+ * leave the log silent about exactly the requests that changed something.
+ *
+ * Waiting for the body is what a Thing that reads its input already makes the
+ * lab do, and the request cannot outlast the server's own request timeout, so
+ * this adds no way for a client to hold an affordance open.
+ */
+async function captureRequestBody(req: IncomingMessage): Promise<string | undefined> {
+  const chunks: Buffer[] = [];
+  let complete = false;
+
+  const arrived = new Promise<void>(resolve => {
+    req.on('data', (chunk: Buffer | string) => {
+      // Copied, because a chunk is a view on a socket buffer that is reused as
+      // soon as it has been handed on.
+      chunks.push(Buffer.from(chunk));
+    });
+    req.once('end', () => {
+      complete = true;
+      resolve();
+    });
+    // A request that closes or fails before its end has no body to record, and
+    // nothing whole to replay; node-wot is told as much when it asks.
+    req.once('close', () => resolve());
+    req.once('error', () => resolve());
+  });
+
+  // Installed after this module's own listeners, so subscribing above does not
+  // trigger the replay it is meant to feed.
+  replayBody(req, () => (complete ? Buffer.concat(chunks) : undefined));
+  await arrived;
+
+  const captured = complete ? Buffer.concat(chunks) : undefined;
+  return captured?.byteLength ? decodeBody(captured) : undefined;
+}
+
+// Only a request that announced a body the lab is willing to hold is read for
+// one. A chunked body announces no size, and a larger one is not worth the
+// memory; both are left to stream to node-wot untouched, and go unrecorded
+// rather than partly recorded.
+const methodsWithBody = new Set(['POST', 'PUT', 'PATCH']);
+
+function hasCapturableBody(req: IncomingMessage): boolean {
+  if (!methodsWithBody.has(req.method ?? 'GET')) {
+    return false;
+  }
+  const length = Number(req.headers['content-length']);
+  return Number.isInteger(length) && length > 0 && length <= maxCapturedBodyBytes;
+}
+
+/**
+ * Arrange for the provenance of one interaction to be posted to the pod.
  *
  * Hooked on `finish` rather than posted here: this middleware runs before
- * node-wot handles the request, so the state that matters does not exist yet.
- * `finish` and not `close`, so an aborted request — a long-poll observation the
- * client walked away from — records nothing; it changed nothing either.
+ * node-wot handles the request, so neither the state that matters nor the status
+ * exists yet. `finish` and not `close`, so an aborted request — a long-poll
+ * observation the client walked away from — records nothing; it changed nothing
+ * either.
  */
-function reportInteraction(req: IncomingMessage, res: ServerResponse, pathParts: string[]): void {
+async function reportInteraction(
+  req: IncomingMessage,
+  res: ServerResponse,
+  pathParts: string[],
+  requestUrl: URL
+): Promise<void> {
   if (!isStateSinkEnabled()) {
     return;
   }
@@ -509,16 +659,27 @@ function reportInteraction(req: IncomingMessage, res: ServerResponse, pathParts:
     return;
   }
 
-  const interaction: Omit<Interaction, 'status'> = {
-    thingId: decodeURIComponent(pathParts[0]),
-    operation,
-    affordance: pathParts[2] ? decodeURIComponent(pathParts[2]) : undefined,
-    method,
-    target: req.url ?? '/'
-  };
+  // Taken before node-wot sees the request: the activity started when the
+  // request arrived, not when the lab got around to it. The agent too — it is
+  // read from the request, and by the time the response has finished the socket
+  // it came from may be gone.
+  const startedAt = new Date();
+  const agent = agentFor(req);
+  const body = hasCapturableBody(req) ? await captureRequestBody(req) : undefined;
 
   res.once('finish', () => {
-    publishThingState({ ...interaction, status: res.statusCode });
+    publishThingState({
+      thingId: decodeURIComponent(pathParts[0]),
+      operation,
+      affordance: pathParts[2] ? decodeURIComponent(pathParts[2]) : undefined,
+      method,
+      requestUri: requestUrl.href,
+      body,
+      agent,
+      status: res.statusCode,
+      startedAt,
+      endedAt: new Date()
+    });
   });
 }
 
@@ -548,8 +709,10 @@ export function createEndpointMiddleware(
     // Every `next()` below hands the request to node-wot's own routes, which is
     // exactly the set of requests that reach a Thing: what this middleware
     // answers itself — the dashboard, its assets, the lab API — never does.
-    const forwardToWot = (): void => {
-      reportInteraction(req, res, pathParts);
+    const forwardToWot = async (): Promise<void> => {
+      // Awaited, because recording a request body means reading it, and the
+      // Thing has to be handed the body the client sent, not what is left of it.
+      await reportInteraction(req, res, pathParts, requestUrl);
       next();
     };
 
@@ -560,12 +723,12 @@ export function createEndpointMiddleware(
       if (handleLab && await handleLab(req, res, pathParts.slice(1), requestUrl)) {
         return;
       }
-      forwardToWot();
+      await forwardToWot();
       return;
     }
 
     if (req.method !== 'GET') {
-      forwardToWot();
+      await forwardToWot();
       return;
     }
 
@@ -598,6 +761,6 @@ export function createEndpointMiddleware(
       return;
     }
 
-    forwardToWot();
+    await forwardToWot();
   };
 }

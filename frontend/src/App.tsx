@@ -311,8 +311,11 @@ function idEchoesTitle(id: string, title: string): boolean {
   return normalize(id) === normalize(title);
 }
 
+// `null` is a value a Thing can report — a product that has not been produced
+// yet has no position — so it prints as the literal `null`, the way the payload
+// spells it. Only `undefined`, where there is nothing to print at all, is a dash.
 function formatValue(value: unknown): string {
-  if (value === undefined || value === null) return '—';
+  if (value === undefined) return '—';
   if (typeof value === 'string') return value;
   return JSON.stringify(value);
 }
@@ -328,10 +331,11 @@ function FieldLabel({ children }: { children: React.ReactNode }) {
 // for paths and TD terms. Values are data, and this is the one place the app
 // says "this is data" — so a property reading, a nested member and an action's
 // output all look the same wherever they appear.
-// Absence is not a value: null/undefined stays a plain muted dash rather than an
-// empty chip, which would read as a value that happens to be blank.
+// Absence is not a value: `undefined` — nothing was read — stays a plain muted
+// dash rather than an empty chip, which would read as a value that happens to be
+// blank. A reported `null` *is* a reading and gets the chip like any other.
 function ValueCode({ value, className }: { value: unknown; className?: string }) {
-  if (value === undefined || value === null) {
+  if (value === undefined) {
     return <Text className={className ? `muted ${className}` : 'muted'}>{formatValue(value)}</Text>;
   }
   return <InlineCode className={className}>{formatValue(value)}</InlineCode>;

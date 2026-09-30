@@ -20,7 +20,7 @@ A Thing needs only its Thing Description and state; behavior can come from `vre:
 - [Features](#features)
 - [Configuration](#configuration)
 - [Creating Things](#creating-things)
-- [Publishing state to a Solid pod](#publishing-state-to-a-solid-pod)
+- [Publishing provenance to a Solid pod](#publishing-provenance-to-a-solid-pod)
 - [API Reference](#api-reference)
 - [Security](#security)
 - [Examples](#examples)
@@ -69,8 +69,9 @@ WoT-Lab provides two ways to interact with your IoT Things:
 
 2. **WoT Protocol**: Standard Web of Things interaction patterns via Thing Descriptions served by `@node-wot`
 
-3. **Solid pod** (opt-in): with `--solid-container`, every interaction with a Thing posts the state it
-   left behind to an LDP container as RDF - see [Publishing state to a Solid pod](#publishing-state-to-a-solid-pod)
+3. **Solid pod** (opt-in): with `--solid-container`, every interaction with a Thing posts a PROV-O
+   record - the request, who made it, and the whole environment's state it left behind - to an LDP
+   container as RDF - see [Publishing provenance to a Solid pod](#publishing-provenance-to-a-solid-pod)
 
 ## Configuration
 
@@ -93,9 +94,12 @@ bun run dev -- --port 9000                # or WOT_LAB_PORT=9000
   written (or `WOT_LAB_MODELS_DIR`). Unset, they are written alongside the
   bundled ones in `src/things/`.
 - `--solid-container <url>` - an LDP container (a Solid pod's, typically) to post
-  a Thing's resulting state to after every interaction with it (or
-  `WOT_LAB_SOLID_CONTAINER`). Unset, nothing is posted and the lab makes no
-  outbound requests - see [Publishing state to a Solid pod](#publishing-state-to-a-solid-pod). 
+  a PROV-O record of every interaction to (or `WOT_LAB_SOLID_CONTAINER`). Unset,
+  nothing is posted and the lab makes no outbound requests - see
+  [Publishing provenance to a Solid pod](#publishing-provenance-to-a-solid-pod).
+- `--agent-header <name>` - the request header a client names itself in, reported
+  as the activity's agent (or `WOT_LAB_AGENT_HEADER`). Defaults to `X-Agent`; a
+  request naming no agent is attributed to the address it came from. 
 
 
 ## Creating Things
@@ -249,17 +253,19 @@ language, in a `vre:effects` annotation, and needs no hand-written handler:
 - **Events** are emitted with `emitEvent("name", value)`.
 
 
-## Publishing state to a Solid pod
+## Publishing provenance to a Solid pod
 
 Point the lab at an LDP container and every WoT interaction with a Thing publishes
-the state it left behind there, as one Turtle resource per interaction:
+its provenance there, as one Turtle resource per interaction: the request that
+arrived, the activity that handled it, and the state that activity left behind -
+the whole environment's state, every Property of every running Thing.
 
 ```bash
 bun run dev -- --env smart-home --solid-container https://solid.example.org/alice/wot-lab/
 ```
 
-The container is the only configuration, and without it nothing is posted: the
-default lab makes no outbound requests. Requests are unauthenticated, so the
+The container is the only required configuration, and without it nothing is posted:
+the default lab makes no outbound requests. Requests are unauthenticated, so the
 container has to grant append to the public; the lab sends no credentials.
 
 ### What is posted, and when
@@ -274,56 +280,134 @@ the client abandons posts nothing either: it changed nothing.
 A refused interaction is recorded like any other, with its status in
 `lab:responseStatus` and the state it did not change - an agent's rejected write is
 as much a part of a run as an accepted one. Only a request naming no running Thing
-posts nothing, because there is no state to report.
+posts nothing: there is no interaction to report, even though the environment
+around it has a state.
 
-The pod is never in the request's path. Snapshots queue in the lab and drain
-behind the response down four connections, so a slow or unreachable pod costs a
-warning (`DEBUG=wot-lab:solid:*`) and never a slow WoT response. The queue is
-bounded at 256; past that, snapshots are dropped and the drop is logged, because
-an observer that runs the lab out of memory is worse than one that misses a
-reading.
+The pod is never in the request's path. Records queue in the lab and drain behind
+the response down four connections, so a slow or unreachable pod costs a warning
+(`DEBUG=wot-lab:solid:*`) and never a slow WoT response. The queue is bounded at
+256; past that, records are dropped and the drop is logged, because an observer
+that runs the lab out of memory is worse than one that misses a reading.
 
 ### The resource
 
 ```turtle
-@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
-@prefix prov: <http://www.w3.org/ns/prov#> .
-@prefix lab:  <https://wintechis.github.io/wot-lab/ns#> .
-@prefix prop: <https://wintechis.github.io/wot-lab/ns/property#> .
-
-<#snapshot>
-    a lab:StateSnapshot, prov:Entity ;
-    prov:generatedAtTime "2026-09-30T10:11:29.265Z"^^xsd:dateTime ;
-    lab:thing <http://localhost:8081/lamp> ;
-    lab:thingId "lamp" ;
-    lab:environment "smart-home" ;
-    lab:trigger <#request> ;
-    lab:state <#state> .
+@prefix xsd:   <http://www.w3.org/2001/XMLSchema#> .
+@prefix prov:  <http://www.w3.org/ns/prov#> .
+@prefix http:  <http://www.w3.org/2011/http#> .
+@prefix httpm: <http://www.w3.org/2011/http-methods#> .
+@prefix lab:   <https://wintechis.github.io/wot-lab/ns#> .
+@prefix prop:  <https://wintechis.github.io/wot-lab/ns/property#> .
 
 <#request>
-    a lab:Interaction ;
+    a prov:Entity, http:Request ;
+    http:mthd httpm:POST ;
+    http:requestURI "http://localhost:8081/lamp/actions/setBrightness" ;
+    http:body [ prov:value "{\"level\":40}" ] .
+
+<#interaction>
+    a prov:Activity ;
+    prov:wasAssociatedWith <https://pod.example.org/alice/profile/card#me> ;
+    prov:used <#request> ;
+    prov:generated <#state> ;
+    lab:thing <http://localhost:8081/lamp> ;
+    lab:thingId "lamp" ;
     lab:operation "invokeaction" ;
-    lab:affordance "toggle" ;
-    lab:method "POST" ;
-    lab:requestTarget "/lamp/actions/toggle" ;
-    lab:responseStatus 204 .
+    lab:affordance "setBrightness" ;
+    lab:responseStatus 200 ;
+    prov:startedAtTime "2026-09-30T10:11:29.251Z"^^xsd:dateTime ;
+    prov:endedAtTime   "2026-09-30T10:11:29.265Z"^^xsd:dateTime .
 
 <#state>
-    a lab:ThingState ;
-    prop:on true ;
-    prop:brightness 100 .
+    a prov:Entity, prov:Collection, lab:EnvironmentState ;
+    prov:generatedAtTime "2026-09-30T10:11:29.265Z"^^xsd:dateTime ;
+    lab:environment "smart-home" ;
+    prov:hadMember
+        <#state-lamp>,
+        <#state-thermostat> .
+
+<#state-lamp>
+    a prov:Entity, lab:ThingState ;
+    lab:thing <http://localhost:8081/lamp> ;
+    lab:thingId "lamp" ;
+    prop:poweredOn true ;
+    prop:brightness 40 .
+
+<#state-thermostat>
+    a prov:Entity, lab:ThingState ;
+    lab:thing <http://localhost:8081/thermostat> ;
+    lab:thingId "thermostat" ;
+    prop:target 21 .
 ```
 
-`lab:operation` is named as a Thing Description's `op` values are:
-`readproperty`, `writeproperty`, `readallproperties`, `writeallproperties`,
-`observeproperty`, `invokeaction`, `subscribeevent`. `lab:environment` appears
-only while an [environment](#environments) is running. The three subjects are
-hash URIs of the resource the pod mints, so the snapshot needs no identifier of
-its own; each carries `prov:generatedAtTime`, which is what orders a session
-rather than the order the pod received them.
+PROV-O and the [W3C HTTP vocabulary](https://www.w3.org/TR/HTTP-in-RDF10/) carry
+the provenance, so a log reads the same way as anyone else's. The lab's own
+vocabulary is left with what PROV has no term for: `lab:operation`, named as a
+Thing Description's `op` values are (`readproperty`, `writeproperty`,
+`readallproperties`, `writeallproperties`, `observeproperty`, `invokeaction`,
+`subscribeevent`), the affordance it named, the response status, and the Property
+values that make up a state. `lab:environment` appears only while an
+[environment](#environments) is running.
 
-Property values are serialised faithfully, so a snapshot reads back as the state
-it recorded:
+`<#state>` is the state of the **whole environment**: a `prov:Collection` whose
+members are one `lab:ThingState` per running Thing, in the order the Things were
+created, each carrying that Thing's Property values after the interaction. The
+Thing the request addressed is named on the activity instead (`lab:thing`,
+`lab:thingId`), because that is a fact about the request, not about the state.
+
+Recording every Thing is what makes a cross-Thing `vre:effects` effect legible: a
+MOSAIK station's `produce` Action places a new product and consumes the ones it
+was built from, none of which is the station. A record of the addressed
+Thing alone would show that Action changing nothing. It also means a run reads
+back as a sequence of complete states - each record answers "what did the
+environment look like at this point", with no need to fold earlier records
+together - at the cost of record size, which grows with the environment: a mosaik
+record (37 Things) is roughly 12 KB, against 700 bytes for one Thing.
+
+The subjects are hash URIs of the resource the pod mints, so a record needs no
+identifier of its own. The activity's `prov:startedAtTime` is when the request
+arrived and `prov:endedAtTime` when its response finished, which is also the
+state's `prov:generatedAtTime` - and that is what orders a session, rather than
+the order the pod received the records.
+
+### Who the agent is
+
+A client names itself in a request header - `X-Agent` by default, or whatever
+`--agent-header` says:
+
+```bash
+curl -X POST -H 'X-Agent: https://pod.example.org/alice/profile/card#me' \
+  http://localhost:8081/lamp/actions/toggle
+```
+
+A value that is a URI (a WebID, or any `http(s):`/`urn:` IRI) becomes the agent
+itself. Anything else - a bare name like `planner-3`, or no header at all, in which
+case the address the request came from is all there is to go on - becomes a blank
+node, which still says who without minting a URI that nothing would resolve:
+
+```turtle
+prov:wasAssociatedWith [ a prov:Agent ; lab:agentId "planner-3" ] ;
+prov:wasAssociatedWith [ a prov:Agent ; lab:ip "127.0.0.1" ] ;
+```
+
+### The request body
+
+`http:body` records what the client sent, so a log says what was asked for and not
+merely that something was asked. The body is read before the Thing is handed the
+request - most Actions never look at their input, and a body nobody reads does not
+survive the response - and replayed to it unchanged, so recording one cannot change
+what a Thing sees.
+
+Recorded are bodies that announce a `Content-Length` of at most 64 KiB, which is
+far past any WoT affordance input. A chunked body announces no size and a larger one
+is not worth the memory: both stream through untouched and go unrecorded, rather
+than partly recorded. A body that is not UTF-8 text is left out too, because a
+literal that does not read back as the bytes that arrived is worse than no literal.
+
+### State values
+
+Property values are serialised faithfully, so a record reads back as the state it
+recorded:
 
 | State value | Turtle |
 |-------------|--------|
@@ -335,16 +419,17 @@ it recorded:
 | `null` | omitted at predicate position; `lab:null` inside a collection, where dropping it would shift everything after it |
 
 Property names are minted into `prop:` (a namespace of their own, so a Property
-called `state` cannot collide with `lab:state`); a name Turtle cannot abbreviate
-is written as a full percent-encoded IRI.
+called `state` cannot collide with a term of the record vocabulary); a name Turtle
+cannot abbreviate is written as a full percent-encoded IRI.
 
 ### What configuring a container exposes
 
 Two things change when a container is configured. The lab starts making outbound
 requests to a host you named, carrying **every Property value of every Thing that
-is interacted with** - so point it at a container whose contents may be as public
-as the container's append permission is. And the resources accumulate: one per
-interaction, which a benchmark replay produces by the hundred. Neither the lab
+is interacted with**, the request that reached it - including its body - and the
+agent or address behind it, so point it at a container whose contents may be as
+public as the container's append permission is. And the resources accumulate: one
+per interaction, which a benchmark replay produces by the hundred. Neither the lab
 nor the pod prunes them.
 
 ## API Reference
@@ -512,9 +597,10 @@ WoT-Lab is a development tool, and it is built to be run on a machine you trust,
   network where everyone who can reach the port may write Thing Models to the models directory,
   start and stop Things, and overwrite their state. The API writes a Thing Description and a
   `state.json`, never a `logic.js`.
-- **`--solid-container` sends Thing state off-box.** It is unset by default; set, the lab posts every
-  interacted-with Thing's full state, unauthenticated, to the container you name - see
-  [Publishing state to a Solid pod](#publishing-state-to-a-solid-pod).
+- **`--solid-container` sends interaction provenance off-box.** It is unset by default; set, the lab
+  posts every interacted-with Thing's full state, the request that reached it - including its body -
+  and the agent or address it came from, unauthenticated, to the container you name - see
+  [Publishing provenance to a Solid pod](#publishing-provenance-to-a-solid-pod).
 
 To report a vulnerability, see [`SECURITY.md`](SECURITY.md).
 
