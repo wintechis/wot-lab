@@ -3,8 +3,14 @@ import { URL } from 'url';
 import { labPrefix } from './labApi.js';
 import { brotliCompressSync, constants as zlibConstants, gzipSync } from 'zlib';
 import * as WoT from 'wot-typescript-definitions';
-import { isAgentIri, RequestAgent } from '../solid/stateResource.js';
-import { agentHeaderName, isStateSinkEnabled, publishThingState } from '../solid/stateSink.js';
+import { isAgentIri, RequestAgent, WotOperation } from '../solid/stateResource.js';
+import { agentHeaderName, currentRunContainer, isStateSinkEnabled, publishThingState } from '../solid/stateSink.js';
+import { createLoggers } from '../utils/debug.js';
+import { isResourceId, resourceIdList, resourceMeta, resourcePrefix } from '../things/resources.js';
+import { resourceToTurtle } from '../things/resourceTurtle.js';
+import { globalState, normalizeThingId } from '../globalState.js';
+
+const { warn } = createLoggers('state');
 
 interface Endpoint {
   name: string;
@@ -110,9 +116,9 @@ function endpointsForThing(thing: WoT.ExposedThing): Endpoint[] {
   return endpoints;
 }
 
-function writeJson(res: ServerResponse, value: unknown): void {
+function writeJson(res: ServerResponse, value: unknown, status = 200): void {
   const body = JSON.stringify(value, null, 2);
-  res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+  res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8' });
   res.end(body);
 }
 
@@ -451,19 +457,85 @@ function renderThing(thing: WoT.ExposedThing, html: boolean, res: ServerResponse
 }
 
 /**
- * The WoT operation a request performed, named as the TD's `op` values are.
+ * Serve a product resource, or the list of them.
  *
- * Used to decide whether a request is an interaction worth recording at all; the
- * record itself does not carry it, so this never leaves the routing in here.
+ * `GET /products` lists what exists; `GET /products/<id>` is one product's current
+ * state. Read-only, because a product's state is a consequence: a station's recipe
+ * puts it where it is, and a client that could write it directly would be able to
+ * conjure a part out of nothing. Which is also why there is no POST — bringing a
+ * product into existence is what a station's Action does.
+ *
+ * The state comes from `globalState`, the same store a station's `vre:effects`
+ * writes through, so a read here sees what the last recipe left.
  */
-type WotOperation =
-  | 'readproperty'
-  | 'writeproperty'
-  | 'readallproperties'
-  | 'writeallproperties'
-  | 'observeproperty'
-  | 'invokeaction'
-  | 'subscribeevent';
+function serveResource(req: IncomingMessage, segments: string[], res: ServerResponse): boolean {
+  const states = globalState.things as Record<string, Record<string, unknown>>;
+  const [, id] = segments;
+
+  if (id === undefined) {
+    writeJson(res, {
+      products: resourceIdList()
+        .filter(name => states[name])
+        .map(name => ({ id: name, href: `/${resourcePrefix}/${encodeURIComponent(name)}` }))
+    });
+    return true;
+  }
+
+  const normalized = normalizeThingId(decodeSegment(id));
+  if (!isResourceId(normalized) || !states[normalized]) {
+    writeJson(res, { error: `Unknown product '${decodeSegment(id)}'` }, 404);
+    return true;
+  }
+  // Serialised through JSON to detach the Valtio proxy the state is held in, which
+  // is what the rest of the lab does when it hands state outwards.
+  const state = JSON.parse(JSON.stringify(states[normalized])) as Record<string, unknown>;
+
+  // Turtle unless the client asked for JSON: a product is data about a physical
+  // item, and what reads it also reads the records in the pod.
+  if (wantsJson(req)) {
+    writeJson(res, state);
+    return true;
+  }
+  writeTurtle(res, resourceToTurtle(normalized, state, resourceMeta(normalized), currentRunContainer()));
+  return true;
+}
+
+/**
+ * Whether the client asked for JSON specifically.
+ *
+ * Turtle is the default, so only an `Accept` that names a JSON type and does not
+ * name Turtle gets JSON — a browser sending `*\/*` gets the representation the
+ * resource is defined in.
+ */
+function wantsJson(req: IncomingMessage): boolean {
+  const accept = (req.headers.accept ?? '').toLowerCase();
+  return /application\/(ld\+)?json/.test(accept) && !accept.includes('text/turtle');
+}
+
+function writeTurtle(res: ServerResponse, body: string): void {
+  res.writeHead(200, {
+    'Content-Type': 'text/turtle; charset=utf-8',
+    'Content-Length': Buffer.byteLength(body)
+  });
+  res.end(body);
+}
+
+/**
+ * Percent-decode a path segment, falling back to the raw segment.
+ *
+ * `new URL()` neither normalises nor rejects a malformed escape, so a segment can
+ * be `%` or `%e0%a4%a`, on which `decodeURIComponent` throws. A request with a
+ * path the lab cannot decode is still a request it must answer, and one of the
+ * two callers runs inside a `finish` hook where a throw has nothing above it to
+ * catch and would take the process down.
+ */
+function decodeSegment(segment: string): string {
+  try {
+    return decodeURIComponent(segment);
+  } catch {
+    return segment;
+  }
+}
 
 /**
  * Which WoT operation, if any, a request path and method name.
@@ -669,9 +741,8 @@ async function reportInteraction(
     return;
   }
   const method = req.method ?? 'GET';
-  // The operation itself is not recorded; whether there is one decides whether
-  // this request is an interaction at all.
-  if (!operationFor(method, pathParts)) {
+  const operation = operationFor(method, pathParts);
+  if (!operation) {
     return;
   }
 
@@ -683,17 +754,27 @@ async function reportInteraction(
   const agent = agentFor(req);
   const body = hasCapturableBody(req) ? await captureRequestBody(req) : undefined;
 
+  // Wrapped because this runs from an event emitter: a throw here propagates out
+  // of `emit` into node's HTTP machinery, which neither awaits nor catches this
+  // middleware, so it would reach the process as an uncaught exception. Recording
+  // is bookkeeping, and bookkeeping must not be able to kill the lab.
   res.once('finish', () => {
-    publishThingState({
-      thingId: decodeURIComponent(pathParts[0]),
-      method,
-      requestUri: requestUrl.href,
-      body,
-      agent,
-      status: res.statusCode,
-      startedAt,
-      endedAt: new Date()
-    });
+    try {
+      publishThingState({
+        thingId: decodeSegment(pathParts[0]),
+        operation,
+        affordance: pathParts[2] ? decodeSegment(pathParts[2]) : undefined,
+        method,
+        requestUri: requestUrl.href,
+        body,
+        agent,
+        status: res.statusCode,
+        startedAt,
+        endedAt: new Date()
+      });
+    } catch (cause) {
+      warn(`Could not record the interaction: ${cause instanceof Error ? cause.message : String(cause)}`);
+    }
   });
 }
 
@@ -741,6 +822,17 @@ export function createEndpointMiddleware(
       return;
     }
 
+    // Like `_lab`, checked before the method filter and before any Thing lookup:
+    // `products` is reserved (see reservedNames), so it shadows nothing.
+    if (pathParts[0] === resourcePrefix) {
+      if (req.method === 'GET' && serveResource(req, pathParts, res)) {
+        return;
+      }
+      // A product's state is written by recipes, not by clients.
+      writeJson(res, { error: 'A product resource is read-only' }, 405);
+      return;
+    }
+
     if (req.method !== 'GET') {
       await forwardToWot();
       return;
@@ -766,7 +858,7 @@ export function createEndpointMiddleware(
       return;
     }
 
-    const thing = [...things.values()].find(candidate => thingId(candidate) === decodeURIComponent(pathParts[0]));
+    const thing = [...things.values()].find(candidate => thingId(candidate) === decodeSegment(pathParts[0]));
     if (thing && acceptsHtml(req)) {
       if (await serveFrontend(req, '/', res)) {
         return;

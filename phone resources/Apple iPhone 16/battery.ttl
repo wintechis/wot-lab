@@ -1,0 +1,59 @@
+@prefix ex:     <https://example.org/passport/> .
+@prefix schema: <https://schema.org/> .
+@prefix qudt:   <http://qudt.org/schema/qudt/> .
+@prefix unit:   <http://qudt.org/vocab/unit/> .
+
+<#battery>
+    a                       ex:Battery ;
+    schema:model            "DEMO-BATTERY-807725" ;
+    schema:mpn              "661-44796" ;
+    schema:url              <https://selfservicerepair.eu/de-DE/iphone-16/batterie> ;
+    ex:chemistry            "Li-ion" ;
+    ex:ratedCapacity        <#ratedCapacity> ;
+    ex:typicalCapacity      <#typicalCapacity> ;
+    ex:nominalVoltage       <#nominalVoltage> ;
+    ex:declaredEnergy       <#declaredEnergy> ;
+    ex:mass                 <#mass> ;
+    schema:manufacturer     <#manufacturer> .
+
+<#ratedCapacity>
+    a                       qudt:QuantityValue ;
+    qudt:numericValue       3561 ;
+    qudt:unit               unit:MilliA-HR .
+
+<#typicalCapacity>
+    a                       qudt:QuantityValue ;
+    qudt:numericValue       3669 ;
+    qudt:unit               unit:MilliA-HR .
+
+<#nominalVoltage>
+    a                       qudt:QuantityValue ;
+    qudt:numericValue       3.89 ;
+    qudt:unit               unit:V .
+
+<#declaredEnergy>
+    a                       qudt:QuantityValue ;
+    qudt:numericValue       13.84 ;
+    qudt:unit               unit:W-HR .
+
+<#mass>
+    a                       qudt:QuantityValue ;
+    qudt:numericValue       48.2 ;
+    qudt:unit               unit:GM .
+
+<#manufacturer>
+    a                       schema:Organization ;
+    schema:name             "Apple" ;
+    schema:address          <#manufacturer-address> .
+
+# Fictional example address; not supplied by smartphones.csv.
+<#manufacturer-address>
+    a                       schema:PostalAddress ;
+    schema:description      "Fictional address for demonstration only" ;
+    schema:streetAddress    "179 Fictional Road" ;
+    schema:postalCode       "50667" ;
+    schema:addressLocality  "Cologne" ;
+    schema:addressCountry   "DE" .
+# Invented demonstration value: battery_model = "DEMO-BATTERY-807725" (missing in CSV).
+# Invented demonstration value: typical_capacity_mah = "3669" (missing in CSV).
+# Invented demonstration value: battery_mass_g = "48.2" (missing in CSV).

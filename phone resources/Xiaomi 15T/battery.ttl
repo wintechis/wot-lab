@@ -1,0 +1,57 @@
+@prefix ex:     <https://example.org/passport/> .
+@prefix schema: <https://schema.org/> .
+@prefix qudt:   <http://qudt.org/schema/qudt/> .
+@prefix unit:   <http://qudt.org/vocab/unit/> .
+
+<#battery>
+    a                       ex:Battery ;
+    schema:model            "BP5J" ;
+    schema:mpn              "1330102000188B" ;
+    schema:url              <https://spare-parts.mi.com/products/xiaomi-15t-battery-bp5j-30> ;
+    ex:chemistry            "Li-ion polymer" ;
+    ex:ratedCapacity        <#ratedCapacity> ;
+    ex:typicalCapacity      <#typicalCapacity> ;
+    ex:nominalVoltage       <#nominalVoltage> ;
+    ex:declaredEnergy       <#declaredEnergy> ;
+    ex:mass                 <#mass> ;
+    schema:manufacturer     <#manufacturer> .
+
+<#ratedCapacity>
+    a                       qudt:QuantityValue ;
+    qudt:numericValue       5350 ;
+    qudt:unit               unit:MilliA-HR .
+
+<#typicalCapacity>
+    a                       qudt:QuantityValue ;
+    qudt:numericValue       5500 ;
+    qudt:unit               unit:MilliA-HR .
+
+<#nominalVoltage>
+    a                       qudt:QuantityValue ;
+    qudt:numericValue       3.93 ;
+    qudt:unit               unit:V .
+
+<#declaredEnergy>
+    a                       qudt:QuantityValue ;
+    qudt:numericValue       21.03 ;
+    qudt:unit               unit:W-HR .
+
+<#mass>
+    a                       qudt:QuantityValue ;
+    qudt:numericValue       45.3 ;
+    qudt:unit               unit:GM .
+
+<#manufacturer>
+    a                       schema:Organization ;
+    schema:name             "Xiaomi" ;
+    schema:address          <#manufacturer-address> .
+
+# Fictional example address; not supplied by smartphones.csv.
+<#manufacturer-address>
+    a                       schema:PostalAddress ;
+    schema:description      "Fictional address for demonstration only" ;
+    schema:streetAddress    "170 Example Avenue" ;
+    schema:postalCode       "04109" ;
+    schema:addressLocality  "Leipzig" ;
+    schema:addressCountry   "DE" .
+# Invented demonstration value: battery_mass_g = "45.3" (missing in CSV).

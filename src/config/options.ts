@@ -33,6 +33,14 @@ export interface LabOptions {
    */
   solidContainer?: string;
   /**
+   * A client credentials token's id and secret, from the Solid server's account
+   * page. Both or neither: with them the lab authenticates to the pod with
+   * Solid-OIDC, without them it posts as the public, which is all an open
+   * container needs.
+   */
+  solidClientId?: string;
+  solidClientSecret?: string;
+  /**
    * The request header a client names itself in, which a provenance record
    * reports as the agent. Unset means `x-agent`.
    */
@@ -114,6 +122,33 @@ function parseHeaderName(value: string): string {
   return value.toLowerCase();
 }
 
+/**
+ * Check the credentials against the container they will be sent to.
+ *
+ * Both or neither, because half a credential is a typo that would otherwise show
+ * up as a pod refusing every record. Over plaintext only on a loopback host: the
+ * secret and the token it buys travel in those requests, and a pod reached over
+ * `http://` across a network would hand both to anyone on the path.
+ */
+function checkCredentials(id: string | undefined, secret: string | undefined, container: string | undefined): void {
+  if (!id && !secret) {
+    return;
+  }
+  if (!id || !secret) {
+    throw new Error('--solid-client-id and --solid-client-secret must be given together');
+  }
+  if (!container) {
+    debug('Solid credentials given without --solid-container; nothing is posted, so they are unused');
+    return;
+  }
+  const url = new URL(container);
+  const loopback = url.hostname === 'localhost' || url.hostname === '127.0.0.1' || url.hostname === '[::1]';
+  if (url.protocol !== 'https:' && !loopback) {
+    throw new Error(`Refusing to send Solid credentials to '${url.origin}' in the clear: use https`);
+  }
+  debug(`Authenticating to ${url.origin} as client '${id}'`);
+}
+
 function flagValue(argv: string[], flag: string): string | undefined {
   const index = argv.indexOf(flag);
   if (index === -1) {
@@ -140,6 +175,8 @@ export function parseArgs(argv: string[] = process.argv): LabOptions {
   const modelsDir = flagValue(argv, '--models-dir') ?? process.env.WOT_LAB_MODELS_DIR;
   const container = flagValue(argv, '--solid-container') ?? process.env.WOT_LAB_SOLID_CONTAINER;
   const agentHeaderFlag = flagValue(argv, '--agent-header') ?? process.env.WOT_LAB_AGENT_HEADER;
+  const solidClientId = flagValue(argv, '--solid-client-id') ?? process.env.WOT_LAB_SOLID_CLIENT_ID;
+  const solidClientSecret = flagValue(argv, '--solid-client-secret') ?? process.env.WOT_LAB_SOLID_CLIENT_SECRET;
 
   const port = portFlag === undefined ? DEFAULT_PORT : Number.parseInt(portFlag, 10);
   if (!Number.isInteger(port) || port < 1 || port > 65535) {
@@ -166,10 +203,12 @@ export function parseArgs(argv: string[] = process.argv): LabOptions {
     debug(`Interaction provenance is posted to ${solidContainer}`);
   }
 
+  checkCredentials(solidClientId, solidClientSecret, solidContainer);
+
   const agentHeader = agentHeaderFlag ? parseHeaderName(agentHeaderFlag) : undefined;
   if (agentHeader) {
     debug(`Requesting agents are read from the '${agentHeader}' header`);
   }
 
-  return { things: requested, env, port, modelsDir, solidContainer, agentHeader };
+  return { things: requested, env, port, modelsDir, solidContainer, solidClientId, solidClientSecret, agentHeader };
 }

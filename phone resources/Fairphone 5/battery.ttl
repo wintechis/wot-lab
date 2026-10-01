@@ -1,0 +1,56 @@
+@prefix ex:     <https://example.org/passport/> .
+@prefix schema: <https://schema.org/> .
+@prefix qudt:   <http://qudt.org/schema/qudt/> .
+@prefix unit:   <http://qudt.org/vocab/unit/> .
+
+<#battery>
+    a                       ex:Battery ;
+    schema:model            "F5AC1" ;
+    schema:mpn              "F5BATT-1ZW-WW1" ;
+    schema:url              <https://www.fairphone.com/shop/fairphone-5-battery-259> ;
+    ex:chemistry            "Li-ion" ;
+    ex:ratedCapacity        <#ratedCapacity> ;
+    ex:typicalCapacity      <#typicalCapacity> ;
+    ex:nominalVoltage       <#nominalVoltage> ;
+    ex:declaredEnergy       <#declaredEnergy> ;
+    ex:mass                 <#mass> ;
+    schema:manufacturer     <#manufacturer> .
+
+<#ratedCapacity>
+    a                       qudt:QuantityValue ;
+    qudt:numericValue       4080 ;
+    qudt:unit               unit:MilliA-HR .
+
+<#typicalCapacity>
+    a                       qudt:QuantityValue ;
+    qudt:numericValue       4200 ;
+    qudt:unit               unit:MilliA-HR .
+
+<#nominalVoltage>
+    a                       qudt:QuantityValue ;
+    qudt:numericValue       3.87 ;
+    qudt:unit               unit:V .
+
+<#declaredEnergy>
+    a                       qudt:QuantityValue ;
+    qudt:numericValue       15.79 ;
+    qudt:unit               unit:W-HR .
+
+<#mass>
+    a                       qudt:QuantityValue ;
+    qudt:numericValue       63.7 ;
+    qudt:unit               unit:GM .
+
+<#manufacturer>
+    a                       schema:Organization ;
+    schema:name             "Fairphone" ;
+    schema:address          <#manufacturer-address> .
+
+# Fictional example address; not supplied by smartphones.csv.
+<#manufacturer-address>
+    a                       schema:PostalAddress ;
+    schema:description      "Fictional address for demonstration only" ;
+    schema:streetAddress    "195 Example Avenue" ;
+    schema:postalCode       "10115" ;
+    schema:addressLocality  "Berlin" ;
+    schema:addressCountry   "DE" .

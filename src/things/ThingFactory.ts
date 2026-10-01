@@ -1,6 +1,7 @@
 import * as WoT from 'wot-typescript-definitions';
 import { ThingHandler } from './ThingHandler.js';
 import { registerExposedThing } from './crossThing.js';
+import { isResourceModel } from './resources.js';
 import { createLoggers } from '../utils/debug.js';
 
 const { debug } = createLoggers('things');
@@ -21,6 +22,17 @@ export class ThingFactory {
     try {
       const td = handler.thingDescription;
       const instanceId = (td.id as string).replace('urn:wot:', '');
+
+      // A model that describes a workpiece rather than a device is not exposed as
+      // a Thing: there is no affordance to expose, and a servient entry would
+      // advertise an interaction surface that is only ever read. Its state is
+      // already in `globalState` — `loadThing` put it there — which is what a
+      // station's effects write through, so skipping exposure costs nothing a
+      // recipe depends on. The resource route serves it.
+      if (isResourceModel(td)) {
+        debug(`✓ Resource '${instanceId}' registered from model '${td.title}'`);
+        return { thingId: instanceId, title: (td.title as string) || instanceId, success: true };
+      }
 
       // node-wot addresses a Thing by `slugify(title)`, not by its id
       // (binding-http's `expose`), and it bakes that path into every form it

@@ -1,4 +1,5 @@
 import * as WoT from 'wot-typescript-definitions';
+import { resourcePrefix } from './resources.js';
 import { mkdir, mkdtemp, rename, rm } from 'fs/promises';
 import { dirname, join } from 'path';
 import { createLoggers } from '../utils/debug.js';
@@ -11,7 +12,7 @@ const { debug } = createLoggers('things');
  * Path segments the HTTP surface already owns. A Thing Model may not take one,
  * or its Things' URLs would be shadowed by the lab API or the built frontend.
  */
-export const reservedNames = ['_lab', 'assets'];
+export const reservedNames = ['_lab', 'assets', resourcePrefix];
 
 export type DataType = 'boolean' | 'integer' | 'number' | 'string' | 'object' | 'array';
 

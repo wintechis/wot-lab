@@ -1,0 +1,56 @@
+@prefix ex:     <https://example.org/passport/> .
+@prefix schema: <https://schema.org/> .
+@prefix qudt:   <http://qudt.org/schema/qudt/> .
+@prefix unit:   <http://qudt.org/vocab/unit/> .
+
+<#battery>
+    a                       ex:Battery ;
+    schema:model            "F6FPHN" ;
+    schema:mpn              "F6BATT-1ZW-WW1" ;
+    schema:url              <https://www.ifixit.com/en-gb/products/fairphone-6-battery> ;
+    ex:chemistry            "Li-ion" ;
+    ex:ratedCapacity        <#ratedCapacity> ;
+    ex:typicalCapacity      <#typicalCapacity> ;
+    ex:nominalVoltage       <#nominalVoltage> ;
+    ex:declaredEnergy       <#declaredEnergy> ;
+    ex:mass                 <#mass> ;
+    schema:manufacturer     <#manufacturer> .
+
+<#ratedCapacity>
+    a                       qudt:QuantityValue ;
+    qudt:numericValue       4315 ;
+    qudt:unit               unit:MilliA-HR .
+
+<#typicalCapacity>
+    a                       qudt:QuantityValue ;
+    qudt:numericValue       4415 ;
+    qudt:unit               unit:MilliA-HR .
+
+<#nominalVoltage>
+    a                       qudt:QuantityValue ;
+    qudt:numericValue       3.91 ;
+    qudt:unit               unit:V .
+
+<#declaredEnergy>
+    a                       qudt:QuantityValue ;
+    qudt:numericValue       16.87 ;
+    qudt:unit               unit:W-HR .
+
+<#mass>
+    a                       qudt:QuantityValue ;
+    qudt:numericValue       63.35 ;
+    qudt:unit               unit:GM .
+
+<#manufacturer>
+    a                       schema:Organization ;
+    schema:name             "Fairphone" ;
+    schema:address          <#manufacturer-address> .
+
+# Fictional example address; not supplied by smartphones.csv.
+<#manufacturer-address>
+    a                       schema:PostalAddress ;
+    schema:description      "Fictional address for demonstration only" ;
+    schema:streetAddress    "17 Fictional Road" ;
+    schema:postalCode       "01067" ;
+    schema:addressLocality  "Dresden" ;
+    schema:addressCountry   "DE" .

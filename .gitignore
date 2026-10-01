@@ -12,3 +12,10 @@ tools/
 
 # Editor settings are personal
 .vscode/
+
+# Credentials. Bun loads .env automatically, so the pod's client secret lives
+# here rather than in a shell history or a flag.
+.env
+.env.local
+
+tokens.md

@@ -1,0 +1,56 @@
+@prefix ex:     <https://example.org/passport/> .
+@prefix schema: <https://schema.org/> .
+@prefix qudt:   <http://qudt.org/schema/qudt/> .
+@prefix unit:   <http://qudt.org/vocab/unit/> .
+
+<#battery>
+    a                       ex:Battery ;
+    schema:model            "GVYZ7" ;
+    schema:mpn              "G949-00975-00" ;
+    schema:url              <https://www.ifixit.com/products/google-pixel-9-battery-genuine?variant=41002924408935> ;
+    ex:chemistry            "Li-ion" ;
+    ex:ratedCapacity        <#ratedCapacity> ;
+    ex:typicalCapacity      <#typicalCapacity> ;
+    ex:nominalVoltage       <#nominalVoltage> ;
+    ex:declaredEnergy       <#declaredEnergy> ;
+    ex:mass                 <#mass> ;
+    schema:manufacturer     <#manufacturer> .
+
+<#ratedCapacity>
+    a                       qudt:QuantityValue ;
+    qudt:numericValue       4558 ;
+    qudt:unit               unit:MilliA-HR .
+
+<#typicalCapacity>
+    a                       qudt:QuantityValue ;
+    qudt:numericValue       4700 ;
+    qudt:unit               unit:MilliA-HR .
+
+<#nominalVoltage>
+    a                       qudt:QuantityValue ;
+    qudt:numericValue       3.90 ;
+    qudt:unit               unit:V .
+
+<#declaredEnergy>
+    a                       qudt:QuantityValue ;
+    qudt:numericValue       17.77 ;
+    qudt:unit               unit:W-HR .
+
+<#mass>
+    a                       qudt:QuantityValue ;
+    qudt:numericValue       58.9 ;
+    qudt:unit               unit:GM .
+
+<#manufacturer>
+    a                       schema:Organization ;
+    schema:name             "Google" ;
+    schema:address          <#manufacturer-address> .
+
+# Fictional example address; not supplied by smartphones.csv.
+<#manufacturer-address>
+    a                       schema:PostalAddress ;
+    schema:description      "Fictional address for demonstration only" ;
+    schema:streetAddress    "161 Fictional Road" ;
+    schema:postalCode       "10115" ;
+    schema:addressLocality  "Berlin" ;
+    schema:addressCountry   "DE" .

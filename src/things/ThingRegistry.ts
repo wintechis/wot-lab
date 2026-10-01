@@ -7,6 +7,7 @@ import {
 } from '../globalState.js';
 import { ThingRequest } from '../config/options.js';
 import { createLoggers } from '../utils/debug.js';
+import { isResourceModel, metaFromThingDescription, registerResourceId, unregisterResourceId } from './resources.js';
 import { ThingFactory } from './ThingFactory.js';
 import {
   clearUriAliases,
@@ -25,12 +26,18 @@ import {
 
 const { debug, info, error } = createLoggers('things');
 
-/** A Thing that is currently exposed. */
+/** A Thing that is currently exposed, or a resource the lab serves. */
 export interface LabThing {
   id: string;
   /** The Thing Model it was made from — the directory in src/things/. */
   model: string;
   title: string;
+  /**
+   * What the lab serves this as. A `resource` has no affordances and no Thing
+   * Description to fetch — it is a workpiece, served at `/products/<id>` — so a
+   * client reading a listing needs to know not to look for forms.
+   */
+  kind: 'thing' | 'resource';
 }
 
 const clone = <T>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
@@ -42,6 +49,10 @@ export class ThingRegistry {
   // initial conditions between benchmark runs.
   private readonly initialStates = new Map<string, Record<string, unknown>>();
   private currentEnvironment?: string;
+  // When the current environment came up. An environment's name is the same every
+  // time a manifest is loaded, so it cannot tell two runs apart — and a record
+  // grouped only by name reads a restart as a change the next request caused.
+  private currentEnvironmentStartedAt?: Date;
   // The Things the current environment brought online, as opposed to ones added
   // beside it: the first are reproduced by `--env`, the rest by `--things`.
   private readonly environmentIds = new Set<string>();
@@ -153,12 +164,17 @@ export class ThingRegistry {
     linksOverride?: Record<string, unknown>[],
     tdOverride?: Record<string, unknown>
   ): Promise<LabThing> {
+    let resource = false;
     try {
       const handler = await loadThing(model, id, title, stateOverride, linksOverride, tdOverride);
       this.initialStates.set(id, clone(handler.currentState as Record<string, unknown>));
+      resource = isResourceModel(handler.thingDescription);
       const result = await this.factory.createThing(handler);
       if (!result.success) {
         throw new Error(result.error || 'failed to expose Thing');
+      }
+      if (resource) {
+        registerResourceId(id, metaFromThingDescription(handler.thingDescription as Record<string, unknown>));
       }
     } catch (cause) {
       // loadThing registers the Thing's state before it is exposed, so a failure
@@ -166,11 +182,12 @@ export class ThingRegistry {
       // does not exist.
       removeThingFromGlobalState(id);
       unregisterExposedThing(id);
+      unregisterResourceId(id);
       this.initialStates.delete(id);
       throw cause;
     }
 
-    const thing: LabThing = { id, model, title };
+    const thing: LabThing = { id, model, title, kind: resource ? 'resource' : 'thing' };
     this.things.set(id, thing);
     debug(`Created '${id}' from Thing Model '${model}'`);
     return thing;
@@ -249,6 +266,7 @@ export class ThingRegistry {
       throw cause;
     }
     this.currentEnvironment = manifest.name;
+    this.currentEnvironmentStartedAt = new Date();
     this.environmentIds.clear();
     for (const thing of created) {
       this.environmentIds.add(thing.id);
@@ -260,6 +278,14 @@ export class ThingRegistry {
   /** The environment currently loaded, if any. */
   environment(): string | undefined {
     return this.currentEnvironment;
+  }
+
+  /**
+   * When the current environment was brought up — what distinguishes one run of a
+   * manifest from the next, which its name does not.
+   */
+  environmentStartedAt(): Date | undefined {
+    return this.currentEnvironmentStartedAt;
   }
 
   /**
@@ -340,11 +366,13 @@ export class ThingRegistry {
     await this.servient.destroyThing(`urn:wot:${normalized}`);
     removeThingFromGlobalState(normalized);
     unregisterExposedThing(normalized);
+    unregisterResourceId(normalized);
     this.things.delete(normalized);
     this.initialStates.delete(normalized);
     // An environment is running for as long as any of its Things is.
     if (this.environmentIds.delete(normalized) && !this.environmentIds.size) {
       this.currentEnvironment = undefined;
+      this.currentEnvironmentStartedAt = undefined;
     }
     info(`Removed Thing '${normalized}'`);
     return true;
@@ -361,6 +389,7 @@ export class ThingRegistry {
     clearUriAliases();
     this.environmentIds.clear();
     this.currentEnvironment = undefined;
+    this.currentEnvironmentStartedAt = undefined;
     return removed;
   }
 }

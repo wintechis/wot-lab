@@ -1,10 +1,32 @@
 import { globalState, normalizeThingId } from '../globalState.js';
+import { labPrefix } from '../http/labApi.js';
+import { isResourceId, resourceIri } from '../things/resources.js';
 import { createLoggers } from '../utils/debug.js';
+import { SolidFetch } from './dpopFetch.js';
 import { Interaction, provenanceToTurtle, StateSnapshot, ThingState } from './stateResource.js';
 
 const { debug, warn } = createLoggers('solid');
 
 const clone = <T>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
+
+/**
+ * One Thing's state, detached, or `{}` if it cannot be.
+ *
+ * `JSON.stringify` throws on a cyclic structure, on a `BigInt`, and on nesting
+ * deep enough to exhaust the stack. A Thing's state is whatever its handler put
+ * there, so none of those is the lab's to rule out — and because every Thing is
+ * cloned for every record, an unclonable value in one Thing would otherwise make
+ * every interaction with every Thing fail. Per Thing, so the rest of a record
+ * survives one bad Thing.
+ */
+function detach(id: string, state: Record<string, unknown>): Record<string, unknown> {
+  try {
+    return clone(state);
+  } catch (cause) {
+    warn(`Could not detach the state of '${id}': ${cause instanceof Error ? cause.message : String(cause)}`);
+    return {};
+  }
+}
 
 /**
  * The header a client names itself in, lowercased as Node presents headers.
@@ -23,6 +45,15 @@ export interface StateSinkOptions {
   /** The header naming the requesting agent; `defaultAgentHeader` when unset. */
   agentHeader?: string;
   /**
+   * How the pod is reached: `createDpopFetch(...)` for a pod that wants
+   * Solid-OIDC, the global `fetch` — the default — for one that does not.
+   *
+   * Passed in rather than built here because credentials are configuration, and
+   * a sink that read them would make every unauthenticated pod carry the import
+   * and every test that posts carry a client id.
+   */
+  fetch?: SolidFetch;
+  /**
    * The URI of the environment currently running, read at post time rather than
    * captured — an environment can be started and replaced while the lab runs.
    * A URI rather than a name so a record links to the manifest a run came from;
@@ -30,6 +61,17 @@ export interface StateSinkOptions {
    */
   // eslint-disable-next-line no-unused-vars
   environmentIri?: () => string | undefined;
+  /**
+   * A name for the run currently going, when one is — the environment plus when it
+   * came up, as one path segment. Read at post time for the same reason as
+   * `environmentIri`: a run can end and another begin while the lab stays up.
+   *
+   * A name and not a URI, because where a run's records live is this module's
+   * business: it becomes a container under `container`, which is a resource that
+   * answers a GET and lists the records belonging to the run.
+   */
+  // eslint-disable-next-line no-unused-vars
+  runId?: () => string | undefined;
 }
 
 // A pod is a remote server on the far side of a network, so posting is never in
@@ -61,6 +103,64 @@ const concurrency = 4;
 
 let options: StateSinkOptions | undefined;
 let pending = 0;
+// Where in its run a state sits. Counted at enqueue time, which is the only place
+// the order is known: posts drain down `concurrency` lanes and finish out of
+// order, and the pod-minted URI a record lands on is not known until its own POST
+// returns — so a chain built from those would either be wrong or would serialise
+// the lanes it exists to keep parallel. The lab names each state instead, from the
+// run it belongs to and its place in that run, and every record says which name is
+// its own. The chain is then correct whatever order the pod sees.
+let sequence = 0;
+let sequenceRunId: string | undefined;
+// The record each next record follows, remembered as records are enqueued. The
+// lab chooses where a record goes, so this is known before the record is written
+// and nothing waits on a POST to learn it — which is what keeps the lanes below
+// parallel while still chaining every record to a URI that will resolve.
+let previousRecordIri: string | undefined;
+// One creation attempt per run, shared by every lane: four lanes starting at once
+// would otherwise race to create the same container.
+const containersMade = new Map<string, Promise<boolean>>();
+
+/**
+ * Make sure a run's container exists, once per run.
+ *
+ * `PUT` with the container type rather than `POST` with a slug, because the lab
+ * decides what a run's container is called — a pod that minted the name would
+ * hand back a URI the next record could not predict. `false` means the pod would
+ * not have it, and records fall back to the flat container: a run that is not
+ * grouped is worth more than a run that is not recorded.
+ */
+function ensureContainer(sink: StateSinkOptions, container: string): Promise<boolean> {
+  const existing = containersMade.get(container);
+  if (existing) {
+    return existing;
+  }
+  const send = sink.fetch ?? fetch;
+  const attempt = send(container, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'text/turtle',
+      Link: '<http://www.w3.org/ns/ldp#BasicContainer>; rel="type"'
+    },
+    body: '',
+    signal: AbortSignal.timeout(requestTimeoutMs)
+  }).then(async response => {
+    // 201 is a fresh container; a pod that already has it answers 200/204/205, and
+    // 409/412 is a pod saying it is already there. None of those is a failure.
+    if (response.ok || response.status === 409 || response.status === 412) {
+      debug(`Run container ${container} ready (${response.status})`);
+      return true;
+    }
+    const detail = (await response.text().catch(() => '')).slice(0, 200);
+    warn(`Pod refused the run container ${container}: ${response.status} ${response.statusText} ${detail}`);
+    return false;
+  }).catch((cause: unknown) => {
+    warn(`Could not create the run container ${container}: ${cause instanceof Error ? cause.message : String(cause)}`);
+    return false;
+  });
+  containersMade.set(container, attempt);
+  return attempt;
+}
 const lanes: Promise<void>[] = Array.from({ length: concurrency }, () => Promise.resolve());
 let nextLane = 0;
 let dropped = 0;
@@ -72,6 +172,21 @@ let dropped = 0;
 export function configureStateSink(next: StateSinkOptions): void {
   options = next;
   debug(`Posting Thing state to ${next.container}`);
+}
+
+/**
+ * The container this run's records are posted to, when records are being posted.
+ *
+ * So a resource can point at where its history is being written. The container and
+ * not a per-product trace: a record covers the whole environment, because a recipe
+ * changes several Things at once, and separating one product's history out of that
+ * is a question for a reader of the records rather than a claim this module can
+ * make. It resolves, and it lists every record of the run.
+ */
+export function currentRunContainer(): string | undefined {
+  const sink = options;
+  const runId = sink?.runId?.();
+  return sink && runId ? `${sink.container}${encodeURIComponent(runId)}/` : undefined;
 }
 
 export function isStateSinkEnabled(): boolean {
@@ -94,8 +209,32 @@ function slugFor(interaction: Interaction): string {
   return `${interaction.thingId}-${stamp}`;
 }
 
+/**
+ * What a record is called inside its run's container.
+ *
+ * The position first and zero-padded, so a listing of the container reads in the
+ * order the interactions happened — a pod sorts its members as strings, and
+ * `10` before `9` would make the one listing a reader gets for free useless. The
+ * Thing after it, because that is what a reader scanning the listing is looking
+ * for. Position and not a timestamp, because two interactions can finish in the
+ * same millisecond and a name that collides would have one record overwrite the
+ * other.
+ */
+function recordName(position: number, thingId: string): string {
+  return `${String(position).padStart(8, '0')}-${encodeURIComponent(thingId)}`;
+}
+
+/**
+ * Where the entity behind an id is served.
+ *
+ * A Thing is served at the lab's root, a resource under the resource prefix. The
+ * record has to say which, because a reader follows these: a product named as
+ * though it were a Thing would point at a URI the lab does not answer.
+ */
 function thingIri(sink: StateSinkOptions, id: string): string {
-  return `${sink.thingBaseUrl}/${encodeURIComponent(id)}`;
+  return isResourceId(id)
+    ? resourceIri(sink.thingBaseUrl, id)
+    : `${sink.thingBaseUrl}/${encodeURIComponent(id)}`;
 }
 
 
@@ -113,23 +252,45 @@ function everyThingState(sink: StateSinkOptions): ThingState[] {
   return Object.keys(things).map(id => ({
     id,
     iri: thingIri(sink, id),
-    state: clone(things[id])
+    state: detach(id, things[id])
   }));
 }
 
-async function post(snapshot: StateSnapshot, container: string): Promise<void> {
+/**
+ * Write one record to the pod.
+ *
+ * `PUT` to a URI this module chose when the snapshot was enqueued, rather than
+ * `POST` to a container that mints one. The record has to name the record before
+ * it, and a pod-minted name is not known until its own POST returns — so a chain
+ * built from those would either be wrong or would make every write wait for the
+ * one before it, which is the parallelism the lanes exist for. Choosing the name
+ * costs nothing and the link resolves.
+ *
+ * A pod that would not have the run's container is not an error worth losing a
+ * record over: `target` falls back to the flat container, posted the old way.
+ */
+async function post(snapshot: StateSnapshot, sink: StateSinkOptions, target?: string): Promise<void> {
   const body = provenanceToTurtle(snapshot);
-  const response = await fetch(container, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'text/turtle',
-      // Asks the container for a plain RDF source rather than a new container.
-      Link: '<http://www.w3.org/ns/ldp#Resource>; rel="type"',
-      Slug: slugFor(snapshot.interaction)
-    },
-    body,
-    signal: AbortSignal.timeout(requestTimeoutMs)
-  });
+  const send = sink.fetch ?? fetch;
+  const grouped = target !== undefined && await ensureContainer(sink, containerOf(target));
+  const response = grouped
+    ? await send(target as string, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'text/turtle' },
+      body,
+      signal: AbortSignal.timeout(requestTimeoutMs)
+    })
+    : await send(sink.container, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'text/turtle',
+        // Asks the container for a plain RDF source rather than a new container.
+        Link: '<http://www.w3.org/ns/ldp#Resource>; rel="type"',
+        Slug: slugFor(snapshot.interaction)
+      },
+      body,
+      signal: AbortSignal.timeout(requestTimeoutMs)
+    });
 
   if (!response.ok) {
     const detail = (await response.text().catch(() => '')).slice(0, 200);
@@ -137,18 +298,25 @@ async function post(snapshot: StateSnapshot, container: string): Promise<void> {
     return;
   }
 
-  // 201 carries the URI the pod minted; a container that answers 200/204 gives
-  // none, and there is nothing to report then.
-  const location = response.headers.get('location');
-  debug(`Posted state of '${snapshot.interaction.thingId}'${location ? ` as ${new URL(location, container).href}` : ''}`);
+  // Where the record went: the URI this module chose, or — for the flat fallback —
+  // the one the pod minted, which a container answering 200/204 does not report.
+  const location = grouped ? target : response.headers.get('location');
+  debug(`Posted state of '${snapshot.interaction.thingId}'${location ? ` as ${new URL(location, sink.container).href}` : ''}`);
+}
+
+/** The container a record URI sits in — everything up to its last slash. */
+function containerOf(recordIri: string): string {
+  return recordIri.slice(0, recordIri.lastIndexOf('/') + 1);
 }
 
 /**
  * Publish the provenance of one WoT interaction.
  *
  * Returns immediately: the caller is an HTTP handler, and a pod's latency is not
- * the client's problem. Nothing here can throw into the request — a pod that is
- * down or slow costs a warning and nothing else.
+ * the client's problem. A pod that is down or slow costs a warning and nothing
+ * else, and an unclonable Thing state costs that Thing's members. The caller
+ * guards the call as well: this runs from a `finish` hook, where a throw would
+ * reach the process rather than the request.
  */
 export function publishThingState(interaction: Interaction): void {
   const sink = options;
@@ -175,9 +343,34 @@ export function publishThingState(interaction: Interaction): void {
     return;
   }
 
+  const runId = sink.runId?.();
+  // A run of its own restarts the count and breaks the chain: a position is a
+  // position within a run, and carrying either across runs would chain a state to
+  // a state of a different run.
+  if (runId !== sequenceRunId) {
+    sequenceRunId = runId;
+    sequence = 0;
+    previousRecordIri = undefined;
+  }
+  const position = sequence;
+  sequence += 1;
+
+  // Where this record will go, decided now so the next one can point at it.
+  const runContainer = runId ? `${sink.container}${encodeURIComponent(runId)}/` : undefined;
+  const recordIri = runContainer ? `${runContainer}${recordName(position, id)}` : undefined;
+  const previous = previousRecordIri;
+  if (recordIri) {
+    previousRecordIri = recordIri;
+  }
+
   const snapshot: StateSnapshot = {
     interaction: { ...interaction, thingId: id },
+    thingIri: thingIri(sink, id),
     environmentIri: sink.environmentIri?.(),
+    runIri: runContainer,
+    // The `#state` of the record before this one, which is a URI that resolves:
+    // the lab chose it, and that record is being written to it.
+    previousStateIri: previous ? `${previous}#state` : undefined,
     // Read now, not when the POST runs: by then the next interaction may have
     // changed it, and this resource claims to be the state *this* request left.
     // Serialising through JSON also flattens the Valtio proxies the Things' own
@@ -189,7 +382,7 @@ export function publishThingState(interaction: Interaction): void {
   const lane = nextLane;
   nextLane = (nextLane + 1) % concurrency;
   lanes[lane] = lanes[lane]
-    .then(() => post(snapshot, sink.container))
+    .then(() => post(snapshot, sink, recordIri))
     .catch(cause => {
       const message = cause instanceof Error ? cause.message : String(cause);
       warn(`Failed to post state of '${id}' to ${sink.container}: ${message}`);

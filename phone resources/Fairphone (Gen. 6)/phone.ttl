@@ -1,0 +1,19 @@
+@prefix ex:     <https://example.org/passport/> .
+@prefix schema: <https://schema.org/> .
+@prefix qudt:   <http://qudt.org/schema/qudt/> .
+@prefix unit:   <http://qudt.org/vocab/unit/> .
+
+<#phone>
+    a                       ex:Smartphone ;
+    schema:name             "Fairphone (Gen. 6)" ;
+    schema:brand            "Fairphone" ;
+    schema:model            "FP6" ;
+    schema:subjectOf        <https://eprel.ec.europa.eu/qr/2372958> ;
+    ex:batteryEndurance     <#batteryEndurance> ;
+    ex:battery              <battery.ttl#battery> ;
+    ex:trace                <trace.ttl#trace> .
+
+<#batteryEndurance>
+    a                       qudt:QuantityValue ;
+    qudt:numericValue       53.87 ;
+    qudt:unit               unit:HR .

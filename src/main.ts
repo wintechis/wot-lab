@@ -9,6 +9,7 @@ import { createLoggers } from './utils/debug.js';
 import { createEndpointMiddleware, LabRequestHandler } from './http/endpointMiddleware.js';
 import { createLabApi, labPrefix } from './http/labApi.js';
 import { configureStateSink, flushStateSink } from './solid/stateSink.js';
+import { createDpopFetch } from './solid/dpopFetch.js';
 
 if (!process.env.DEBUG) {
   // The Solid sink's warnings too: a dropped or refused provenance record is
@@ -32,6 +33,11 @@ const usage = `wot-lab
                     every WoT interaction to — the request, the activity and the
                     Thing state it left behind
                     (or WOT_LAB_SOLID_CONTAINER). Unset posts nothing.
+  --solid-client-id <id> --solid-client-secret <secret>
+                    A client credentials token from the Solid server's account
+                    page (or WOT_LAB_SOLID_CLIENT_ID / _SECRET). Given, records
+                    are posted with Solid-OIDC as that token's WebID; unset, they
+                    are posted as the public.
   --agent-header <name>
                     The request header a client names itself in, reported as the
                     activity's agent (default x-agent, or WOT_LAB_AGENT_HEADER).
@@ -76,14 +82,39 @@ labRef.current = createLabApi(registry);
 // unconfigured without a container, so the default lab makes no outbound requests.
 if (options.solidContainer) {
   const baseUrl = `http://localhost:${options.port}`;
+  const environmentUri = (): string | undefined => {
+    const environment = registry.environment();
+    return environment
+      ? `${baseUrl}/${labPrefix}/environments/${encodeURIComponent(environment)}`
+      : undefined;
+  };
+  // The pod's own origin issues the tokens: a Community Solid Server is the
+  // identity provider for the pods it serves. Unset credentials leave this
+  // undefined and the sink falls back to a plain `fetch`, which is what an open
+  // container wants.
+  const podFetch = options.solidClientId && options.solidClientSecret
+    ? createDpopFetch({
+      server: new URL(options.solidContainer).origin,
+      clientId: options.solidClientId,
+      clientSecret: options.solidClientSecret
+    })
+    : undefined;
   configureStateSink({
     container: options.solidContainer,
     thingBaseUrl: baseUrl,
+    fetch: podFetch,
     agentHeader: options.agentHeader,
-    environmentIri: () => {
+    environmentIri: () => environmentUri(),
+    // The run rather than the environment: the same manifest loaded twice is the
+    // same environment, so records grouped only by that read two runs as one
+    // sequence — and a restart as a change the next request caused. A name, which
+    // the sink turns into the container a run's records live in; the environment
+    // and the moment it came up are what tell two runs of one manifest apart.
+    runId: () => {
       const environment = registry.environment();
-      return environment
-        ? `${baseUrl}/${labPrefix}/environments/${encodeURIComponent(environment)}`
+      const startedAt = registry.environmentStartedAt();
+      return environment && startedAt
+        ? `${environment}-${startedAt.toISOString().replace(/[:.]/g, '-')}`
         : undefined;
     }
   });
@@ -131,7 +162,8 @@ if (options.modelsDir) {
   debug(`- Authored models:     ${options.modelsDir}`);
 }
 if (options.solidContainer) {
-  debug(`- Provenance records:  POST ${options.solidContainer}`);
+  const as = options.solidClientId ? ` (as client '${options.solidClientId}')` : ' (unauthenticated)';
+  debug(`- Provenance records:  POST ${options.solidContainer}${as}`);
 }
 
 // Graceful shutdown
