@@ -21,7 +21,7 @@
  * Every term is someone else's: PROV-O for who did what and when, PROV-DICTIONARY
  * for a state's Properties by name, the W3C HTTP vocabulary and Content-in-RDF for
  * the request and its response, the WoT Thing Description and hypermedia
- * vocabularies for the operation and the affordance a request named, FOAF and DCMI
+ * vocabularies for the operation a request performed, FOAF and DCMI
  * Terms for identity and names. The lab mints no vocabulary of its own, so a
  * record needs no documentation but the specifications it is written in — with the
  * one caveat that reading *which* Thing a request addressed still means knowing
@@ -47,6 +47,12 @@
  * identity in every record, so an unchanged structured value would read as changed
  * in every diff. It also flattens the document, which a nested value did not — the
  * indentation alone made a deep value quadratic in its own depth.
+ *
+ * A record says each fact once. Where the vocabulary has an individual for a value
+ * — `httpm:POST`, `httpsc:OK` — the individual is written and its name or code is
+ * not; a time the activity already carries is not repeated on what it generated; a
+ * class is not stated beside a subclass of it. A record that said both would only
+ * be larger, and a pod holds one per interaction.
  */
 import { createHash } from 'crypto';
 
@@ -121,31 +127,6 @@ const operationTypes: Record<WotOperation, string> = {
 };
 
 /**
- * Which kind of affordance the named one is — the operation already says it, and
- * the `all` operations name none, which is why two of these are undefined.
- */
-const affordanceClasses: Record<WotOperation, string | undefined> = {
-  readproperty: 'td:PropertyAffordance',
-  writeproperty: 'td:PropertyAffordance',
-  observeproperty: 'td:PropertyAffordance',
-  invokeaction: 'td:ActionAffordance',
-  subscribeevent: 'td:EventAffordance',
-  readallproperties: undefined,
-  writeallproperties: undefined
-};
-
-/** The property relating a Thing to an affordance of that kind. */
-const affordanceProperties: Record<WotOperation, string> = {
-  readproperty: 'td:hasPropertyAffordance',
-  writeproperty: 'td:hasPropertyAffordance',
-  observeproperty: 'td:hasPropertyAffordance',
-  invokeaction: 'td:hasActionAffordance',
-  subscribeevent: 'td:hasEventAffordance',
-  readallproperties: 'td:hasPropertyAffordance',
-  writeallproperties: 'td:hasPropertyAffordance'
-};
-
-/**
  * The status-code individuals of the HTTP-in-RDF vocabulary, by code. From the
  * vocabulary itself rather than a handful the lab happens to answer with, so a
  * status added later still links instead of silently dropping to the value alone.
@@ -189,8 +170,6 @@ export interface Interaction {
   /** The id the Thing is exposed under. */
   thingId: string;
   operation: WotOperation;
-  /** The Property, Action or Event named in the path; absent for the `all` operations. */
-  affordance?: string;
   method: string;
   /** The absolute URI the client addressed. */
   requestUri: string;
@@ -244,6 +223,8 @@ export interface StateSnapshot {
   environmentIri?: string;
   /** Every running Thing's state after the interaction was handled, in creation order. */
   things: ThingState[];
+  /** Where the pod holds the products the interaction produced, if it produced any it keeps. */
+  generatedProducts?: string[];
 }
 
 // eslint-disable-next-line no-control-regex
@@ -323,9 +304,9 @@ interface ValueScope {
  * The subject a value of this digest is written under.
  *
  * A fragment of the record, which makes it a URI the record itself defines: it
- * resolves, because resolving it means fetching this record. The digest is also
- * written as a literal, and that — not the URI — is what makes two records
- * comparable, since the same fragment in two records is two URIs.
+ * resolves, because resolving it means fetching this record. Two records holding
+ * the same value name it by the same fragment, which is what makes them
+ * comparable.
  */
 function valueSubject(digest: string): string {
   return `<#value-${digest}>`;
@@ -372,15 +353,11 @@ function valueEntity(value: unknown, scope: ValueScope, depth = 0): string | und
     scope.subjects.set(name, []);
   }
 
-  const body = Array.isArray(value)
+  // The digest is not repeated as a literal: it is the fragment the subject is
+  // named by, which is the same in every record that holds this value.
+  const lines = Array.isArray(value)
     ? arrayLines(value, scope, depth)
     : dictionaryLines(value as Record<string, unknown>, scope, depth);
-  // The digest as a literal, so a reader comparing this value across records joins
-  // on something that is the same in both. The fragment URI is not: it resolves
-  // against whichever record it is written in.
-  const lines = digest === undefined
-    ? body
-    : [body[0], `dcterms:identifier "${digest}"`, ...body.slice(1)];
 
   if (name === undefined) {
     return `[ ${lines.join(' ;\n      ')} ]`;
@@ -394,7 +371,7 @@ function arrayLines(value: unknown[], scope: ValueScope, depth: number): string[
   if (value.length === 0) {
     // `prov:EmptyCollection` says "a collection without members", which is what an
     // empty array is; a bare `prov:Collection` would only decline to list them.
-    return [`a prov:Entity, prov:EmptyCollection`];
+    return [`a prov:EmptyCollection`];
   }
   // `Array.from` rather than `map`, which skips holes: a hole would shift every
   // element after it, and the placeholder exists precisely so it cannot. An
@@ -402,15 +379,15 @@ function arrayLines(value: unknown[], scope: ValueScope, depth: number): string[
   const items = Array.from(value, item => valueEntity(item, scope, depth + 1) ?? '[ a prov:Entity ]');
   // `rdf:value` rather than `prov:value`, which is a `DatatypeProperty` and so
   // cannot carry a list.
-  return [`a prov:Entity, prov:Collection`, `rdf:value (\n        ${items.join('\n        ')}\n      )`];
+  return [`a prov:Collection`, `rdf:value (\n        ${items.join('\n        ')}\n      )`];
 }
 
 /** The statements of a structured value: a PROV dictionary of its members. */
 function dictionaryLines(value: Record<string, unknown>, scope: ValueScope, depth: number): string[] {
   const members = pairNodes(value, scope, depth + 1);
   return members.length
-    ? [`a prov:Entity, prov:Dictionary`, `prov:hadDictionaryMember\n        ${members.join(' ,\n        ')}`]
-    : [`a prov:Entity, prov:EmptyDictionary`];
+    ? [`a prov:Dictionary`, `prov:hadDictionaryMember\n        ${members.join(' ,\n        ')}`]
+    : [`a prov:EmptyDictionary`];
 }
 
 /**
@@ -507,11 +484,10 @@ const httpMethods = new Set(['CONNECT', 'DELETE', 'GET', 'HEAD', 'OPTIONS', 'PAT
 const methodToken = /^[A-Za-z]+$/;
 
 /**
- * The method, as a vocabulary individual where one exists and as a name always.
+ * The method, as a vocabulary individual where one exists and as a name otherwise.
  *
- * Both, because they are read by different readers: `htv:mthd` is what the HTTP
- * vocabulary models, and `htv:methodName` is what a Thing Description writes in
- * a form — so a record joins against a TD only through the latter.
+ * Not both: `httpm:POST` already says the method is named POST, so a name beside
+ * it is the same fact twice.
  */
 function methodStatement(method: string): string {
   const name = method.toUpperCase();
@@ -519,7 +495,7 @@ function methodStatement(method: string): string {
   // one that is a token still only has an individual if `httpm:` defines it — but
   // either way the method itself is recorded, because the name is the fact.
   return methodToken.test(name) && httpMethods.has(name)
-    ? `    htv:mthd httpm:${name} ;\n    htv:methodName "${name}"`
+    ? `    htv:mthd httpm:${name}`
     : `    htv:methodName "${escapeLiteral(name)}"`;
 }
 
@@ -540,7 +516,7 @@ function thingStateSubject(id: string): string {
  * Render one interaction and the state it left as a Turtle document.
  *
  * Everything hangs off hash subjects of the resource itself (`<#request>`,
- * `<#response>`, `<#interaction>`, `<#form>`, `<#affordance>`, `<#state>`, one
+ * `<#response>`, `<#interaction>`, `<#form>`, `<#state>`, one
  * `<#state-‹id›>` per Thing and one `<#value-‹digest›>` per structured value), so
  * the pod mints one URI and every subject comes with it — no counter, and no
  * identifier the lab would have to keep unique across restarts.
@@ -552,7 +528,6 @@ function thingStateSubject(id: string): string {
 export function provenanceToTurtle(snapshot: StateSnapshot): string {
   const { interaction } = snapshot;
   const statusCode = statusCodes[interaction.status];
-  const affordanceClass = affordanceClasses[interaction.operation];
   // Hoisted out of the states as they are walked, then written after them.
   const scope: ValueScope = { subjects: new Map() };
   const thingStates = snapshot.things.map(thing => ({
@@ -582,10 +557,10 @@ export function provenanceToTurtle(snapshot: StateSnapshot): string {
     ...vocabularies.map(([prefix, namespace]) =>
       `@prefix ${`${prefix}:`.padEnd(12)}<${namespace}> .`),
 
-    // The record about itself, so a container can be filtered to its records.
+    // The record about itself, so a container can be filtered to its records. No
+    // time of its own: it is the activity's end, which the activity carries.
     ...subject(`<>`,
-      `    a prov:Bundle`,
-      `    prov:generatedAtTime "${timestamp(interaction.endedAt)}"^^xsd:dateTime`),
+      `    a prov:Bundle`),
 
     ...subject(`<#request>`,
       `    a prov:Entity, htv:Request`,
@@ -608,38 +583,20 @@ export function provenanceToTurtle(snapshot: StateSnapshot): string {
 
     // The response the activity produced, rather than a status on the activity
     // itself: the HTTP vocabulary models a response, and the code it carries is
-    // that response's, not the handling's.
+    // that response's, not the handling's. The code's individual where the
+    // vocabulary has one, its value only where it has none.
     ...subject(`<#response>`,
       `    a prov:Entity, htv:Response`,
-      Number.isInteger(interaction.status) ? `    htv:statusCodeValue ${interaction.status}` : undefined,
-      statusCode ? `    htv:sc httpsc:${statusCode}` : undefined),
+      statusCode
+        ? `    htv:sc httpsc:${statusCode}`
+        : Number.isInteger(interaction.status) ? `    htv:statusCodeValue ${interaction.status}` : undefined),
 
     // `hctl:` and not `td:`: a Form is a hypermedia control, and the Thing
-    // Description vocabulary has no Form of its own. `hctl:hasTarget` is a
-    // `DatatypeProperty`, so the target is the literal its range asks for.
+    // Description vocabulary has no Form of its own. Its target and method are the
+    // request's, which says them already.
     ...subject(`<#form>`,
       `    a hctl:Form`,
-      `    hctl:hasOperationType ${operationTypes[interaction.operation]}`,
-      `    hctl:hasTarget "${escapeLiteral(interaction.requestUri)}"`,
-      `    htv:methodName "${escapeLiteral(interaction.method.toUpperCase())}"`),
-
-    // The affordance the form belongs to, when the request named one: the `all`
-    // operations address the Thing itself and name none. `td:name` goes here and
-    // not on the form or on a value, because an affordance is what it names.
-    ...(interaction.affordance && affordanceClass
-      ? subject(`<#affordance>`,
-        `    a ${affordanceClass}`,
-        `    td:name "${escapeLiteral(interaction.affordance)}"`,
-        `    td:hasForm <#form>`)
-      : []),
-
-    // The affordance hangs off the Thing that offers it, which is how a Thing
-    // Description relates the two — and what makes it reachable from the request
-    // rather than a subject nothing points at.
-    ...(interaction.affordance && affordanceClass && iriTerm(snapshot.thingIri)
-      ? subject(iriTerm(snapshot.thingIri) as string,
-        `    ${affordanceProperties[interaction.operation]} <#affordance>`)
-      : []),
+      `    hctl:hasOperationType ${operationTypes[interaction.operation]}`),
 
     ...subject(`<#interaction>`,
       `    a prov:Activity`,
@@ -649,15 +606,18 @@ export function provenanceToTurtle(snapshot: StateSnapshot): string {
       // the URI and the body, which is everything this record knows about what
       // arrived.
       `    prov:used <#request>`,
-      `    prov:generated <#response>, <#state>`,
+      // A product a station's Action produced is something this activity generated
+      // too; it is named by its copy in the pod, whose state the record does not carry.
+      `    prov:generated ${['<#response>', '<#state>', ...(snapshot.generatedProducts ?? []).flatMap(iri => iriTerm(iri) ?? [])].join(', ')}`,
       `    prov:startedAtTime "${timestamp(interaction.startedAt)}"^^xsd:dateTime`,
       `    prov:endedAtTime   "${timestamp(interaction.endedAt)}"^^xsd:dateTime`),
 
     // A `prov:Collection` so the members are reachable as what they are — the
     // parts of one state — rather than only through the activity that made them.
+    // No time of its own: it was generated when the activity ended, which the
+    // activity says.
     ...subject(`<#state>`,
-      `    a prov:Entity, prov:Collection`,
-      `    prov:generatedAtTime "${timestamp(interaction.endedAt)}"^^xsd:dateTime`,
+      `    a prov:Collection`,
       // The run first: the container holding this run's records, which is what
       // separates two runs of one manifest. The environment after it, because a
       // reader asking which scenario this was wants the manifest, not the run.
@@ -678,10 +638,12 @@ export function provenanceToTurtle(snapshot: StateSnapshot): string {
     // record found it. A `prov:Dictionary`, because a state is its Properties by
     // name and that is the structure PROV has for exactly that.
     ...uniqueStates.flatMap(({ thing, members }) =>
+      // The id only where the Thing has no IRI to say it: the IRI ends in it.
       subject(thingStateSubject(thing.id),
-        `    a prov:Entity, prov:Dictionary`,
-        iriTerm(thing.iri) ? `    prov:specializationOf ${iriTerm(thing.iri)}` : undefined,
-        `    dcterms:identifier "${escapeLiteral(thing.id)}"`,
+        `    a prov:Dictionary`,
+        iriTerm(thing.iri)
+          ? `    prov:specializationOf ${iriTerm(thing.iri)}`
+          : `    dcterms:identifier "${escapeLiteral(thing.id)}"`,
         members.length ? `    prov:hadDictionaryMember\n        ${members.join(' ,\n        ')}` : undefined)),
 
     // The structured values the states referred to, written once however many

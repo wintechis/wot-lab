@@ -1,6 +1,7 @@
 import { globalState, normalizeThingId } from '../globalState.js';
 import { labPrefix } from '../http/labApi.js';
-import { isResourceId, resourceIri } from '../things/resources.js';
+import { batteryClass, linkedProducts, productTurtle } from '../things/resourceTurtle.js';
+import { isResourceId, resourceMeta } from '../things/resources.js';
 import { createLoggers } from '../utils/debug.js';
 import { SolidFetch } from './dpopFetch.js';
 import { Interaction, provenanceToTurtle, StateSnapshot, ThingState } from './stateResource.js';
@@ -38,7 +39,11 @@ function detach(id: string, state: Record<string, unknown>): Record<string, unkn
 export const defaultAgentHeader = 'x-agent';
 
 export interface StateSinkOptions {
-  /** The LDP container every record is POSTed to. Always ends in a slash. */
+  /**
+   * The LDP container the lab writes to. Always ends in a slash. It holds two
+   * containers of its own: `traces/`, for the record of every interaction, and
+   * `products/`, for the finished products and the products they link to.
+   */
   container: string;
   /** Where this lab's Things are served from, e.g. `http://localhost:8081`. */
   thingBaseUrl: string;
@@ -161,6 +166,34 @@ function ensureContainer(sink: StateSinkOptions, container: string): Promise<boo
   containersMade.set(container, attempt);
   return attempt;
 }
+/** Where the records of every interaction go, one container per run inside. */
+function tracesContainer(sink: StateSinkOptions): string {
+  return `${sink.container}traces/`;
+}
+
+/** Where finished products and the products they link to go, one container per run inside. */
+function productsContainer(sink: StateSinkOptions): string {
+  return `${sink.container}products/`;
+}
+
+/**
+ * The class a finished product carries. Producing one is what puts it, and every
+ * product its representation links, into the pod — a copy of the phone together
+ * with its battery and parts, whose relative links resolve among themselves.
+ */
+const finishedProductClass = 'ex:Smartphone';
+
+/**
+ * Whether a product an Action generated is one the pod gets a copy of: a finished
+ * product, or a battery, which a finished product links. Every other generated
+ * product is an intermediate that ends up consumed and is never written, so a
+ * record naming its pod URI would point at nothing.
+ */
+function isSavedProduct(id: string): boolean {
+  const types = resourceMeta(id)?.types ?? [];
+  return types.includes(finishedProductClass) || types.includes(batteryClass);
+}
+
 const lanes: Promise<void>[] = Array.from({ length: concurrency }, () => Promise.resolve());
 let nextLane = 0;
 let dropped = 0;
@@ -171,7 +204,10 @@ let dropped = 0;
  */
 export function configureStateSink(next: StateSinkOptions): void {
   options = next;
-  debug(`Posting Thing state to ${next.container}`);
+  // Both up front, so the layout is there to see before the first record is.
+  void ensureContainer(next, tracesContainer(next));
+  void ensureContainer(next, productsContainer(next));
+  debug(`Posting Thing state to ${tracesContainer(next)}, products to ${productsContainer(next)}`);
 }
 
 /**
@@ -186,7 +222,7 @@ export function configureStateSink(next: StateSinkOptions): void {
 export function currentRunContainer(): string | undefined {
   const sink = options;
   const runId = sink?.runId?.();
-  return sink && runId ? `${sink.container}${encodeURIComponent(runId)}/` : undefined;
+  return sink && runId ? `${tracesContainer(sink)}${encodeURIComponent(runId)}/` : undefined;
 }
 
 export function isStateSinkEnabled(): boolean {
@@ -224,19 +260,22 @@ function recordName(position: number, thingId: string): string {
   return `${String(position).padStart(8, '0')}-${encodeURIComponent(thingId)}`;
 }
 
-/**
- * Where the entity behind an id is served.
- *
- * A Thing is served at the lab's root, a resource under the resource prefix. The
- * record has to say which, because a reader follows these: a product named as
- * though it were a Thing would point at a URI the lab does not answer.
- */
+/** Where a Thing is served: at the lab's root, under its id. */
 function thingIri(sink: StateSinkOptions, id: string): string {
-  return isResourceId(id)
-    ? resourceIri(sink.thingBaseUrl, id)
-    : `${sink.thingBaseUrl}/${encodeURIComponent(id)}`;
+  return `${sink.thingBaseUrl}/${encodeURIComponent(id)}`;
 }
 
+/**
+ * The Properties a record leaves out: a station's service and the shopfloor's
+ * recipe book and service list. They describe how the factory is set up, not what
+ * an interaction did to it — no Action changes them — so recording them in every
+ * record would repeat the same setup once per interaction.
+ */
+const unrecordedProperties = new Set(['recipes', 'service', 'services']);
+
+function recordedState(state: Record<string, unknown>): Record<string, unknown> {
+  return Object.fromEntries(Object.entries(state).filter(([name]) => !unrecordedProperties.has(name)));
+}
 
 /**
  * Every running Thing's state, in creation order.
@@ -246,14 +285,29 @@ function thingIri(sink: StateSinkOptions, id: string): string {
  * changes others, and those changes belong to the interaction that caused them.
  * The cost is one record's size — a record now grows with the environment — and
  * it is paid once per interaction, off the request's path.
+ *
+ * Things only. A product is a resource with a representation of its own, which
+ * links the records of the run that made it; its state is not repeated in them.
  */
 function everyThingState(sink: StateSinkOptions): ThingState[] {
   const things = globalState.things as Record<string, Record<string, unknown>>;
-  return Object.keys(things).map(id => ({
+  return Object.keys(things).filter(id => !isResourceId(id)).map(id => ({
     id,
     iri: thingIri(sink, id),
-    state: detach(id, things[id])
+    state: recordedState(detach(id, things[id]))
   }));
+}
+
+/**
+ * The products that exist right now: produced, or a raw material, and not yet
+ * consumed — which a product's own `state` says by being `initialState`.
+ *
+ * Taken when a request arrives and again when it finishes, so a record can name
+ * the products the interaction brought into existence.
+ */
+export function existingProducts(): Set<string> {
+  const things = globalState.things as Record<string, Record<string, unknown>>;
+  return new Set(Object.keys(things).filter(id => isResourceId(id) && things[id].state === 'initialState'));
 }
 
 /**
@@ -272,7 +326,9 @@ function everyThingState(sink: StateSinkOptions): ThingState[] {
 async function post(snapshot: StateSnapshot, sink: StateSinkOptions, target?: string): Promise<void> {
   const body = provenanceToTurtle(snapshot);
   const send = sink.fetch ?? fetch;
-  const grouped = target !== undefined && await ensureContainer(sink, containerOf(target));
+  const grouped = target !== undefined
+    && await ensureContainer(sink, tracesContainer(sink))
+    && await ensureContainer(sink, containerOf(target));
   const response = grouped
     ? await send(target as string, {
       method: 'PUT',
@@ -280,7 +336,7 @@ async function post(snapshot: StateSnapshot, sink: StateSinkOptions, target?: st
       body,
       signal: AbortSignal.timeout(requestTimeoutMs)
     })
-    : await send(sink.container, {
+    : await send(tracesContainer(sink), {
       method: 'POST',
       headers: {
         'Content-Type': 'text/turtle',
@@ -301,7 +357,7 @@ async function post(snapshot: StateSnapshot, sink: StateSinkOptions, target?: st
   // Where the record went: the URI this module chose, or — for the flat fallback —
   // the one the pod minted, which a container answering 200/204 does not report.
   const location = grouped ? target : response.headers.get('location');
-  debug(`Posted state of '${snapshot.interaction.thingId}'${location ? ` as ${new URL(location, sink.container).href}` : ''}`);
+  debug(`Posted state of '${snapshot.interaction.thingId}'${location ? ` as ${new URL(location, tracesContainer(sink)).href}` : ''}`);
 }
 
 /** The container a record URI sits in — everything up to its last slash. */
@@ -317,8 +373,11 @@ function containerOf(recordIri: string): string {
  * else, and an unclonable Thing state costs that Thing's members. The caller
  * guards the call as well: this runs from a `finish` hook, where a throw would
  * reach the process rather than the request.
+ *
+ * `productsBefore` is `existingProducts()` as the request arrived; a product that
+ * exists now and did not then is one this interaction produced.
  */
-export function publishThingState(interaction: Interaction): void {
+export function publishThingState(interaction: Interaction, productsBefore?: Set<string>): void {
   const sink = options;
   if (!sink) {
     return;
@@ -356,12 +415,19 @@ export function publishThingState(interaction: Interaction): void {
   sequence += 1;
 
   // Where this record will go, decided now so the next one can point at it.
-  const runContainer = runId ? `${sink.container}${encodeURIComponent(runId)}/` : undefined;
+  const runContainer = runId ? `${tracesContainer(sink)}${encodeURIComponent(runId)}/` : undefined;
+  const productsRun = runId ? `${productsContainer(sink)}${encodeURIComponent(runId)}/` : productsContainer(sink);
   const recordIri = runContainer ? `${runContainer}${recordName(position, id)}` : undefined;
   const previous = previousRecordIri;
   if (recordIri) {
     previousRecordIri = recordIri;
   }
+
+  // The products that exist now and did not when the request arrived: what this
+  // interaction produced.
+  const generated = productsBefore
+    ? [...existingProducts()].filter(product => !productsBefore.has(product))
+    : [];
 
   const snapshot: StateSnapshot = {
     interaction: { ...interaction, thingId: id },
@@ -375,17 +441,63 @@ export function publishThingState(interaction: Interaction): void {
     // changed it, and this resource claims to be the state *this* request left.
     // Serialising through JSON also flattens the Valtio proxies the Things' own
     // handlers serve, which is what the rest of the lab does to detach state.
-    things: everyThingState(sink)
+    things: everyThingState(sink),
+    // Named where the pod will hold them. A battery is written only once a phone
+    // it went into is finished, so until then — and in a run that never finishes
+    // one — its link is to a document not yet there.
+    generatedProducts: generated.filter(isSavedProduct).map(product => `${productsRun}${encodeURIComponent(product)}`)
   };
 
+  enqueue(() => post(snapshot, sink, recordIri), `state of '${id}'`);
+
+  // A finished product goes to the pod with everything it links, rendered now for
+  // the same reason the states are: this is what the interaction left.
+  for (const finished of generated.filter(product => resourceMeta(product)?.types.includes(finishedProductClass))) {
+    for (const product of [finished, ...linkedProducts(finished)]) {
+      const body = productTurtle(product, runContainer);
+      if (body !== undefined) {
+        enqueue(() => putProduct(sink, `${productsRun}${encodeURIComponent(product)}`, body), `product '${product}'`);
+      }
+    }
+  }
+}
+
+/**
+ * Write one product resource to the pod, as the lab serves it.
+ *
+ * Named by its id beside the products it links, so its relative links — `<cpu#product>`
+ * — resolve to the copies written with it rather than to the lab.
+ */
+async function putProduct(sink: StateSinkOptions, target: string, body: string): Promise<void> {
+  const send = sink.fetch ?? fetch;
+  if (!await ensureContainer(sink, productsContainer(sink)) || !await ensureContainer(sink, containerOf(target))) {
+    warn(`No container for ${target}; product not written`);
+    return;
+  }
+  const response = await send(target, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'text/turtle' },
+    body,
+    signal: AbortSignal.timeout(requestTimeoutMs)
+  });
+  if (!response.ok) {
+    const detail = (await response.text().catch(() => '')).slice(0, 200);
+    warn(`Pod refused ${target}: ${response.status} ${response.statusText} ${detail}`);
+    return;
+  }
+  debug(`Wrote ${target}`);
+}
+
+/** Queue one write down the next lane, counted against the backlog. */
+function enqueue(write: () => Promise<void>, what: string): void {
   pending += 1;
   const lane = nextLane;
   nextLane = (nextLane + 1) % concurrency;
   lanes[lane] = lanes[lane]
-    .then(() => post(snapshot, sink, recordIri))
+    .then(write)
     .catch(cause => {
       const message = cause instanceof Error ? cause.message : String(cause);
-      warn(`Failed to post state of '${id}' to ${sink.container}: ${message}`);
+      warn(`Failed to write ${what} to ${options?.container ?? 'the pod'}: ${message}`);
     })
     .finally(() => {
       pending -= 1;

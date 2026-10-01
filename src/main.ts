@@ -29,10 +29,11 @@ const usage = `wot-lab
   --models-dir <p>  Where authored Thing Models are written
                     (default: alongside the bundled ones, or WOT_LAB_MODELS_DIR)
   --solid-container <url>
-                    An LDP container (a Solid pod's) to post a PROV-O record of
-                    every WoT interaction to — the request, the activity and the
-                    Thing state it left behind
-                    (or WOT_LAB_SOLID_CONTAINER). Unset posts nothing.
+                    An LDP container (a Solid pod's) the lab writes into:
+                    traces/ gets a PROV-O record of every WoT interaction — the
+                    request, the activity and the Thing state it left behind —
+                    and products/ every finished product with the products it
+                    links (or WOT_LAB_SOLID_CONTAINER). Unset posts nothing.
   --solid-client-id <id> --solid-client-secret <secret>
                     A client credentials token from the Solid server's account
                     page (or WOT_LAB_SOLID_CLIENT_ID / _SECRET). Given, records

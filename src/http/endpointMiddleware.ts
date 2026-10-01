@@ -4,10 +4,10 @@ import { labPrefix } from './labApi.js';
 import { brotliCompressSync, constants as zlibConstants, gzipSync } from 'zlib';
 import * as WoT from 'wot-typescript-definitions';
 import { isAgentIri, RequestAgent, WotOperation } from '../solid/stateResource.js';
-import { agentHeaderName, currentRunContainer, isStateSinkEnabled, publishThingState } from '../solid/stateSink.js';
+import { agentHeaderName, currentRunContainer, existingProducts, isStateSinkEnabled, publishThingState } from '../solid/stateSink.js';
 import { createLoggers } from '../utils/debug.js';
-import { isResourceId, resourceIdList, resourceMeta, resourcePrefix, ResourceMeta } from '../things/resources.js';
-import { resourceToTurtle } from '../things/resourceTurtle.js';
+import { isResourceId, resourceIdList, resourcePrefix } from '../things/resources.js';
+import { productTurtle } from '../things/resourceTurtle.js';
 import { globalState, normalizeThingId } from '../globalState.js';
 
 const { warn } = createLoggers('state');
@@ -486,23 +486,15 @@ function serveResource(req: IncomingMessage, segments: string[], res: ServerResp
     writeJson(res, { error: `Unknown product '${decodeSegment(id)}'` }, 404);
     return true;
   }
-  // Serialised through JSON to detach the Valtio proxy the state is held in, which
-  // is what the rest of the lab does when it hands state outwards.
-  const state = JSON.parse(JSON.stringify(states[normalized])) as Record<string, unknown>;
-
   // Turtle unless the client asked for JSON: a product is data about a physical
   // item, and what reads it also reads the records in the pod.
   if (wantsJson(req)) {
-    writeJson(res, state);
+    // Serialised through JSON to detach the Valtio proxy the state is held in,
+    // which is what the rest of the lab does when it hands state outwards.
+    writeJson(res, JSON.parse(JSON.stringify(states[normalized])));
     return true;
   }
-  // The products this one was made from are resources too; the writer follows its
-  // inputs through them to the raw parts at the end of each chain.
-  const lookup = (inputId: string): { state: Record<string, unknown>; meta?: ResourceMeta } | undefined => {
-    const input = normalizeThingId(inputId);
-    return isResourceId(input) && states[input] ? { state: states[input], meta: resourceMeta(input) } : undefined;
-  };
-  writeTurtle(res, resourceToTurtle(normalized, state, resourceMeta(normalized), currentRunContainer(), lookup));
+  writeTurtle(res, productTurtle(normalized, currentRunContainer()) as string);
   return true;
 }
 
@@ -757,6 +749,9 @@ async function reportInteraction(
   // read from the request, and by the time the response has finished the socket
   // it came from may be gone.
   const startedAt = new Date();
+  // Which products exist before the request is handled, so the record can name
+  // the ones it produced.
+  const productsBefore = existingProducts();
   const agent = agentFor(req);
   const body = hasCapturableBody(req) ? await captureRequestBody(req) : undefined;
 
@@ -769,7 +764,6 @@ async function reportInteraction(
       publishThingState({
         thingId: decodeSegment(pathParts[0]),
         operation,
-        affordance: pathParts[2] ? decodeSegment(pathParts[2]) : undefined,
         method,
         requestUri: requestUrl.href,
         body,
@@ -777,7 +771,7 @@ async function reportInteraction(
         status: res.statusCode,
         startedAt,
         endedAt: new Date()
-      });
+      }, productsBefore);
     } catch (cause) {
       warn(`Could not record the interaction: ${cause instanceof Error ? cause.message : String(cause)}`);
     }

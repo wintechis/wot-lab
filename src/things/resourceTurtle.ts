@@ -33,8 +33,9 @@
  * among them, as a phone passport links its battery.
  */
 
+import { globalState, normalizeThingId } from '../globalState.js';
 import { escapeLiteral, isAbsoluteHttpIri } from '../solid/stateResource.js';
-import { inputsProperty, PropertyMeta, ResourceMeta } from './resources.js';
+import { inputsProperty, isResourceId, PropertyMeta, resourceMeta, ResourceMeta } from './resources.js';
 
 /** The vocabularies a representation is written in, by prefix. */
 const namespaces: Record<string, string> = {
@@ -47,7 +48,7 @@ const namespaces: Record<string, string> = {
 };
 
 /** The class a passport gives a battery, which a phone links with `ex:battery`. */
-const batteryClass = 'ex:Battery';
+export const batteryClass = 'ex:Battery';
 
 /**
  * One state value as a Turtle literal, or `undefined` when RDF has no literal for
@@ -257,4 +258,44 @@ function writeNode({ subject, classes, statements }: Node): string {
     ...statements.map(({ predicate, object }) => `    ${predicate.padEnd(22)} ${object}`)
   ];
   return `${subject}\n${lines.join(' ;\n')} .`;
+}
+
+/** A product resource's live state and metadata, from the store recipes write to. */
+const liveLookup: ResourceLookup = inputId => {
+  const id = normalizeThingId(inputId);
+  const states = globalState.things as Record<string, Record<string, unknown>>;
+  // Serialised through JSON to detach the Valtio proxy the state is held in.
+  return isResourceId(id) && states[id]
+    ? { state: JSON.parse(JSON.stringify(states[id])) as Record<string, unknown>, meta: resourceMeta(id) }
+    : undefined;
+};
+
+/** One product resource as it is now, or `undefined` when no product has that id. */
+export function productTurtle(id: string, traceIri?: string): string | undefined {
+  const product = liveLookup(id);
+  return product && resourceToTurtle(normalizeThingId(id), product.state, product.meta, traceIri, liveLookup);
+}
+
+/**
+ * The products a product's representation links: its battery and the raw inputs
+ * it was made from, and what those link in turn — so a copy of the product and
+ * these is a set of documents whose relative links all resolve among themselves.
+ */
+export function linkedProducts(id: string): string[] {
+  const linked: string[] = [];
+  const visit = (current: string): void => {
+    const product = liveLookup(current);
+    if (!product) {
+      return;
+    }
+    const { parts, batteries } = rawInputs(product.state, liveLookup);
+    for (const next of [...batteries, ...parts]) {
+      if (next !== normalizeThingId(id) && !linked.includes(next)) {
+        linked.push(next);
+        visit(next);
+      }
+    }
+  };
+  visit(id);
+  return linked;
 }

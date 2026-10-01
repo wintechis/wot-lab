@@ -27,8 +27,9 @@ export interface LabOptions {
    */
   modelsDir?: string;
   /**
-   * An LDP container — a Solid pod's, typically — that every WoT interaction's
-   * provenance is posted to. Unset means nothing is posted: the lab makes no
+   * An LDP container — a Solid pod's, typically — the lab writes into: `traces/`
+   * for every WoT interaction's provenance, `products/` for finished products and
+   * the products they link. Unset means nothing is posted: the lab makes no
    * outbound requests unless asked to.
    */
   solidContainer?: string;
@@ -200,7 +201,7 @@ export function parseArgs(argv: string[] = process.argv): LabOptions {
 
   const solidContainer = container ? parseContainer(container) : undefined;
   if (solidContainer) {
-    debug(`Interaction provenance is posted to ${solidContainer}`);
+    debug(`Traces and products are written under ${solidContainer}`);
   }
 
   checkCredentials(solidClientId, solidClientSecret, solidContainer);

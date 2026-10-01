@@ -71,7 +71,7 @@ WoT-Lab provides two ways to interact with your IoT Things:
 
 3. **Solid pod** (opt-in): with `--solid-container`, every interaction with a Thing posts a PROV-O
    record - the request, who made it, and the whole environment's state it left behind - to an LDP
-   container as RDF - see [Publishing provenance to a Solid pod](#publishing-provenance-to-a-solid-pod)
+   container as RDF, and every finished product with the products it links - see [Publishing provenance to a Solid pod](#publishing-provenance-to-a-solid-pod)
 
 ## Configuration
 
@@ -93,8 +93,9 @@ bun run dev -- --port 9000                # or WOT_LAB_PORT=9000
 - `--models-dir <path>` - where Thing Models authored in the dashboard are
   written (or `WOT_LAB_MODELS_DIR`). Unset, they are written alongside the
   bundled ones in `src/things/`.
-- `--solid-container <url>` - an LDP container (a Solid pod's, typically) to post
-  a PROV-O record of every interaction to (or `WOT_LAB_SOLID_CONTAINER`). Unset,
+- `--solid-container <url>` - an LDP container (a Solid pod's, typically) to write
+  into: `traces/` gets a PROV-O record of every interaction, `products/` every
+  finished product and the products it links (or `WOT_LAB_SOLID_CONTAINER`). Unset,
   nothing is posted and the lab makes no outbound requests - see
   [Publishing provenance to a Solid pod](#publishing-provenance-to-a-solid-pod).
 - `--agent-header <name>` - the request header a client names itself in, reported
@@ -263,6 +264,20 @@ the whole environment's state, every Property of every running Thing.
 ```bash
 bun run dev -- --env smart-home --solid-container https://solid.example.org/alice/wot-lab/
 ```
+
+The container holds two of its own, which the lab creates:
+
+```
+wot-lab/
+├── traces/<run>/     one record per interaction, in order
+└── products/<run>/   each finished product and every product it links
+```
+
+A run is the environment plus the moment it came up. A product counts as finished
+when its model or manifest types it `ex:Smartphone`; when an Action produces one,
+the lab writes its Turtle representation and those of its battery and raw inputs
+beside it, so its relative links resolve inside the pod. Each links back to the
+run's traces with `ex:trace`.
 
 The container is the only required configuration, and without it nothing is posted:
 the default lab makes no outbound requests. Requests are unauthenticated, so the
