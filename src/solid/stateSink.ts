@@ -1,6 +1,6 @@
 import { globalState, normalizeThingId } from '../globalState.js';
 import { labPrefix } from '../http/labApi.js';
-import { batteryClass, linkedProducts, productTurtle } from '../things/resourceTurtle.js';
+import { batteryClass, finishedProductClass, linkedProducts, productTurtle } from '../things/resourceTurtle.js';
 import { isResourceId, resourceMeta } from '../things/resources.js';
 import { createLoggers } from '../utils/debug.js';
 import { SolidFetch } from './dpopFetch.js';
@@ -175,13 +175,6 @@ function tracesContainer(sink: StateSinkOptions): string {
 function productsContainer(sink: StateSinkOptions): string {
   return `${sink.container}products/`;
 }
-
-/**
- * The class a finished product carries. Producing one is what puts it, and every
- * product its representation links, into the pod — a copy of the phone together
- * with its battery and parts, whose relative links resolve among themselves.
- */
-const finishedProductClass = 'ex:Smartphone';
 
 /**
  * Whether a product an Action generated is one the pod gets a copy of: a finished

@@ -45,13 +45,49 @@
   "actions": {
     "produceMainModuleWithPorts": {
       "title": "produce mainModuleWithPorts",
-      "description": "Run the mainModuleWithPorts recipe: consume mainModule, port and place mainModuleWithPorts at this station. Has no effect unless every input already lies at the station.",
+      "description": "Run the mainModuleWithPorts recipe: consume the given mainModule, port and place the given mainModuleWithPorts at this station. Has no effect unless every input already lies at the station.",
       "input": {
-        "type": "string",
-        "enum": [
-          "produceIt"
-        ],
-        "title": "trigger"
+        "type": "object",
+        "title": "recipe input",
+        "properties": {
+          "trigger": {
+            "type": "string",
+            "enum": [
+              "produceIt"
+            ],
+            "title": "trigger"
+          },
+          "mainModule": {
+            "type": "string",
+            "title": "mainModule",
+            "description": "The mainModule to consume, by id.",
+            "enum": [
+              "mainmodule"
+            ]
+          },
+          "port": {
+            "type": "string",
+            "title": "port",
+            "description": "The port to consume, by id.",
+            "enum": [
+              "port"
+            ]
+          },
+          "mainModuleWithPorts": {
+            "type": "string",
+            "title": "mainModuleWithPorts",
+            "description": "The mainModuleWithPorts to build, by id.",
+            "enum": [
+              "mainmodulewithports"
+            ]
+          }
+        },
+        "required": [
+          "trigger",
+          "mainModule",
+          "port",
+          "mainModuleWithPorts"
+        ]
       },
       "output": {
         "type": "object",
@@ -63,7 +99,7 @@
       },
       "safe": false,
       "idempotent": false,
-      "vre:effects": "const mainModule = <mainmodule>;\nconst port = <port>;\nconst mainModuleWithPorts = <mainmodulewithports>;\nmainModuleWithPorts.xpos' = mainModule.xpos == xpos && mainModule.ypos == ypos\n  && port.xpos == xpos && port.ypos == ypos ? xpos : mainModuleWithPorts.xpos;\nmainModuleWithPorts.ypos' = mainModule.xpos == xpos && mainModule.ypos == ypos\n  && port.xpos == xpos && port.ypos == ypos ? ypos : mainModuleWithPorts.ypos;\nmainModuleWithPorts.state' = mainModule.xpos == xpos && mainModule.ypos == ypos\n  && port.xpos == xpos && port.ypos == ypos ? \"initialState\" : mainModuleWithPorts.state;\nmainModuleWithPorts.madeFrom' = mainModule.xpos == xpos && mainModule.ypos == ypos\n  && port.xpos == xpos && port.ypos == ypos ? [].append(\"mainmodule\").append(\"port\") : mainModuleWithPorts.madeFrom;\nmainModule.xpos' = mainModule.xpos == xpos && mainModule.ypos == ypos\n  && port.xpos == xpos && port.ypos == ypos ? null : mainModule.xpos;\nmainModule.ypos' = mainModule.xpos == xpos && mainModule.ypos == ypos\n  && port.xpos == xpos && port.ypos == ypos ? null : mainModule.ypos;\nmainModule.state' = mainModule.xpos == xpos && mainModule.ypos == ypos\n  && port.xpos == xpos && port.ypos == ypos ? \"consumed\" : mainModule.state;\nport.xpos' = mainModule.xpos == xpos && mainModule.ypos == ypos\n  && port.xpos == xpos && port.ypos == ypos ? null : port.xpos;\nport.ypos' = mainModule.xpos == xpos && mainModule.ypos == ypos\n  && port.xpos == xpos && port.ypos == ypos ? null : port.ypos;\nport.state' = mainModule.xpos == xpos && mainModule.ypos == ypos\n  && port.xpos == xpos && port.ypos == ypos ? \"consumed\" : port.state;\noutput.success = mainModule.xpos == xpos && mainModule.ypos == ypos\n  && port.xpos == xpos && port.ypos == ypos;"
+      "vre:effects": "mainModuleWithPorts.xpos' = mainModule.xpos == xpos && mainModule.ypos == ypos\n  && port.xpos == xpos && port.ypos == ypos ? xpos : mainModuleWithPorts.xpos;\nmainModuleWithPorts.ypos' = mainModule.xpos == xpos && mainModule.ypos == ypos\n  && port.xpos == xpos && port.ypos == ypos ? ypos : mainModuleWithPorts.ypos;\nmainModuleWithPorts.state' = mainModule.xpos == xpos && mainModule.ypos == ypos\n  && port.xpos == xpos && port.ypos == ypos ? \"initialState\" : mainModuleWithPorts.state;\nmainModuleWithPorts.madeFrom' = mainModule.xpos == xpos && mainModule.ypos == ypos\n  && port.xpos == xpos && port.ypos == ypos ? [].append(mainModule).append(port) : mainModuleWithPorts.madeFrom;\nmainModule.xpos' = mainModule.xpos == xpos && mainModule.ypos == ypos\n  && port.xpos == xpos && port.ypos == ypos ? null : mainModule.xpos;\nmainModule.ypos' = mainModule.xpos == xpos && mainModule.ypos == ypos\n  && port.xpos == xpos && port.ypos == ypos ? null : mainModule.ypos;\nmainModule.state' = mainModule.xpos == xpos && mainModule.ypos == ypos\n  && port.xpos == xpos && port.ypos == ypos ? \"consumed\" : mainModule.state;\nport.xpos' = mainModule.xpos == xpos && mainModule.ypos == ypos\n  && port.xpos == xpos && port.ypos == ypos ? null : port.xpos;\nport.ypos' = mainModule.xpos == xpos && mainModule.ypos == ypos\n  && port.xpos == xpos && port.ypos == ypos ? null : port.ypos;\nport.state' = mainModule.xpos == xpos && mainModule.ypos == ypos\n  && port.xpos == xpos && port.ypos == ypos ? \"consumed\" : port.state;\noutput.success = mainModule.xpos == xpos && mainModule.ypos == ypos\n  && port.xpos == xpos && port.ypos == ypos;"
     }
   }
 }

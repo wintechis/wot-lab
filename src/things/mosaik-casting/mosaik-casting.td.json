@@ -45,13 +45,40 @@
   "actions": {
     "produceCase": {
       "title": "produce case",
-      "description": "Run the case recipe: consume ingot and place case at this station. Has no effect unless every input already lies at the station.",
+      "description": "Run the case recipe: consume the given ingot and place the given case at this station. Has no effect unless every input already lies at the station.",
       "input": {
-        "type": "string",
-        "enum": [
-          "produceIt"
-        ],
-        "title": "trigger"
+        "type": "object",
+        "title": "recipe input",
+        "properties": {
+          "trigger": {
+            "type": "string",
+            "enum": [
+              "produceIt"
+            ],
+            "title": "trigger"
+          },
+          "ingot": {
+            "type": "string",
+            "title": "ingot",
+            "description": "The ingot to consume, by id.",
+            "enum": [
+              "ingot"
+            ]
+          },
+          "case": {
+            "type": "string",
+            "title": "case",
+            "description": "The case to build, by id.",
+            "enum": [
+              "case"
+            ]
+          }
+        },
+        "required": [
+          "trigger",
+          "ingot",
+          "case"
+        ]
       },
       "output": {
         "type": "object",
@@ -63,7 +90,7 @@
       },
       "safe": false,
       "idempotent": false,
-      "vre:effects": "const ingot = <ingot>;\nconst case = <case>;\ncase.xpos' = ingot.xpos == xpos && ingot.ypos == ypos ? xpos : case.xpos;\ncase.ypos' = ingot.xpos == xpos && ingot.ypos == ypos ? ypos : case.ypos;\ncase.state' = ingot.xpos == xpos && ingot.ypos == ypos ? \"initialState\" : case.state;\ncase.madeFrom' = ingot.xpos == xpos && ingot.ypos == ypos ? [].append(\"ingot\") : case.madeFrom;\ningot.xpos' = ingot.xpos == xpos && ingot.ypos == ypos ? null : ingot.xpos;\ningot.ypos' = ingot.xpos == xpos && ingot.ypos == ypos ? null : ingot.ypos;\ningot.state' = ingot.xpos == xpos && ingot.ypos == ypos ? \"consumed\" : ingot.state;\noutput.success = ingot.xpos == xpos && ingot.ypos == ypos;"
+      "vre:effects": "case.xpos' = ingot.xpos == xpos && ingot.ypos == ypos ? xpos : case.xpos;\ncase.ypos' = ingot.xpos == xpos && ingot.ypos == ypos ? ypos : case.ypos;\ncase.state' = ingot.xpos == xpos && ingot.ypos == ypos ? \"initialState\" : case.state;\ncase.madeFrom' = ingot.xpos == xpos && ingot.ypos == ypos ? [].append(ingot) : case.madeFrom;\ningot.xpos' = ingot.xpos == xpos && ingot.ypos == ypos ? null : ingot.xpos;\ningot.ypos' = ingot.xpos == xpos && ingot.ypos == ypos ? null : ingot.ypos;\ningot.state' = ingot.xpos == xpos && ingot.ypos == ypos ? \"consumed\" : ingot.state;\noutput.success = ingot.xpos == xpos && ingot.ypos == ypos;"
     }
   }
 }

@@ -4,11 +4,12 @@ import { enable } from 'debug';
 import { ThingRegistry } from './things/ThingRegistry.js';
 import { setUserModelsDirectory } from './things/ThingHandler.js';
 import { loadEnvironmentManifest } from './things/environments.js';
-import { parseArgs } from './config/options.js';
+import { defaultOrdersPollSeconds, parseArgs } from './config/options.js';
 import { createLoggers } from './utils/debug.js';
 import { createEndpointMiddleware, LabRequestHandler } from './http/endpointMiddleware.js';
 import { createLabApi, labPrefix } from './http/labApi.js';
 import { configureStateSink, flushStateSink } from './solid/stateSink.js';
+import { ordersContainer, startOrderRunner, stopOrderRunner } from './solid/orders.js';
 import { createDpopFetch } from './solid/dpopFetch.js';
 
 if (!process.env.DEBUG) {
@@ -43,6 +44,10 @@ const usage = `wot-lab
                     The request header a client names itself in, reported as the
                     activity's agent (default x-agent, or WOT_LAB_AGENT_HEADER).
                     A request naming none is attributed to its address.
+  --orders-poll <seconds>
+                    How often the pod's orders/ container is read, which the lab
+                    builds what it finds in (default 5, or WOT_LAB_ORDERS_POLL).
+                    0 leaves orders unread.
 
 Starting without --things is normal: Things are created from the dashboard.`;
 
@@ -119,6 +124,24 @@ if (options.solidContainer) {
         : undefined;
     }
   });
+
+  // The same container is read for orders. Nothing is built unless someone puts
+  // an order in it, so a lab configured only to write records is unaffected.
+  const pollSeconds = options.ordersPollSeconds ?? defaultOrdersPollSeconds;
+  if (pollSeconds > 0) {
+    startOrderRunner({
+      container: options.solidContainer,
+      labBaseUrl: baseUrl,
+      fetch: podFetch,
+      intervalMs: pollSeconds * 1000,
+      environment: () => registry.environment(),
+      // An order consumes raw materials, so each one starts from the environment's
+      // initial conditions — the same reset the benchmark takes between runs.
+      reset: () => {
+        registry.resetAll();
+      }
+    });
+  }
 }
 
 // Nothing is created implicitly. A Thing exists because the command line asked
@@ -165,11 +188,18 @@ if (options.modelsDir) {
 if (options.solidContainer) {
   const as = options.solidClientId ? ` (as client '${options.solidClientId}')` : ' (unauthenticated)';
   debug(`- Provenance records:  POST ${options.solidContainer}${as}`);
+  const pollSeconds = options.ordersPollSeconds ?? defaultOrdersPollSeconds;
+  if (pollSeconds > 0) {
+    debug(`- Orders:              GET ${ordersContainer(options.solidContainer)} every ${pollSeconds}s`);
+  }
 }
 
 // Graceful shutdown
 process.on('SIGINT', async () => {
   debug('\nShutting down gracefully...');
+  // Before the flush, so a sweep cannot start another production run while the
+  // records of the last one are draining.
+  stopOrderRunner();
   // Snapshots already queued are in flight to the pod; losing them would leave
   // its record of the session ending before the session did. Briefly — a pod that
   // has stopped answering must not turn Ctrl-C into a hang.

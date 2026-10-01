@@ -114,7 +114,7 @@ step t1 moveDown
 step t1 moveDown
 step t1 moveDown
 step t1 drop
-step combine produceBattery '{"trigger": "produceIt", "battery": "gh82-39193a"}'
+step combine produceBattery '{"trigger": "produceIt", "batterycell": "batterycell", "battery": "gh82-39193a"}'
 step t1 moveRight
 step t1 moveRight
 step t1 moveRight
@@ -143,7 +143,7 @@ step t1 moveLeft
 step t1 moveLeft
 step t1 moveLeft
 step t1 drop
-step casting produceCase produceIt
+step casting produceCase '{"trigger": "produceIt", "ingot": "ingot", "case": "case"}'
 step t1 moveLeft
 step t1 moveLeft
 step t1 moveLeft
@@ -281,7 +281,7 @@ step t1 moveDown
 step t1 moveDown
 step t1 moveDown
 step t1 drop
-step solder1 produceMainModule produceIt
+step solder1 produceMainModule '{"trigger": "produceIt", "cpu": "cpu", "flash": "flash", "mainboard": "mainboard", "ram": "ram", "mainModule": "mainmodule"}'
 step t1 pickup mainmodule
 step t1 moveRight
 step t1 moveRight
@@ -319,7 +319,7 @@ step t1 moveDown
 step t1 moveDown
 step t1 moveDown
 step t1 drop
-step fixing produceMainModuleWithPorts produceIt
+step fixing produceMainModuleWithPorts '{"trigger": "produceIt", "mainModule": "mainmodule", "port": "port", "mainModuleWithPorts": "mainmodulewithports"}'
 step t1 pickup mainmodulewithports
 step t1 moveRight
 step t1 moveRight
@@ -366,7 +366,7 @@ step t1 moveDown
 step t1 moveDown
 step t1 moveDown
 step t1 drop
-step bolt1 produceCaseWithMainModule produceIt
+step bolt1 produceCaseWithMainModule '{"trigger": "produceIt", "case": "case", "mainModuleWithPorts": "mainmodulewithports", "caseWithMainModule": "casewithmainmodule"}'
 step t1 moveLeft
 step t1 moveLeft
 step t1 moveLeft
@@ -425,7 +425,7 @@ step t1 moveUp
 step t1 moveUp
 step t1 moveUp
 step t1 drop
-step solder2 produceCommunicationModule produceIt
+step solder2 produceCommunicationModule '{"trigger": "produceIt", "comm": "comm", "mainboard2": "mainboard2", "communicationModule": "communicationmodule"}'
 step t1 pickup communicationmodule
 step t1 moveRight
 step t1 moveRight
@@ -440,7 +440,7 @@ step t1 moveRight
 step t1 moveUp
 step t1 moveUp
 step t1 drop
-step bolt1 produceCaseWithCommunicationModule produceIt
+step bolt1 produceCaseWithCommunicationModule '{"trigger": "produceIt", "caseWithMainModule": "casewithmainmodule", "communicationModule": "communicationmodule", "caseWithCommunicationModule": "casewithcommunicationmodule"}'
 step t1 moveLeft
 step t1 moveLeft
 step t1 moveLeft
@@ -509,7 +509,7 @@ step t1 moveUp
 step t1 moveUp
 step t1 moveUp
 step t1 drop
-step solder2 produceSensorModule produceIt
+step solder2 produceSensorModule '{"trigger": "produceIt", "mainboard3": "mainboard3", "sensor": "sensor", "sensorModule": "sensormodule"}'
 step t1 pickup sensormodule
 step t1 moveRight
 step t1 moveRight
@@ -524,7 +524,7 @@ step t1 moveRight
 step t1 moveUp
 step t1 moveUp
 step t1 drop
-step bolt1 produceCaseWithSensorModule produceIt
+step bolt1 produceCaseWithSensorModule '{"trigger": "produceIt", "caseWithCommunicationModule": "casewithcommunicationmodule", "sensorModule": "sensormodule", "caseWithSensorModule": "casewithsensormodule"}'
 step t1 pickup casewithsensormodule
 step t1 moveLeft
 step t1 moveLeft
@@ -582,7 +582,7 @@ step t1 moveDown
 step t1 moveDown
 step t1 moveDown
 step t1 drop
-step glue1 produceCaseWithBattery '{"trigger": "produceIt", "battery": "gh82-39193a"}'
+step glue1 produceCaseWithBattery '{"trigger": "produceIt", "battery": "gh82-39193a", "caseWithSensorModule": "casewithsensormodule", "caseWithBattery": "casewithbattery"}'
 step t1 moveRight
 step t1 moveRight
 step t1 moveRight
@@ -679,8 +679,8 @@ step t1 moveUp
 step t1 moveUp
 step t1 moveUp
 step t1 drop
-step glue1 produceDisplayUnit produceIt
-step glue1 produceSmartphone produceIt
+step glue1 produceDisplayUnit '{"trigger": "produceIt", "glass": "glass", "lcd": "lcd", "displayUnit": "displayunit"}'
+step glue1 produceSmartphone '{"trigger": "produceIt", "caseWithBattery": "casewithbattery", "displayUnit": "displayunit", "smartphone": "smartphone"}'
 
 echo "Done: all $TOTAL steps executed."
 

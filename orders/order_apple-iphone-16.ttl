@@ -1,0 +1,30 @@
+# An order for one smartphone, as the lab reads them from a pod's `orders/`
+# container: the products it is to be made of, each named by the URI the lab serves
+# it at. The battery is the Apple iPhone 16 spare part; the rest are the raw
+# materials the shopfloor's recipe book calls for.
+#
+# A component is a component because it names a product of this lab, so the
+# predicate carrying it is the order author's choice. Change the port if the lab is
+# not on 8081.
+@prefix schema: <https://schema.org/> .
+@prefix ex:     <https://example.org/passport/> .
+
+<#order>
+    a                  schema:Order ;
+    schema:name        "One smartphone with the Apple iPhone 16 battery" ;
+    schema:description "661-44796 (Apple DEMO-BATTERY-807725) in place of the generic battery product." ;
+    ex:component
+                       <http://localhost:8081/products/661-44796> ,
+                       <http://localhost:8081/products/batterycell> ,
+                       <http://localhost:8081/products/ingot> ,
+                       <http://localhost:8081/products/comm> ,
+                       <http://localhost:8081/products/mainboard2> ,
+                       <http://localhost:8081/products/glass> ,
+                       <http://localhost:8081/products/lcd> ,
+                       <http://localhost:8081/products/cpu> ,
+                       <http://localhost:8081/products/flash> ,
+                       <http://localhost:8081/products/mainboard> ,
+                       <http://localhost:8081/products/ram> ,
+                       <http://localhost:8081/products/port> ,
+                       <http://localhost:8081/products/mainboard3> ,
+                       <http://localhost:8081/products/sensor> .

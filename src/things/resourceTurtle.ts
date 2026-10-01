@@ -51,6 +51,13 @@ const namespaces: Record<string, string> = {
 export const batteryClass = 'ex:Battery';
 
 /**
+ * The class a finished product carries — the end of a recipe chain rather than an
+ * intermediate another recipe consumes. What makes a product worth copying into a
+ * pod, and what an order asks for.
+ */
+export const finishedProductClass = 'ex:Smartphone';
+
+/**
  * One state value as a Turtle literal, or `undefined` when RDF has no literal for
  * it — `null`, which a product carries whenever it has no position, and which at
  * predicate position is said by saying nothing.

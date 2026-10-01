@@ -1,5 +1,5 @@
 { "name": "mosaik",
-  "description": "MOSAIK smart-factory shopfloor: 25 products, 6 battery spare parts (identified by their manufacturer part number), 10 workstations that each run one recipe, one transporter that carries a product between them, and a shopfloor Thing holding the recipe book. Every produce Action is a cross-Thing effect on the product it makes.",
+  "description": "MOSAIK smart-factory shopfloor: 25 products, 6 battery spare parts (identified by their manufacturer part number), 10 workstations that each run one recipe, one transporter that carries a product between them, and a shopfloor Thing holding the recipe book. Every produce Action is a cross-Thing effect on the product it makes, and takes a parameter per recipe role naming the products it consumes and the one it builds.",
   "things": [
     { "model": "mosaik-product", "id": "battery", "title": "battery",
       "state": { "xpos": null, "ypos": null, "state": "uninitialised" } },

@@ -45,13 +45,49 @@
   "actions": {
     "produceCommunicationModule": {
       "title": "produce communicationModule",
-      "description": "Run the communicationModule recipe: consume comm, mainboard2 and place communicationModule at this station. Has no effect unless every input already lies at the station.",
+      "description": "Run the communicationModule recipe: consume the given comm, mainboard2 and place the given communicationModule at this station. Has no effect unless every input already lies at the station.",
       "input": {
-        "type": "string",
-        "enum": [
-          "produceIt"
-        ],
-        "title": "trigger"
+        "type": "object",
+        "title": "recipe input",
+        "properties": {
+          "trigger": {
+            "type": "string",
+            "enum": [
+              "produceIt"
+            ],
+            "title": "trigger"
+          },
+          "comm": {
+            "type": "string",
+            "title": "comm",
+            "description": "The comm to consume, by id.",
+            "enum": [
+              "comm"
+            ]
+          },
+          "mainboard2": {
+            "type": "string",
+            "title": "mainboard2",
+            "description": "The mainboard2 to consume, by id.",
+            "enum": [
+              "mainboard2"
+            ]
+          },
+          "communicationModule": {
+            "type": "string",
+            "title": "communicationModule",
+            "description": "The communicationModule to build, by id.",
+            "enum": [
+              "communicationmodule"
+            ]
+          }
+        },
+        "required": [
+          "trigger",
+          "comm",
+          "mainboard2",
+          "communicationModule"
+        ]
       },
       "output": {
         "type": "object",
@@ -63,17 +99,71 @@
       },
       "safe": false,
       "idempotent": false,
-      "vre:effects": "const comm = <comm>;\nconst mainboard2 = <mainboard2>;\nconst communicationModule = <communicationmodule>;\ncommunicationModule.xpos' = comm.xpos == xpos && comm.ypos == ypos\n  && mainboard2.xpos == xpos && mainboard2.ypos == ypos ? xpos : communicationModule.xpos;\ncommunicationModule.ypos' = comm.xpos == xpos && comm.ypos == ypos\n  && mainboard2.xpos == xpos && mainboard2.ypos == ypos ? ypos : communicationModule.ypos;\ncommunicationModule.state' = comm.xpos == xpos && comm.ypos == ypos\n  && mainboard2.xpos == xpos && mainboard2.ypos == ypos ? \"initialState\" : communicationModule.state;\ncommunicationModule.madeFrom' = comm.xpos == xpos && comm.ypos == ypos\n  && mainboard2.xpos == xpos && mainboard2.ypos == ypos ? [].append(\"comm\").append(\"mainboard2\") : communicationModule.madeFrom;\ncomm.xpos' = comm.xpos == xpos && comm.ypos == ypos\n  && mainboard2.xpos == xpos && mainboard2.ypos == ypos ? null : comm.xpos;\ncomm.ypos' = comm.xpos == xpos && comm.ypos == ypos\n  && mainboard2.xpos == xpos && mainboard2.ypos == ypos ? null : comm.ypos;\ncomm.state' = comm.xpos == xpos && comm.ypos == ypos\n  && mainboard2.xpos == xpos && mainboard2.ypos == ypos ? \"consumed\" : comm.state;\nmainboard2.xpos' = comm.xpos == xpos && comm.ypos == ypos\n  && mainboard2.xpos == xpos && mainboard2.ypos == ypos ? null : mainboard2.xpos;\nmainboard2.ypos' = comm.xpos == xpos && comm.ypos == ypos\n  && mainboard2.xpos == xpos && mainboard2.ypos == ypos ? null : mainboard2.ypos;\nmainboard2.state' = comm.xpos == xpos && comm.ypos == ypos\n  && mainboard2.xpos == xpos && mainboard2.ypos == ypos ? \"consumed\" : mainboard2.state;\noutput.success = comm.xpos == xpos && comm.ypos == ypos\n  && mainboard2.xpos == xpos && mainboard2.ypos == ypos;"
+      "vre:effects": "communicationModule.xpos' = comm.xpos == xpos && comm.ypos == ypos\n  && mainboard2.xpos == xpos && mainboard2.ypos == ypos ? xpos : communicationModule.xpos;\ncommunicationModule.ypos' = comm.xpos == xpos && comm.ypos == ypos\n  && mainboard2.xpos == xpos && mainboard2.ypos == ypos ? ypos : communicationModule.ypos;\ncommunicationModule.state' = comm.xpos == xpos && comm.ypos == ypos\n  && mainboard2.xpos == xpos && mainboard2.ypos == ypos ? \"initialState\" : communicationModule.state;\ncommunicationModule.madeFrom' = comm.xpos == xpos && comm.ypos == ypos\n  && mainboard2.xpos == xpos && mainboard2.ypos == ypos ? [].append(comm).append(mainboard2) : communicationModule.madeFrom;\ncomm.xpos' = comm.xpos == xpos && comm.ypos == ypos\n  && mainboard2.xpos == xpos && mainboard2.ypos == ypos ? null : comm.xpos;\ncomm.ypos' = comm.xpos == xpos && comm.ypos == ypos\n  && mainboard2.xpos == xpos && mainboard2.ypos == ypos ? null : comm.ypos;\ncomm.state' = comm.xpos == xpos && comm.ypos == ypos\n  && mainboard2.xpos == xpos && mainboard2.ypos == ypos ? \"consumed\" : comm.state;\nmainboard2.xpos' = comm.xpos == xpos && comm.ypos == ypos\n  && mainboard2.xpos == xpos && mainboard2.ypos == ypos ? null : mainboard2.xpos;\nmainboard2.ypos' = comm.xpos == xpos && comm.ypos == ypos\n  && mainboard2.xpos == xpos && mainboard2.ypos == ypos ? null : mainboard2.ypos;\nmainboard2.state' = comm.xpos == xpos && comm.ypos == ypos\n  && mainboard2.xpos == xpos && mainboard2.ypos == ypos ? \"consumed\" : mainboard2.state;\noutput.success = comm.xpos == xpos && comm.ypos == ypos\n  && mainboard2.xpos == xpos && mainboard2.ypos == ypos;"
     },
     "produceMainModule": {
       "title": "produce mainModule",
-      "description": "Run the mainModule recipe: consume cpu, flash, mainboard, ram and place mainModule at this station. Has no effect unless every input already lies at the station.",
+      "description": "Run the mainModule recipe: consume the given cpu, flash, mainboard, ram and place the given mainModule at this station. Has no effect unless every input already lies at the station.",
       "input": {
-        "type": "string",
-        "enum": [
-          "produceIt"
-        ],
-        "title": "trigger"
+        "type": "object",
+        "title": "recipe input",
+        "properties": {
+          "trigger": {
+            "type": "string",
+            "enum": [
+              "produceIt"
+            ],
+            "title": "trigger"
+          },
+          "cpu": {
+            "type": "string",
+            "title": "cpu",
+            "description": "The cpu to consume, by id.",
+            "enum": [
+              "cpu"
+            ]
+          },
+          "flash": {
+            "type": "string",
+            "title": "flash",
+            "description": "The flash to consume, by id.",
+            "enum": [
+              "flash"
+            ]
+          },
+          "mainboard": {
+            "type": "string",
+            "title": "mainboard",
+            "description": "The mainboard to consume, by id.",
+            "enum": [
+              "mainboard"
+            ]
+          },
+          "ram": {
+            "type": "string",
+            "title": "ram",
+            "description": "The ram to consume, by id.",
+            "enum": [
+              "ram"
+            ]
+          },
+          "mainModule": {
+            "type": "string",
+            "title": "mainModule",
+            "description": "The mainModule to build, by id.",
+            "enum": [
+              "mainmodule"
+            ]
+          }
+        },
+        "required": [
+          "trigger",
+          "cpu",
+          "flash",
+          "mainboard",
+          "ram",
+          "mainModule"
+        ]
       },
       "output": {
         "type": "object",
@@ -85,17 +175,53 @@
       },
       "safe": false,
       "idempotent": false,
-      "vre:effects": "const cpu = <cpu>;\nconst flash = <flash>;\nconst mainboard = <mainboard>;\nconst ram = <ram>;\nconst mainModule = <mainmodule>;\nmainModule.xpos' = cpu.xpos == xpos && cpu.ypos == ypos\n  && flash.xpos == xpos && flash.ypos == ypos\n  && mainboard.xpos == xpos && mainboard.ypos == ypos\n  && ram.xpos == xpos && ram.ypos == ypos ? xpos : mainModule.xpos;\nmainModule.ypos' = cpu.xpos == xpos && cpu.ypos == ypos\n  && flash.xpos == xpos && flash.ypos == ypos\n  && mainboard.xpos == xpos && mainboard.ypos == ypos\n  && ram.xpos == xpos && ram.ypos == ypos ? ypos : mainModule.ypos;\nmainModule.state' = cpu.xpos == xpos && cpu.ypos == ypos\n  && flash.xpos == xpos && flash.ypos == ypos\n  && mainboard.xpos == xpos && mainboard.ypos == ypos\n  && ram.xpos == xpos && ram.ypos == ypos ? \"initialState\" : mainModule.state;\nmainModule.madeFrom' = cpu.xpos == xpos && cpu.ypos == ypos\n  && flash.xpos == xpos && flash.ypos == ypos\n  && mainboard.xpos == xpos && mainboard.ypos == ypos\n  && ram.xpos == xpos && ram.ypos == ypos ? [].append(\"cpu\").append(\"flash\").append(\"mainboard\").append(\"ram\") : mainModule.madeFrom;\ncpu.xpos' = cpu.xpos == xpos && cpu.ypos == ypos\n  && flash.xpos == xpos && flash.ypos == ypos\n  && mainboard.xpos == xpos && mainboard.ypos == ypos\n  && ram.xpos == xpos && ram.ypos == ypos ? null : cpu.xpos;\ncpu.ypos' = cpu.xpos == xpos && cpu.ypos == ypos\n  && flash.xpos == xpos && flash.ypos == ypos\n  && mainboard.xpos == xpos && mainboard.ypos == ypos\n  && ram.xpos == xpos && ram.ypos == ypos ? null : cpu.ypos;\ncpu.state' = cpu.xpos == xpos && cpu.ypos == ypos\n  && flash.xpos == xpos && flash.ypos == ypos\n  && mainboard.xpos == xpos && mainboard.ypos == ypos\n  && ram.xpos == xpos && ram.ypos == ypos ? \"consumed\" : cpu.state;\nflash.xpos' = cpu.xpos == xpos && cpu.ypos == ypos\n  && flash.xpos == xpos && flash.ypos == ypos\n  && mainboard.xpos == xpos && mainboard.ypos == ypos\n  && ram.xpos == xpos && ram.ypos == ypos ? null : flash.xpos;\nflash.ypos' = cpu.xpos == xpos && cpu.ypos == ypos\n  && flash.xpos == xpos && flash.ypos == ypos\n  && mainboard.xpos == xpos && mainboard.ypos == ypos\n  && ram.xpos == xpos && ram.ypos == ypos ? null : flash.ypos;\nflash.state' = cpu.xpos == xpos && cpu.ypos == ypos\n  && flash.xpos == xpos && flash.ypos == ypos\n  && mainboard.xpos == xpos && mainboard.ypos == ypos\n  && ram.xpos == xpos && ram.ypos == ypos ? \"consumed\" : flash.state;\nmainboard.xpos' = cpu.xpos == xpos && cpu.ypos == ypos\n  && flash.xpos == xpos && flash.ypos == ypos\n  && mainboard.xpos == xpos && mainboard.ypos == ypos\n  && ram.xpos == xpos && ram.ypos == ypos ? null : mainboard.xpos;\nmainboard.ypos' = cpu.xpos == xpos && cpu.ypos == ypos\n  && flash.xpos == xpos && flash.ypos == ypos\n  && mainboard.xpos == xpos && mainboard.ypos == ypos\n  && ram.xpos == xpos && ram.ypos == ypos ? null : mainboard.ypos;\nmainboard.state' = cpu.xpos == xpos && cpu.ypos == ypos\n  && flash.xpos == xpos && flash.ypos == ypos\n  && mainboard.xpos == xpos && mainboard.ypos == ypos\n  && ram.xpos == xpos && ram.ypos == ypos ? \"consumed\" : mainboard.state;\nram.xpos' = cpu.xpos == xpos && cpu.ypos == ypos\n  && flash.xpos == xpos && flash.ypos == ypos\n  && mainboard.xpos == xpos && mainboard.ypos == ypos\n  && ram.xpos == xpos && ram.ypos == ypos ? null : ram.xpos;\nram.ypos' = cpu.xpos == xpos && cpu.ypos == ypos\n  && flash.xpos == xpos && flash.ypos == ypos\n  && mainboard.xpos == xpos && mainboard.ypos == ypos\n  && ram.xpos == xpos && ram.ypos == ypos ? null : ram.ypos;\nram.state' = cpu.xpos == xpos && cpu.ypos == ypos\n  && flash.xpos == xpos && flash.ypos == ypos\n  && mainboard.xpos == xpos && mainboard.ypos == ypos\n  && ram.xpos == xpos && ram.ypos == ypos ? \"consumed\" : ram.state;\noutput.success = cpu.xpos == xpos && cpu.ypos == ypos\n  && flash.xpos == xpos && flash.ypos == ypos\n  && mainboard.xpos == xpos && mainboard.ypos == ypos\n  && ram.xpos == xpos && ram.ypos == ypos;"
+      "vre:effects": "mainModule.xpos' = cpu.xpos == xpos && cpu.ypos == ypos\n  && flash.xpos == xpos && flash.ypos == ypos\n  && mainboard.xpos == xpos && mainboard.ypos == ypos\n  && ram.xpos == xpos && ram.ypos == ypos ? xpos : mainModule.xpos;\nmainModule.ypos' = cpu.xpos == xpos && cpu.ypos == ypos\n  && flash.xpos == xpos && flash.ypos == ypos\n  && mainboard.xpos == xpos && mainboard.ypos == ypos\n  && ram.xpos == xpos && ram.ypos == ypos ? ypos : mainModule.ypos;\nmainModule.state' = cpu.xpos == xpos && cpu.ypos == ypos\n  && flash.xpos == xpos && flash.ypos == ypos\n  && mainboard.xpos == xpos && mainboard.ypos == ypos\n  && ram.xpos == xpos && ram.ypos == ypos ? \"initialState\" : mainModule.state;\nmainModule.madeFrom' = cpu.xpos == xpos && cpu.ypos == ypos\n  && flash.xpos == xpos && flash.ypos == ypos\n  && mainboard.xpos == xpos && mainboard.ypos == ypos\n  && ram.xpos == xpos && ram.ypos == ypos ? [].append(cpu).append(flash).append(mainboard).append(ram) : mainModule.madeFrom;\ncpu.xpos' = cpu.xpos == xpos && cpu.ypos == ypos\n  && flash.xpos == xpos && flash.ypos == ypos\n  && mainboard.xpos == xpos && mainboard.ypos == ypos\n  && ram.xpos == xpos && ram.ypos == ypos ? null : cpu.xpos;\ncpu.ypos' = cpu.xpos == xpos && cpu.ypos == ypos\n  && flash.xpos == xpos && flash.ypos == ypos\n  && mainboard.xpos == xpos && mainboard.ypos == ypos\n  && ram.xpos == xpos && ram.ypos == ypos ? null : cpu.ypos;\ncpu.state' = cpu.xpos == xpos && cpu.ypos == ypos\n  && flash.xpos == xpos && flash.ypos == ypos\n  && mainboard.xpos == xpos && mainboard.ypos == ypos\n  && ram.xpos == xpos && ram.ypos == ypos ? \"consumed\" : cpu.state;\nflash.xpos' = cpu.xpos == xpos && cpu.ypos == ypos\n  && flash.xpos == xpos && flash.ypos == ypos\n  && mainboard.xpos == xpos && mainboard.ypos == ypos\n  && ram.xpos == xpos && ram.ypos == ypos ? null : flash.xpos;\nflash.ypos' = cpu.xpos == xpos && cpu.ypos == ypos\n  && flash.xpos == xpos && flash.ypos == ypos\n  && mainboard.xpos == xpos && mainboard.ypos == ypos\n  && ram.xpos == xpos && ram.ypos == ypos ? null : flash.ypos;\nflash.state' = cpu.xpos == xpos && cpu.ypos == ypos\n  && flash.xpos == xpos && flash.ypos == ypos\n  && mainboard.xpos == xpos && mainboard.ypos == ypos\n  && ram.xpos == xpos && ram.ypos == ypos ? \"consumed\" : flash.state;\nmainboard.xpos' = cpu.xpos == xpos && cpu.ypos == ypos\n  && flash.xpos == xpos && flash.ypos == ypos\n  && mainboard.xpos == xpos && mainboard.ypos == ypos\n  && ram.xpos == xpos && ram.ypos == ypos ? null : mainboard.xpos;\nmainboard.ypos' = cpu.xpos == xpos && cpu.ypos == ypos\n  && flash.xpos == xpos && flash.ypos == ypos\n  && mainboard.xpos == xpos && mainboard.ypos == ypos\n  && ram.xpos == xpos && ram.ypos == ypos ? null : mainboard.ypos;\nmainboard.state' = cpu.xpos == xpos && cpu.ypos == ypos\n  && flash.xpos == xpos && flash.ypos == ypos\n  && mainboard.xpos == xpos && mainboard.ypos == ypos\n  && ram.xpos == xpos && ram.ypos == ypos ? \"consumed\" : mainboard.state;\nram.xpos' = cpu.xpos == xpos && cpu.ypos == ypos\n  && flash.xpos == xpos && flash.ypos == ypos\n  && mainboard.xpos == xpos && mainboard.ypos == ypos\n  && ram.xpos == xpos && ram.ypos == ypos ? null : ram.xpos;\nram.ypos' = cpu.xpos == xpos && cpu.ypos == ypos\n  && flash.xpos == xpos && flash.ypos == ypos\n  && mainboard.xpos == xpos && mainboard.ypos == ypos\n  && ram.xpos == xpos && ram.ypos == ypos ? null : ram.ypos;\nram.state' = cpu.xpos == xpos && cpu.ypos == ypos\n  && flash.xpos == xpos && flash.ypos == ypos\n  && mainboard.xpos == xpos && mainboard.ypos == ypos\n  && ram.xpos == xpos && ram.ypos == ypos ? \"consumed\" : ram.state;\noutput.success = cpu.xpos == xpos && cpu.ypos == ypos\n  && flash.xpos == xpos && flash.ypos == ypos\n  && mainboard.xpos == xpos && mainboard.ypos == ypos\n  && ram.xpos == xpos && ram.ypos == ypos;"
     },
     "produceSensorModule": {
       "title": "produce sensorModule",
-      "description": "Run the sensorModule recipe: consume mainboard3, sensor and place sensorModule at this station. Has no effect unless every input already lies at the station.",
+      "description": "Run the sensorModule recipe: consume the given mainboard3, sensor and place the given sensorModule at this station. Has no effect unless every input already lies at the station.",
       "input": {
-        "type": "string",
-        "enum": [
-          "produceIt"
-        ],
-        "title": "trigger"
+        "type": "object",
+        "title": "recipe input",
+        "properties": {
+          "trigger": {
+            "type": "string",
+            "enum": [
+              "produceIt"
+            ],
+            "title": "trigger"
+          },
+          "mainboard3": {
+            "type": "string",
+            "title": "mainboard3",
+            "description": "The mainboard3 to consume, by id.",
+            "enum": [
+              "mainboard3"
+            ]
+          },
+          "sensor": {
+            "type": "string",
+            "title": "sensor",
+            "description": "The sensor to consume, by id.",
+            "enum": [
+              "sensor"
+            ]
+          },
+          "sensorModule": {
+            "type": "string",
+            "title": "sensorModule",
+            "description": "The sensorModule to build, by id.",
+            "enum": [
+              "sensormodule"
+            ]
+          }
+        },
+        "required": [
+          "trigger",
+          "mainboard3",
+          "sensor",
+          "sensorModule"
+        ]
       },
       "output": {
         "type": "object",
@@ -107,7 +233,7 @@
       },
       "safe": false,
       "idempotent": false,
-      "vre:effects": "const mainboard3 = <mainboard3>;\nconst sensor = <sensor>;\nconst sensorModule = <sensormodule>;\nsensorModule.xpos' = mainboard3.xpos == xpos && mainboard3.ypos == ypos\n  && sensor.xpos == xpos && sensor.ypos == ypos ? xpos : sensorModule.xpos;\nsensorModule.ypos' = mainboard3.xpos == xpos && mainboard3.ypos == ypos\n  && sensor.xpos == xpos && sensor.ypos == ypos ? ypos : sensorModule.ypos;\nsensorModule.state' = mainboard3.xpos == xpos && mainboard3.ypos == ypos\n  && sensor.xpos == xpos && sensor.ypos == ypos ? \"initialState\" : sensorModule.state;\nsensorModule.madeFrom' = mainboard3.xpos == xpos && mainboard3.ypos == ypos\n  && sensor.xpos == xpos && sensor.ypos == ypos ? [].append(\"mainboard3\").append(\"sensor\") : sensorModule.madeFrom;\nmainboard3.xpos' = mainboard3.xpos == xpos && mainboard3.ypos == ypos\n  && sensor.xpos == xpos && sensor.ypos == ypos ? null : mainboard3.xpos;\nmainboard3.ypos' = mainboard3.xpos == xpos && mainboard3.ypos == ypos\n  && sensor.xpos == xpos && sensor.ypos == ypos ? null : mainboard3.ypos;\nmainboard3.state' = mainboard3.xpos == xpos && mainboard3.ypos == ypos\n  && sensor.xpos == xpos && sensor.ypos == ypos ? \"consumed\" : mainboard3.state;\nsensor.xpos' = mainboard3.xpos == xpos && mainboard3.ypos == ypos\n  && sensor.xpos == xpos && sensor.ypos == ypos ? null : sensor.xpos;\nsensor.ypos' = mainboard3.xpos == xpos && mainboard3.ypos == ypos\n  && sensor.xpos == xpos && sensor.ypos == ypos ? null : sensor.ypos;\nsensor.state' = mainboard3.xpos == xpos && mainboard3.ypos == ypos\n  && sensor.xpos == xpos && sensor.ypos == ypos ? \"consumed\" : sensor.state;\noutput.success = mainboard3.xpos == xpos && mainboard3.ypos == ypos\n  && sensor.xpos == xpos && sensor.ypos == ypos;"
+      "vre:effects": "sensorModule.xpos' = mainboard3.xpos == xpos && mainboard3.ypos == ypos\n  && sensor.xpos == xpos && sensor.ypos == ypos ? xpos : sensorModule.xpos;\nsensorModule.ypos' = mainboard3.xpos == xpos && mainboard3.ypos == ypos\n  && sensor.xpos == xpos && sensor.ypos == ypos ? ypos : sensorModule.ypos;\nsensorModule.state' = mainboard3.xpos == xpos && mainboard3.ypos == ypos\n  && sensor.xpos == xpos && sensor.ypos == ypos ? \"initialState\" : sensorModule.state;\nsensorModule.madeFrom' = mainboard3.xpos == xpos && mainboard3.ypos == ypos\n  && sensor.xpos == xpos && sensor.ypos == ypos ? [].append(mainboard3).append(sensor) : sensorModule.madeFrom;\nmainboard3.xpos' = mainboard3.xpos == xpos && mainboard3.ypos == ypos\n  && sensor.xpos == xpos && sensor.ypos == ypos ? null : mainboard3.xpos;\nmainboard3.ypos' = mainboard3.xpos == xpos && mainboard3.ypos == ypos\n  && sensor.xpos == xpos && sensor.ypos == ypos ? null : mainboard3.ypos;\nmainboard3.state' = mainboard3.xpos == xpos && mainboard3.ypos == ypos\n  && sensor.xpos == xpos && sensor.ypos == ypos ? \"consumed\" : mainboard3.state;\nsensor.xpos' = mainboard3.xpos == xpos && mainboard3.ypos == ypos\n  && sensor.xpos == xpos && sensor.ypos == ypos ? null : sensor.xpos;\nsensor.ypos' = mainboard3.xpos == xpos && mainboard3.ypos == ypos\n  && sensor.xpos == xpos && sensor.ypos == ypos ? null : sensor.ypos;\nsensor.state' = mainboard3.xpos == xpos && mainboard3.ypos == ypos\n  && sensor.xpos == xpos && sensor.ypos == ypos ? \"consumed\" : sensor.state;\noutput.success = mainboard3.xpos == xpos && mainboard3.ypos == ypos\n  && sensor.xpos == xpos && sensor.ypos == ypos;"
     }
   }
 }

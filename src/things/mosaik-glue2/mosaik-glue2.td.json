@@ -53,7 +53,7 @@
   "actions": {
     "produceCaseWithBattery": {
       "title": "produce caseWithBattery",
-      "description": "Run the caseWithBattery recipe: consume the given battery, caseWithSensorModule and place caseWithBattery at this station. Has no effect unless every input already lies at the station.",
+      "description": "Run the caseWithBattery recipe: consume the given battery, caseWithSensorModule and place the given caseWithBattery at this station. Has no effect unless every input already lies at the station.",
       "input": {
         "type": "object",
         "title": "recipe input",
@@ -68,7 +68,7 @@
           "battery": {
             "type": "string",
             "title": "battery",
-            "description": "The battery to use: 'battery' for the generic battery product, or the id of one of the battery spare parts, which is its manufacturer part number (schema:mpn) in lowercase.",
+            "description": "The battery to consume: 'battery' for the generic battery product, or the id of one of the battery spare parts, which is its manufacturer part number (schema:mpn) in lowercase.",
             "enum": [
               "battery",
               "661-44796",
@@ -78,11 +78,29 @@
               "gh82-39193a",
               "1330102000188b"
             ]
+          },
+          "caseWithSensorModule": {
+            "type": "string",
+            "title": "caseWithSensorModule",
+            "description": "The caseWithSensorModule to consume, by id.",
+            "enum": [
+              "casewithsensormodule"
+            ]
+          },
+          "caseWithBattery": {
+            "type": "string",
+            "title": "caseWithBattery",
+            "description": "The caseWithBattery to build, by id.",
+            "enum": [
+              "casewithbattery"
+            ]
           }
         },
         "required": [
           "trigger",
-          "battery"
+          "battery",
+          "caseWithSensorModule",
+          "caseWithBattery"
         ]
       },
       "output": {
@@ -95,17 +113,53 @@
       },
       "safe": false,
       "idempotent": false,
-      "vre:effects": "const caseWithSensorModule = <casewithsensormodule>;\nconst caseWithBattery = <casewithbattery>;\ncaseWithBattery.xpos' = battery.xpos == xpos && battery.ypos == ypos\n  && caseWithSensorModule.xpos == xpos && caseWithSensorModule.ypos == ypos ? xpos : caseWithBattery.xpos;\ncaseWithBattery.ypos' = battery.xpos == xpos && battery.ypos == ypos\n  && caseWithSensorModule.xpos == xpos && caseWithSensorModule.ypos == ypos ? ypos : caseWithBattery.ypos;\ncaseWithBattery.state' = battery.xpos == xpos && battery.ypos == ypos\n  && caseWithSensorModule.xpos == xpos && caseWithSensorModule.ypos == ypos ? \"initialState\" : caseWithBattery.state;\ncaseWithBattery.madeFrom' = battery.xpos == xpos && battery.ypos == ypos\n  && caseWithSensorModule.xpos == xpos && caseWithSensorModule.ypos == ypos ? [].append(battery).append(\"casewithsensormodule\") : caseWithBattery.madeFrom;\nbattery.xpos' = battery.xpos == xpos && battery.ypos == ypos\n  && caseWithSensorModule.xpos == xpos && caseWithSensorModule.ypos == ypos ? null : battery.xpos;\nbattery.ypos' = battery.xpos == xpos && battery.ypos == ypos\n  && caseWithSensorModule.xpos == xpos && caseWithSensorModule.ypos == ypos ? null : battery.ypos;\nbattery.state' = battery.xpos == xpos && battery.ypos == ypos\n  && caseWithSensorModule.xpos == xpos && caseWithSensorModule.ypos == ypos ? \"consumed\" : battery.state;\ncaseWithSensorModule.xpos' = battery.xpos == xpos && battery.ypos == ypos\n  && caseWithSensorModule.xpos == xpos && caseWithSensorModule.ypos == ypos ? null : caseWithSensorModule.xpos;\ncaseWithSensorModule.ypos' = battery.xpos == xpos && battery.ypos == ypos\n  && caseWithSensorModule.xpos == xpos && caseWithSensorModule.ypos == ypos ? null : caseWithSensorModule.ypos;\ncaseWithSensorModule.state' = battery.xpos == xpos && battery.ypos == ypos\n  && caseWithSensorModule.xpos == xpos && caseWithSensorModule.ypos == ypos ? \"consumed\" : caseWithSensorModule.state;\noutput.success = battery.xpos == xpos && battery.ypos == ypos\n  && caseWithSensorModule.xpos == xpos && caseWithSensorModule.ypos == ypos;"
+      "vre:effects": "caseWithBattery.xpos' = battery.xpos == xpos && battery.ypos == ypos\n  && caseWithSensorModule.xpos == xpos && caseWithSensorModule.ypos == ypos ? xpos : caseWithBattery.xpos;\ncaseWithBattery.ypos' = battery.xpos == xpos && battery.ypos == ypos\n  && caseWithSensorModule.xpos == xpos && caseWithSensorModule.ypos == ypos ? ypos : caseWithBattery.ypos;\ncaseWithBattery.state' = battery.xpos == xpos && battery.ypos == ypos\n  && caseWithSensorModule.xpos == xpos && caseWithSensorModule.ypos == ypos ? \"initialState\" : caseWithBattery.state;\ncaseWithBattery.madeFrom' = battery.xpos == xpos && battery.ypos == ypos\n  && caseWithSensorModule.xpos == xpos && caseWithSensorModule.ypos == ypos ? [].append(battery).append(caseWithSensorModule) : caseWithBattery.madeFrom;\nbattery.xpos' = battery.xpos == xpos && battery.ypos == ypos\n  && caseWithSensorModule.xpos == xpos && caseWithSensorModule.ypos == ypos ? null : battery.xpos;\nbattery.ypos' = battery.xpos == xpos && battery.ypos == ypos\n  && caseWithSensorModule.xpos == xpos && caseWithSensorModule.ypos == ypos ? null : battery.ypos;\nbattery.state' = battery.xpos == xpos && battery.ypos == ypos\n  && caseWithSensorModule.xpos == xpos && caseWithSensorModule.ypos == ypos ? \"consumed\" : battery.state;\ncaseWithSensorModule.xpos' = battery.xpos == xpos && battery.ypos == ypos\n  && caseWithSensorModule.xpos == xpos && caseWithSensorModule.ypos == ypos ? null : caseWithSensorModule.xpos;\ncaseWithSensorModule.ypos' = battery.xpos == xpos && battery.ypos == ypos\n  && caseWithSensorModule.xpos == xpos && caseWithSensorModule.ypos == ypos ? null : caseWithSensorModule.ypos;\ncaseWithSensorModule.state' = battery.xpos == xpos && battery.ypos == ypos\n  && caseWithSensorModule.xpos == xpos && caseWithSensorModule.ypos == ypos ? \"consumed\" : caseWithSensorModule.state;\noutput.success = battery.xpos == xpos && battery.ypos == ypos\n  && caseWithSensorModule.xpos == xpos && caseWithSensorModule.ypos == ypos;"
     },
     "produceDisplayUnit": {
       "title": "produce displayUnit",
-      "description": "Run the displayUnit recipe: consume glass, lcd and place displayUnit at this station. Has no effect unless every input already lies at the station.",
+      "description": "Run the displayUnit recipe: consume the given glass, lcd and place the given displayUnit at this station. Has no effect unless every input already lies at the station.",
       "input": {
-        "type": "string",
-        "enum": [
-          "produceIt"
-        ],
-        "title": "trigger"
+        "type": "object",
+        "title": "recipe input",
+        "properties": {
+          "trigger": {
+            "type": "string",
+            "enum": [
+              "produceIt"
+            ],
+            "title": "trigger"
+          },
+          "glass": {
+            "type": "string",
+            "title": "glass",
+            "description": "The glass to consume, by id.",
+            "enum": [
+              "glass"
+            ]
+          },
+          "lcd": {
+            "type": "string",
+            "title": "lcd",
+            "description": "The lcd to consume, by id.",
+            "enum": [
+              "lcd"
+            ]
+          },
+          "displayUnit": {
+            "type": "string",
+            "title": "displayUnit",
+            "description": "The displayUnit to build, by id.",
+            "enum": [
+              "displayunit"
+            ]
+          }
+        },
+        "required": [
+          "trigger",
+          "glass",
+          "lcd",
+          "displayUnit"
+        ]
       },
       "output": {
         "type": "object",
@@ -117,17 +171,53 @@
       },
       "safe": false,
       "idempotent": false,
-      "vre:effects": "const glass = <glass>;\nconst lcd = <lcd>;\nconst displayUnit = <displayunit>;\ndisplayUnit.xpos' = glass.xpos == xpos && glass.ypos == ypos\n  && lcd.xpos == xpos && lcd.ypos == ypos ? xpos : displayUnit.xpos;\ndisplayUnit.ypos' = glass.xpos == xpos && glass.ypos == ypos\n  && lcd.xpos == xpos && lcd.ypos == ypos ? ypos : displayUnit.ypos;\ndisplayUnit.state' = glass.xpos == xpos && glass.ypos == ypos\n  && lcd.xpos == xpos && lcd.ypos == ypos ? \"initialState\" : displayUnit.state;\ndisplayUnit.madeFrom' = glass.xpos == xpos && glass.ypos == ypos\n  && lcd.xpos == xpos && lcd.ypos == ypos ? [].append(\"glass\").append(\"lcd\") : displayUnit.madeFrom;\nglass.xpos' = glass.xpos == xpos && glass.ypos == ypos\n  && lcd.xpos == xpos && lcd.ypos == ypos ? null : glass.xpos;\nglass.ypos' = glass.xpos == xpos && glass.ypos == ypos\n  && lcd.xpos == xpos && lcd.ypos == ypos ? null : glass.ypos;\nglass.state' = glass.xpos == xpos && glass.ypos == ypos\n  && lcd.xpos == xpos && lcd.ypos == ypos ? \"consumed\" : glass.state;\nlcd.xpos' = glass.xpos == xpos && glass.ypos == ypos\n  && lcd.xpos == xpos && lcd.ypos == ypos ? null : lcd.xpos;\nlcd.ypos' = glass.xpos == xpos && glass.ypos == ypos\n  && lcd.xpos == xpos && lcd.ypos == ypos ? null : lcd.ypos;\nlcd.state' = glass.xpos == xpos && glass.ypos == ypos\n  && lcd.xpos == xpos && lcd.ypos == ypos ? \"consumed\" : lcd.state;\noutput.success = glass.xpos == xpos && glass.ypos == ypos\n  && lcd.xpos == xpos && lcd.ypos == ypos;"
+      "vre:effects": "displayUnit.xpos' = glass.xpos == xpos && glass.ypos == ypos\n  && lcd.xpos == xpos && lcd.ypos == ypos ? xpos : displayUnit.xpos;\ndisplayUnit.ypos' = glass.xpos == xpos && glass.ypos == ypos\n  && lcd.xpos == xpos && lcd.ypos == ypos ? ypos : displayUnit.ypos;\ndisplayUnit.state' = glass.xpos == xpos && glass.ypos == ypos\n  && lcd.xpos == xpos && lcd.ypos == ypos ? \"initialState\" : displayUnit.state;\ndisplayUnit.madeFrom' = glass.xpos == xpos && glass.ypos == ypos\n  && lcd.xpos == xpos && lcd.ypos == ypos ? [].append(glass).append(lcd) : displayUnit.madeFrom;\nglass.xpos' = glass.xpos == xpos && glass.ypos == ypos\n  && lcd.xpos == xpos && lcd.ypos == ypos ? null : glass.xpos;\nglass.ypos' = glass.xpos == xpos && glass.ypos == ypos\n  && lcd.xpos == xpos && lcd.ypos == ypos ? null : glass.ypos;\nglass.state' = glass.xpos == xpos && glass.ypos == ypos\n  && lcd.xpos == xpos && lcd.ypos == ypos ? \"consumed\" : glass.state;\nlcd.xpos' = glass.xpos == xpos && glass.ypos == ypos\n  && lcd.xpos == xpos && lcd.ypos == ypos ? null : lcd.xpos;\nlcd.ypos' = glass.xpos == xpos && glass.ypos == ypos\n  && lcd.xpos == xpos && lcd.ypos == ypos ? null : lcd.ypos;\nlcd.state' = glass.xpos == xpos && glass.ypos == ypos\n  && lcd.xpos == xpos && lcd.ypos == ypos ? \"consumed\" : lcd.state;\noutput.success = glass.xpos == xpos && glass.ypos == ypos\n  && lcd.xpos == xpos && lcd.ypos == ypos;"
     },
     "produceSmartphone": {
       "title": "produce smartphone",
-      "description": "Run the smartphone recipe: consume caseWithBattery, displayUnit and place smartphone at this station. Has no effect unless every input already lies at the station.",
+      "description": "Run the smartphone recipe: consume the given caseWithBattery, displayUnit and place the given smartphone at this station. Has no effect unless every input already lies at the station.",
       "input": {
-        "type": "string",
-        "enum": [
-          "produceIt"
-        ],
-        "title": "trigger"
+        "type": "object",
+        "title": "recipe input",
+        "properties": {
+          "trigger": {
+            "type": "string",
+            "enum": [
+              "produceIt"
+            ],
+            "title": "trigger"
+          },
+          "caseWithBattery": {
+            "type": "string",
+            "title": "caseWithBattery",
+            "description": "The caseWithBattery to consume, by id.",
+            "enum": [
+              "casewithbattery"
+            ]
+          },
+          "displayUnit": {
+            "type": "string",
+            "title": "displayUnit",
+            "description": "The displayUnit to consume, by id.",
+            "enum": [
+              "displayunit"
+            ]
+          },
+          "smartphone": {
+            "type": "string",
+            "title": "smartphone",
+            "description": "The smartphone to build, by id.",
+            "enum": [
+              "smartphone"
+            ]
+          }
+        },
+        "required": [
+          "trigger",
+          "caseWithBattery",
+          "displayUnit",
+          "smartphone"
+        ]
       },
       "output": {
         "type": "object",
@@ -139,7 +229,7 @@
       },
       "safe": false,
       "idempotent": false,
-      "vre:effects": "const caseWithBattery = <casewithbattery>;\nconst displayUnit = <displayunit>;\nconst smartphone = <smartphone>;\nsmartphone.xpos' = caseWithBattery.xpos == xpos && caseWithBattery.ypos == ypos\n  && displayUnit.xpos == xpos && displayUnit.ypos == ypos ? xpos : smartphone.xpos;\nsmartphone.ypos' = caseWithBattery.xpos == xpos && caseWithBattery.ypos == ypos\n  && displayUnit.xpos == xpos && displayUnit.ypos == ypos ? ypos : smartphone.ypos;\nsmartphone.state' = caseWithBattery.xpos == xpos && caseWithBattery.ypos == ypos\n  && displayUnit.xpos == xpos && displayUnit.ypos == ypos ? \"initialState\" : smartphone.state;\nsmartphone.madeFrom' = caseWithBattery.xpos == xpos && caseWithBattery.ypos == ypos\n  && displayUnit.xpos == xpos && displayUnit.ypos == ypos ? [].append(\"casewithbattery\").append(\"displayunit\") : smartphone.madeFrom;\ncaseWithBattery.xpos' = caseWithBattery.xpos == xpos && caseWithBattery.ypos == ypos\n  && displayUnit.xpos == xpos && displayUnit.ypos == ypos ? null : caseWithBattery.xpos;\ncaseWithBattery.ypos' = caseWithBattery.xpos == xpos && caseWithBattery.ypos == ypos\n  && displayUnit.xpos == xpos && displayUnit.ypos == ypos ? null : caseWithBattery.ypos;\ncaseWithBattery.state' = caseWithBattery.xpos == xpos && caseWithBattery.ypos == ypos\n  && displayUnit.xpos == xpos && displayUnit.ypos == ypos ? \"consumed\" : caseWithBattery.state;\ndisplayUnit.xpos' = caseWithBattery.xpos == xpos && caseWithBattery.ypos == ypos\n  && displayUnit.xpos == xpos && displayUnit.ypos == ypos ? null : displayUnit.xpos;\ndisplayUnit.ypos' = caseWithBattery.xpos == xpos && caseWithBattery.ypos == ypos\n  && displayUnit.xpos == xpos && displayUnit.ypos == ypos ? null : displayUnit.ypos;\ndisplayUnit.state' = caseWithBattery.xpos == xpos && caseWithBattery.ypos == ypos\n  && displayUnit.xpos == xpos && displayUnit.ypos == ypos ? \"consumed\" : displayUnit.state;\noutput.success = caseWithBattery.xpos == xpos && caseWithBattery.ypos == ypos\n  && displayUnit.xpos == xpos && displayUnit.ypos == ypos;"
+      "vre:effects": "smartphone.xpos' = caseWithBattery.xpos == xpos && caseWithBattery.ypos == ypos\n  && displayUnit.xpos == xpos && displayUnit.ypos == ypos ? xpos : smartphone.xpos;\nsmartphone.ypos' = caseWithBattery.xpos == xpos && caseWithBattery.ypos == ypos\n  && displayUnit.xpos == xpos && displayUnit.ypos == ypos ? ypos : smartphone.ypos;\nsmartphone.state' = caseWithBattery.xpos == xpos && caseWithBattery.ypos == ypos\n  && displayUnit.xpos == xpos && displayUnit.ypos == ypos ? \"initialState\" : smartphone.state;\nsmartphone.madeFrom' = caseWithBattery.xpos == xpos && caseWithBattery.ypos == ypos\n  && displayUnit.xpos == xpos && displayUnit.ypos == ypos ? [].append(caseWithBattery).append(displayUnit) : smartphone.madeFrom;\ncaseWithBattery.xpos' = caseWithBattery.xpos == xpos && caseWithBattery.ypos == ypos\n  && displayUnit.xpos == xpos && displayUnit.ypos == ypos ? null : caseWithBattery.xpos;\ncaseWithBattery.ypos' = caseWithBattery.xpos == xpos && caseWithBattery.ypos == ypos\n  && displayUnit.xpos == xpos && displayUnit.ypos == ypos ? null : caseWithBattery.ypos;\ncaseWithBattery.state' = caseWithBattery.xpos == xpos && caseWithBattery.ypos == ypos\n  && displayUnit.xpos == xpos && displayUnit.ypos == ypos ? \"consumed\" : caseWithBattery.state;\ndisplayUnit.xpos' = caseWithBattery.xpos == xpos && caseWithBattery.ypos == ypos\n  && displayUnit.xpos == xpos && displayUnit.ypos == ypos ? null : displayUnit.xpos;\ndisplayUnit.ypos' = caseWithBattery.xpos == xpos && caseWithBattery.ypos == ypos\n  && displayUnit.xpos == xpos && displayUnit.ypos == ypos ? null : displayUnit.ypos;\ndisplayUnit.state' = caseWithBattery.xpos == xpos && caseWithBattery.ypos == ypos\n  && displayUnit.xpos == xpos && displayUnit.ypos == ypos ? \"consumed\" : displayUnit.state;\noutput.success = caseWithBattery.xpos == xpos && caseWithBattery.ypos == ypos\n  && displayUnit.xpos == xpos && displayUnit.ypos == ypos;"
     }
   }
 }

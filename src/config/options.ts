@@ -5,6 +5,13 @@ const { debug } = createLoggers('config');
 /** Port the WoT HTTP server listens on unless `--port` / `WOT_LAB_PORT` says otherwise. */
 export const DEFAULT_PORT = 8081;
 
+/**
+ * How often the pod's `orders/` container is read, unless `--orders-poll` says
+ * otherwise. Often enough that an order placed by hand is picked up while the
+ * person who placed it is still watching, rare enough to be no load on a pod.
+ */
+export const defaultOrdersPollSeconds = 5;
+
 /** A request to bring `count` Things online from one Thing Model. */
 export interface ThingRequest {
   /** The Thing Model to build them from. */
@@ -46,6 +53,12 @@ export interface LabOptions {
    * reports as the agent. Unset means `x-agent`.
    */
   agentHeader?: string;
+  /**
+   * Seconds between sweeps of the pod's `orders/` container, which the lab builds
+   * what it finds in. Unset means `defaultOrdersPollSeconds`; zero leaves orders
+   * unread, for a lab that is to write records and nothing else.
+   */
+  ordersPollSeconds?: number;
 }
 
 /**
@@ -109,6 +122,19 @@ function parseContainer(value: string): string {
     throw new Error(`Invalid --solid-container: '${value}' must be a plain container URL`);
   }
   return url.pathname.endsWith('/') ? url.href : `${url.href}/`;
+}
+
+/**
+ * A poll interval in whole seconds. Zero is allowed and means "do not poll";
+ * anything shorter than a second is not, because a sweep reads a container and
+ * may start a production run, and neither belongs in a tight loop.
+ */
+function parseSeconds(value: string): number {
+  const seconds = Number.parseInt(value, 10);
+  if (!Number.isInteger(seconds) || seconds < 0 || String(seconds) !== value.trim()) {
+    throw new Error(`Invalid --orders-poll: '${value}' is not a whole number of seconds`);
+  }
+  return seconds;
 }
 
 // RFC 9110 field names: a token, and nothing a header name cannot be. Checked
@@ -178,6 +204,7 @@ export function parseArgs(argv: string[] = process.argv): LabOptions {
   const agentHeaderFlag = flagValue(argv, '--agent-header') ?? process.env.WOT_LAB_AGENT_HEADER;
   const solidClientId = flagValue(argv, '--solid-client-id') ?? process.env.WOT_LAB_SOLID_CLIENT_ID;
   const solidClientSecret = flagValue(argv, '--solid-client-secret') ?? process.env.WOT_LAB_SOLID_CLIENT_SECRET;
+  const ordersPollFlag = flagValue(argv, '--orders-poll') ?? process.env.WOT_LAB_ORDERS_POLL;
 
   const port = portFlag === undefined ? DEFAULT_PORT : Number.parseInt(portFlag, 10);
   if (!Number.isInteger(port) || port < 1 || port > 65535) {
@@ -211,5 +238,25 @@ export function parseArgs(argv: string[] = process.argv): LabOptions {
     debug(`Requesting agents are read from the '${agentHeader}' header`);
   }
 
-  return { things: requested, env, port, modelsDir, solidContainer, solidClientId, solidClientSecret, agentHeader };
+  const ordersPollSeconds = ordersPollFlag === undefined
+    ? undefined
+    : parseSeconds(ordersPollFlag);
+  if (solidContainer) {
+    const seconds = ordersPollSeconds ?? defaultOrdersPollSeconds;
+    debug(seconds > 0
+      ? `Orders are read from ${solidContainer}orders/ every ${seconds}s`
+      : 'Orders are not read');
+  }
+
+  return {
+    things: requested,
+    env,
+    port,
+    modelsDir,
+    solidContainer,
+    solidClientId,
+    solidClientSecret,
+    agentHeader,
+    ordersPollSeconds
+  };
 }

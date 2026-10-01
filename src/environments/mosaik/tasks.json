@@ -1483,7 +1483,14 @@
       {
         "thing": "solder1",
         "action": "produceMainModule",
-        "input": "produceIt"
+        "input": {
+          "trigger": "produceIt",
+          "cpu": "cpu",
+          "flash": "flash",
+          "mainboard": "mainboard",
+          "ram": "ram",
+          "mainModule": "mainmodule"
+        }
       }
     ]
   },
@@ -1760,7 +1767,11 @@
       {
         "thing": "combine",
         "action": "produceBattery",
-        "input": { "trigger": "produceIt", "battery": "battery" }
+        "input": {
+          "trigger": "produceIt",
+          "batterycell": "batterycell",
+          "battery": "battery"
+        }
       },
       {
         "thing": "t1",
@@ -1905,7 +1916,11 @@
       {
         "thing": "casting",
         "action": "produceCase",
-        "input": "produceIt"
+        "input": {
+          "trigger": "produceIt",
+          "ingot": "ingot",
+          "case": "case"
+        }
       },
       {
         "thing": "t1",
@@ -2595,7 +2610,14 @@
       {
         "thing": "solder1",
         "action": "produceMainModule",
-        "input": "produceIt"
+        "input": {
+          "trigger": "produceIt",
+          "cpu": "cpu",
+          "flash": "flash",
+          "mainboard": "mainboard",
+          "ram": "ram",
+          "mainModule": "mainmodule"
+        }
       },
       {
         "thing": "t1",
@@ -2785,7 +2807,12 @@
       {
         "thing": "fixing",
         "action": "produceMainModuleWithPorts",
-        "input": "produceIt"
+        "input": {
+          "trigger": "produceIt",
+          "mainModule": "mainmodule",
+          "port": "port",
+          "mainModuleWithPorts": "mainmodulewithports"
+        }
       },
       {
         "thing": "t1",
@@ -3020,7 +3047,12 @@
       {
         "thing": "bolt1",
         "action": "produceCaseWithMainModule",
-        "input": "produceIt"
+        "input": {
+          "trigger": "produceIt",
+          "case": "case",
+          "mainModuleWithPorts": "mainmodulewithports",
+          "caseWithMainModule": "casewithmainmodule"
+        }
       },
       {
         "thing": "t1",
@@ -3315,7 +3347,12 @@
       {
         "thing": "solder2",
         "action": "produceCommunicationModule",
-        "input": "produceIt"
+        "input": {
+          "trigger": "produceIt",
+          "comm": "comm",
+          "mainboard2": "mainboard2",
+          "communicationModule": "communicationmodule"
+        }
       },
       {
         "thing": "t1",
@@ -3390,7 +3427,12 @@
       {
         "thing": "bolt1",
         "action": "produceCaseWithCommunicationModule",
-        "input": "produceIt"
+        "input": {
+          "trigger": "produceIt",
+          "caseWithMainModule": "casewithmainmodule",
+          "communicationModule": "communicationmodule",
+          "caseWithCommunicationModule": "casewithcommunicationmodule"
+        }
       },
       {
         "thing": "t1",
@@ -3735,7 +3777,12 @@
       {
         "thing": "solder2",
         "action": "produceSensorModule",
-        "input": "produceIt"
+        "input": {
+          "trigger": "produceIt",
+          "mainboard3": "mainboard3",
+          "sensor": "sensor",
+          "sensorModule": "sensormodule"
+        }
       },
       {
         "thing": "t1",
@@ -3810,7 +3857,12 @@
       {
         "thing": "bolt1",
         "action": "produceCaseWithSensorModule",
-        "input": "produceIt"
+        "input": {
+          "trigger": "produceIt",
+          "caseWithCommunicationModule": "casewithcommunicationmodule",
+          "sensorModule": "sensormodule",
+          "caseWithSensorModule": "casewithsensormodule"
+        }
       },
       {
         "thing": "t1",
@@ -4100,7 +4152,12 @@
       {
         "thing": "glue1",
         "action": "produceCaseWithBattery",
-        "input": { "trigger": "produceIt", "battery": "battery" }
+        "input": {
+          "trigger": "produceIt",
+          "battery": "battery",
+          "caseWithSensorModule": "casewithsensormodule",
+          "caseWithBattery": "casewithbattery"
+        }
       },
       {
         "thing": "t1",
@@ -4585,12 +4642,22 @@
       {
         "thing": "glue1",
         "action": "produceDisplayUnit",
-        "input": "produceIt"
+        "input": {
+          "trigger": "produceIt",
+          "glass": "glass",
+          "lcd": "lcd",
+          "displayUnit": "displayunit"
+        }
       },
       {
         "thing": "glue1",
         "action": "produceSmartphone",
-        "input": "produceIt"
+        "input": {
+          "trigger": "produceIt",
+          "caseWithBattery": "casewithbattery",
+          "displayUnit": "displayunit",
+          "smartphone": "smartphone"
+        }
       }
     ]
   }

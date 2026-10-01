@@ -21,6 +21,7 @@ A Thing needs only its Thing Description and state; behavior can come from `vre:
 - [Configuration](#configuration)
 - [Creating Things](#creating-things)
 - [Publishing provenance to a Solid pod](#publishing-provenance-to-a-solid-pod)
+- [Building what a Solid pod orders](#building-what-a-solid-pod-orders)
 - [API Reference](#api-reference)
 - [Security](#security)
 - [Examples](#examples)
@@ -93,14 +94,19 @@ bun run dev -- --port 9000                # or WOT_LAB_PORT=9000
 - `--models-dir <path>` - where Thing Models authored in the dashboard are
   written (or `WOT_LAB_MODELS_DIR`). Unset, they are written alongside the
   bundled ones in `src/things/`.
-- `--solid-container <url>` - an LDP container (a Solid pod's, typically) to write
-  into: `traces/` gets a PROV-O record of every interaction, `products/` every
-  finished product and the products it links (or `WOT_LAB_SOLID_CONTAINER`). Unset,
-  nothing is posted and the lab makes no outbound requests - see
-  [Publishing provenance to a Solid pod](#publishing-provenance-to-a-solid-pod).
+- `--solid-container <url>` - an LDP container (a Solid pod's, typically) the lab
+  works against: `traces/` gets a PROV-O record of every interaction, `products/`
+  every finished product and the products it links, and `orders/` is read for
+  smartphones to build (or `WOT_LAB_SOLID_CONTAINER`). Unset, nothing is posted,
+  nothing is read and the lab makes no outbound requests - see
+  [Publishing provenance to a Solid pod](#publishing-provenance-to-a-solid-pod)
+  and [Building what a Solid pod orders](#building-what-a-solid-pod-orders).
 - `--agent-header <name>` - the request header a client names itself in, reported
   as the activity's agent (or `WOT_LAB_AGENT_HEADER`). Defaults to `X-Agent`; a
   request naming no agent is attributed to the address it came from. 
+- `--orders-poll <seconds>` - how often the pod's `orders/` container is read (or
+  `WOT_LAB_ORDERS_POLL`). Defaults to 5; `0` leaves orders unread, for a lab that
+  is to write records and nothing else.
 
 
 ## Creating Things
@@ -265,12 +271,13 @@ the whole environment's state, every Property of every running Thing.
 bun run dev -- --env smart-home --solid-container https://solid.example.org/alice/wot-lab/
 ```
 
-The container holds two of its own, which the lab creates:
+The container holds three of its own, which the lab creates:
 
 ```
 wot-lab/
 ├── traces/<run>/     one record per interaction, in order
-└── products/<run>/   each finished product and every product it links
+├── products/<run>/   each finished product and every product it links
+└── orders/           smartphones to build; the lab reads this one
 ```
 
 A run is the environment plus the moment it came up. A product counts as finished
@@ -278,6 +285,9 @@ when its model or manifest types it `ex:Smartphone`; when an Action produces one
 the lab writes its Turtle representation and those of its battery and raw inputs
 beside it, so its relative links resolve inside the pod. Each links back to the
 run's traces with `ex:trace`.
+
+`orders/` is the one container the lab reads rather than writes - see
+[Building what a Solid pod orders](#building-what-a-solid-pod-orders).
 
 The container is the only required configuration, and without it nothing is posted:
 the default lab makes no outbound requests. Requests are unauthenticated, so the
@@ -499,6 +509,106 @@ public as the container's append permission is. And the resources accumulate: on
 per interaction, which a benchmark replay produces by the hundred. Neither the lab
 nor the pod prunes them.
 
+A third: whoever can write to `orders/` can make the factory run. See
+[Building what a Solid pod orders](#building-what-a-solid-pod-orders).
+
+## Building what a Solid pod orders
+
+A lab pointed at a container reads `orders/` inside it every few seconds and builds
+what it finds. This is the replacement for running a fixed plan script by hand: the
+plan is still the environment's own, but what it is run *with* comes from the pod.
+
+```bash
+bun run dev -- --env mosaik --solid-container https://solid.example.org/alice/wot-lab/
+# then put an order in the pod, e.g. one of the examples:
+curl -X PUT -H 'Content-Type: text/turtle' \
+  --data-binary @orders/order_apple-iphone-16.ttl \
+  https://solid.example.org/alice/wot-lab/orders/order-1.ttl
+```
+
+### The order
+
+An order is a Turtle document listing the products a smartphone is to be made of,
+each named by the **URI the lab serves it at**:
+
+```turtle
+@prefix schema: <https://schema.org/> .
+@prefix ex:     <https://example.org/passport/> .
+
+<#order>
+    a             schema:Order ;
+    schema:name   "One smartphone with the Apple iPhone 16 battery" ;
+    ex:component  <http://localhost:8081/products/661-44796> ,
+                  <http://localhost:8081/products/batterycell> ,
+                  <http://localhost:8081/products/glass> ,
+                  <http://localhost:8081/products/lcd> .
+```
+
+What makes a URI a component is that it names a product of *this* lab, so the
+predicate carrying it is the order author's choice - `ex:component`,
+`schema:orderedItem` or a term of their own all read the same, and a document in
+the container that names no product of the lab is not an order and is left alone.
+A `.../products/<id>` and a `.../products/<id>#product` name the same product.
+One consequence worth knowing: the URIs have to match the port the lab is on, so
+the bundled examples under [`orders/`](orders) say `8081` and need editing for a
+lab started elsewhere.
+
+Six examples ship, one per phone in `phone resources/` - the same six the plan
+scripts under `plans/` were written for.
+
+### How an order is built
+
+The plan is the environment's own: the benchmark task whose goal puts a finished
+product (one typed `ex:Smartphone`) on the floor, which for `mosaik` is `s6` and
+its 618 steps. Nothing about it is hard-coded here - the task is found by its goal
+and the products' own classes.
+
+What the order changes is **which products** the plan's steps name. Every produce
+Action takes a parameter per recipe role - each input it consumes and the output it
+builds - and each role's `enum` is the set of products that can play it:
+
+```bash
+curl -X POST localhost:8081/combine/actions/produceBattery \
+  -H 'Content-Type: application/json' \
+  -d '{"trigger":"produceIt","batterycell":"batterycell","battery":"661-44796"}'
+```
+
+So a product the order names tells the lab which role the order spoke about, and
+every other product of that role is replaced by it, in the produce steps and in the
+transporter's `pickup` alike. An order that names only a battery gets the plan's own
+products for everything else; an order naming a product no recipe uses is built
+anyway, with that component logged as unused.
+
+Each order starts from the environment's initial state - the same reset
+`POST /_lab/reset` performs - because an order consumes raw materials and the one
+after it would otherwise find the floor empty. The records of the orders before it
+are already in the pod, so nothing recorded is lost.
+
+Every invocation carries the order's URI as its agent, so the run's traces say
+which order caused them:
+
+```turtle
+<#interaction>
+    a prov:Activity ;
+    prov:wasAssociatedWith <https://solid.example.org/alice/wot-lab/orders/order-1.ttl> .
+```
+
+### When an order is done
+
+The lab adds one triple to the order on the pod:
+
+```turtle
+<#order> <https://example.org/passport/fulfilled> true .
+```
+
+A `PATCH` with a SPARQL update, so the document keeps the comments and layout it
+was written with; a pod that will not take one is read and written back instead.
+An order that already carries the triple is skipped, which is what keeps a restart
+from building everything in the container again. An order whose plan ran but whose
+product did not appear is **not** marked, and is logged - it is not retried while
+the lab is up, because a plan that cannot run would otherwise be retried every few
+seconds.
+
 ## API Reference
 
 WoT-Lab exposes one HTTP server from `@node-wot/binding-http`. It listens on port `8081` by default; use `--port` or `WOT_LAB_PORT` to change it.
@@ -589,7 +699,7 @@ cross-Thing `vre:effects` (and `logic.js` only where VRE can't reach):
 | `social-media` | 3 | 14 | Three pages of a decentralized social network; following and liking are cross-Thing effects. |
 | `smart-home` | 7 | 15 | A home energy hub, thermostat, washer, dryer, car charger, and a plug powering a lamp. |
 | `ibm-building3` | 2279 | 11 | The **smart office**: an office building of 281 rooms, each with a colour lamp, radiator, temperature sensor, and door and window sensors and actuators. From the IBM Dublin building model. |
-| `mosaik` | 37 | 6 | The **factory**: a MOSAIK shopfloor of 25 products, ten workstations, a transporter and the recipe book; a plan can run to 618 invocations. |
+| `mosaik` | 37 | 6 | The **factory**: a MOSAIK shopfloor of 25 products (6 of them battery spare parts), ten workstations, a transporter and the recipe book; a plan can run to 618 invocations, and every produce Action names the products it consumes and the one it builds. |
 
 A seventh manifest, `ibm-building3-small` (17 Things, 4 tasks), is a two-room
 subset of the smart office for iterating without the full building's start-up;

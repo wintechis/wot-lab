@@ -45,13 +45,49 @@
   "actions": {
     "produceCaseWithCommunicationModule": {
       "title": "produce caseWithCommunicationModule",
-      "description": "Run the caseWithCommunicationModule recipe: consume caseWithMainModule, communicationModule and place caseWithCommunicationModule at this station. Has no effect unless every input already lies at the station.",
+      "description": "Run the caseWithCommunicationModule recipe: consume the given caseWithMainModule, communicationModule and place the given caseWithCommunicationModule at this station. Has no effect unless every input already lies at the station.",
       "input": {
-        "type": "string",
-        "enum": [
-          "produceIt"
-        ],
-        "title": "trigger"
+        "type": "object",
+        "title": "recipe input",
+        "properties": {
+          "trigger": {
+            "type": "string",
+            "enum": [
+              "produceIt"
+            ],
+            "title": "trigger"
+          },
+          "caseWithMainModule": {
+            "type": "string",
+            "title": "caseWithMainModule",
+            "description": "The caseWithMainModule to consume, by id.",
+            "enum": [
+              "casewithmainmodule"
+            ]
+          },
+          "communicationModule": {
+            "type": "string",
+            "title": "communicationModule",
+            "description": "The communicationModule to consume, by id.",
+            "enum": [
+              "communicationmodule"
+            ]
+          },
+          "caseWithCommunicationModule": {
+            "type": "string",
+            "title": "caseWithCommunicationModule",
+            "description": "The caseWithCommunicationModule to build, by id.",
+            "enum": [
+              "casewithcommunicationmodule"
+            ]
+          }
+        },
+        "required": [
+          "trigger",
+          "caseWithMainModule",
+          "communicationModule",
+          "caseWithCommunicationModule"
+        ]
       },
       "output": {
         "type": "object",
@@ -63,17 +99,53 @@
       },
       "safe": false,
       "idempotent": false,
-      "vre:effects": "const caseWithMainModule = <casewithmainmodule>;\nconst communicationModule = <communicationmodule>;\nconst caseWithCommunicationModule = <casewithcommunicationmodule>;\ncaseWithCommunicationModule.xpos' = caseWithMainModule.xpos == xpos && caseWithMainModule.ypos == ypos\n  && communicationModule.xpos == xpos && communicationModule.ypos == ypos ? xpos : caseWithCommunicationModule.xpos;\ncaseWithCommunicationModule.ypos' = caseWithMainModule.xpos == xpos && caseWithMainModule.ypos == ypos\n  && communicationModule.xpos == xpos && communicationModule.ypos == ypos ? ypos : caseWithCommunicationModule.ypos;\ncaseWithCommunicationModule.state' = caseWithMainModule.xpos == xpos && caseWithMainModule.ypos == ypos\n  && communicationModule.xpos == xpos && communicationModule.ypos == ypos ? \"initialState\" : caseWithCommunicationModule.state;\ncaseWithCommunicationModule.madeFrom' = caseWithMainModule.xpos == xpos && caseWithMainModule.ypos == ypos\n  && communicationModule.xpos == xpos && communicationModule.ypos == ypos ? [].append(\"casewithmainmodule\").append(\"communicationmodule\") : caseWithCommunicationModule.madeFrom;\ncaseWithMainModule.xpos' = caseWithMainModule.xpos == xpos && caseWithMainModule.ypos == ypos\n  && communicationModule.xpos == xpos && communicationModule.ypos == ypos ? null : caseWithMainModule.xpos;\ncaseWithMainModule.ypos' = caseWithMainModule.xpos == xpos && caseWithMainModule.ypos == ypos\n  && communicationModule.xpos == xpos && communicationModule.ypos == ypos ? null : caseWithMainModule.ypos;\ncaseWithMainModule.state' = caseWithMainModule.xpos == xpos && caseWithMainModule.ypos == ypos\n  && communicationModule.xpos == xpos && communicationModule.ypos == ypos ? \"consumed\" : caseWithMainModule.state;\ncommunicationModule.xpos' = caseWithMainModule.xpos == xpos && caseWithMainModule.ypos == ypos\n  && communicationModule.xpos == xpos && communicationModule.ypos == ypos ? null : communicationModule.xpos;\ncommunicationModule.ypos' = caseWithMainModule.xpos == xpos && caseWithMainModule.ypos == ypos\n  && communicationModule.xpos == xpos && communicationModule.ypos == ypos ? null : communicationModule.ypos;\ncommunicationModule.state' = caseWithMainModule.xpos == xpos && caseWithMainModule.ypos == ypos\n  && communicationModule.xpos == xpos && communicationModule.ypos == ypos ? \"consumed\" : communicationModule.state;\noutput.success = caseWithMainModule.xpos == xpos && caseWithMainModule.ypos == ypos\n  && communicationModule.xpos == xpos && communicationModule.ypos == ypos;"
+      "vre:effects": "caseWithCommunicationModule.xpos' = caseWithMainModule.xpos == xpos && caseWithMainModule.ypos == ypos\n  && communicationModule.xpos == xpos && communicationModule.ypos == ypos ? xpos : caseWithCommunicationModule.xpos;\ncaseWithCommunicationModule.ypos' = caseWithMainModule.xpos == xpos && caseWithMainModule.ypos == ypos\n  && communicationModule.xpos == xpos && communicationModule.ypos == ypos ? ypos : caseWithCommunicationModule.ypos;\ncaseWithCommunicationModule.state' = caseWithMainModule.xpos == xpos && caseWithMainModule.ypos == ypos\n  && communicationModule.xpos == xpos && communicationModule.ypos == ypos ? \"initialState\" : caseWithCommunicationModule.state;\ncaseWithCommunicationModule.madeFrom' = caseWithMainModule.xpos == xpos && caseWithMainModule.ypos == ypos\n  && communicationModule.xpos == xpos && communicationModule.ypos == ypos ? [].append(caseWithMainModule).append(communicationModule) : caseWithCommunicationModule.madeFrom;\ncaseWithMainModule.xpos' = caseWithMainModule.xpos == xpos && caseWithMainModule.ypos == ypos\n  && communicationModule.xpos == xpos && communicationModule.ypos == ypos ? null : caseWithMainModule.xpos;\ncaseWithMainModule.ypos' = caseWithMainModule.xpos == xpos && caseWithMainModule.ypos == ypos\n  && communicationModule.xpos == xpos && communicationModule.ypos == ypos ? null : caseWithMainModule.ypos;\ncaseWithMainModule.state' = caseWithMainModule.xpos == xpos && caseWithMainModule.ypos == ypos\n  && communicationModule.xpos == xpos && communicationModule.ypos == ypos ? \"consumed\" : caseWithMainModule.state;\ncommunicationModule.xpos' = caseWithMainModule.xpos == xpos && caseWithMainModule.ypos == ypos\n  && communicationModule.xpos == xpos && communicationModule.ypos == ypos ? null : communicationModule.xpos;\ncommunicationModule.ypos' = caseWithMainModule.xpos == xpos && caseWithMainModule.ypos == ypos\n  && communicationModule.xpos == xpos && communicationModule.ypos == ypos ? null : communicationModule.ypos;\ncommunicationModule.state' = caseWithMainModule.xpos == xpos && caseWithMainModule.ypos == ypos\n  && communicationModule.xpos == xpos && communicationModule.ypos == ypos ? \"consumed\" : communicationModule.state;\noutput.success = caseWithMainModule.xpos == xpos && caseWithMainModule.ypos == ypos\n  && communicationModule.xpos == xpos && communicationModule.ypos == ypos;"
     },
     "produceCaseWithMainModule": {
       "title": "produce caseWithMainModule",
-      "description": "Run the caseWithMainModule recipe: consume case, mainModuleWithPorts and place caseWithMainModule at this station. Has no effect unless every input already lies at the station.",
+      "description": "Run the caseWithMainModule recipe: consume the given case, mainModuleWithPorts and place the given caseWithMainModule at this station. Has no effect unless every input already lies at the station.",
       "input": {
-        "type": "string",
-        "enum": [
-          "produceIt"
-        ],
-        "title": "trigger"
+        "type": "object",
+        "title": "recipe input",
+        "properties": {
+          "trigger": {
+            "type": "string",
+            "enum": [
+              "produceIt"
+            ],
+            "title": "trigger"
+          },
+          "case": {
+            "type": "string",
+            "title": "case",
+            "description": "The case to consume, by id.",
+            "enum": [
+              "case"
+            ]
+          },
+          "mainModuleWithPorts": {
+            "type": "string",
+            "title": "mainModuleWithPorts",
+            "description": "The mainModuleWithPorts to consume, by id.",
+            "enum": [
+              "mainmodulewithports"
+            ]
+          },
+          "caseWithMainModule": {
+            "type": "string",
+            "title": "caseWithMainModule",
+            "description": "The caseWithMainModule to build, by id.",
+            "enum": [
+              "casewithmainmodule"
+            ]
+          }
+        },
+        "required": [
+          "trigger",
+          "case",
+          "mainModuleWithPorts",
+          "caseWithMainModule"
+        ]
       },
       "output": {
         "type": "object",
@@ -85,17 +157,53 @@
       },
       "safe": false,
       "idempotent": false,
-      "vre:effects": "const case = <case>;\nconst mainModuleWithPorts = <mainmodulewithports>;\nconst caseWithMainModule = <casewithmainmodule>;\ncaseWithMainModule.xpos' = case.xpos == xpos && case.ypos == ypos\n  && mainModuleWithPorts.xpos == xpos && mainModuleWithPorts.ypos == ypos ? xpos : caseWithMainModule.xpos;\ncaseWithMainModule.ypos' = case.xpos == xpos && case.ypos == ypos\n  && mainModuleWithPorts.xpos == xpos && mainModuleWithPorts.ypos == ypos ? ypos : caseWithMainModule.ypos;\ncaseWithMainModule.state' = case.xpos == xpos && case.ypos == ypos\n  && mainModuleWithPorts.xpos == xpos && mainModuleWithPorts.ypos == ypos ? \"initialState\" : caseWithMainModule.state;\ncaseWithMainModule.madeFrom' = case.xpos == xpos && case.ypos == ypos\n  && mainModuleWithPorts.xpos == xpos && mainModuleWithPorts.ypos == ypos ? [].append(\"case\").append(\"mainmodulewithports\") : caseWithMainModule.madeFrom;\ncase.xpos' = case.xpos == xpos && case.ypos == ypos\n  && mainModuleWithPorts.xpos == xpos && mainModuleWithPorts.ypos == ypos ? null : case.xpos;\ncase.ypos' = case.xpos == xpos && case.ypos == ypos\n  && mainModuleWithPorts.xpos == xpos && mainModuleWithPorts.ypos == ypos ? null : case.ypos;\ncase.state' = case.xpos == xpos && case.ypos == ypos\n  && mainModuleWithPorts.xpos == xpos && mainModuleWithPorts.ypos == ypos ? \"consumed\" : case.state;\nmainModuleWithPorts.xpos' = case.xpos == xpos && case.ypos == ypos\n  && mainModuleWithPorts.xpos == xpos && mainModuleWithPorts.ypos == ypos ? null : mainModuleWithPorts.xpos;\nmainModuleWithPorts.ypos' = case.xpos == xpos && case.ypos == ypos\n  && mainModuleWithPorts.xpos == xpos && mainModuleWithPorts.ypos == ypos ? null : mainModuleWithPorts.ypos;\nmainModuleWithPorts.state' = case.xpos == xpos && case.ypos == ypos\n  && mainModuleWithPorts.xpos == xpos && mainModuleWithPorts.ypos == ypos ? \"consumed\" : mainModuleWithPorts.state;\noutput.success = case.xpos == xpos && case.ypos == ypos\n  && mainModuleWithPorts.xpos == xpos && mainModuleWithPorts.ypos == ypos;"
+      "vre:effects": "caseWithMainModule.xpos' = case.xpos == xpos && case.ypos == ypos\n  && mainModuleWithPorts.xpos == xpos && mainModuleWithPorts.ypos == ypos ? xpos : caseWithMainModule.xpos;\ncaseWithMainModule.ypos' = case.xpos == xpos && case.ypos == ypos\n  && mainModuleWithPorts.xpos == xpos && mainModuleWithPorts.ypos == ypos ? ypos : caseWithMainModule.ypos;\ncaseWithMainModule.state' = case.xpos == xpos && case.ypos == ypos\n  && mainModuleWithPorts.xpos == xpos && mainModuleWithPorts.ypos == ypos ? \"initialState\" : caseWithMainModule.state;\ncaseWithMainModule.madeFrom' = case.xpos == xpos && case.ypos == ypos\n  && mainModuleWithPorts.xpos == xpos && mainModuleWithPorts.ypos == ypos ? [].append(case).append(mainModuleWithPorts) : caseWithMainModule.madeFrom;\ncase.xpos' = case.xpos == xpos && case.ypos == ypos\n  && mainModuleWithPorts.xpos == xpos && mainModuleWithPorts.ypos == ypos ? null : case.xpos;\ncase.ypos' = case.xpos == xpos && case.ypos == ypos\n  && mainModuleWithPorts.xpos == xpos && mainModuleWithPorts.ypos == ypos ? null : case.ypos;\ncase.state' = case.xpos == xpos && case.ypos == ypos\n  && mainModuleWithPorts.xpos == xpos && mainModuleWithPorts.ypos == ypos ? \"consumed\" : case.state;\nmainModuleWithPorts.xpos' = case.xpos == xpos && case.ypos == ypos\n  && mainModuleWithPorts.xpos == xpos && mainModuleWithPorts.ypos == ypos ? null : mainModuleWithPorts.xpos;\nmainModuleWithPorts.ypos' = case.xpos == xpos && case.ypos == ypos\n  && mainModuleWithPorts.xpos == xpos && mainModuleWithPorts.ypos == ypos ? null : mainModuleWithPorts.ypos;\nmainModuleWithPorts.state' = case.xpos == xpos && case.ypos == ypos\n  && mainModuleWithPorts.xpos == xpos && mainModuleWithPorts.ypos == ypos ? \"consumed\" : mainModuleWithPorts.state;\noutput.success = case.xpos == xpos && case.ypos == ypos\n  && mainModuleWithPorts.xpos == xpos && mainModuleWithPorts.ypos == ypos;"
     },
     "produceCaseWithSensorModule": {
       "title": "produce caseWithSensorModule",
-      "description": "Run the caseWithSensorModule recipe: consume caseWithCommunicationModule, sensorModule and place caseWithSensorModule at this station. Has no effect unless every input already lies at the station.",
+      "description": "Run the caseWithSensorModule recipe: consume the given caseWithCommunicationModule, sensorModule and place the given caseWithSensorModule at this station. Has no effect unless every input already lies at the station.",
       "input": {
-        "type": "string",
-        "enum": [
-          "produceIt"
-        ],
-        "title": "trigger"
+        "type": "object",
+        "title": "recipe input",
+        "properties": {
+          "trigger": {
+            "type": "string",
+            "enum": [
+              "produceIt"
+            ],
+            "title": "trigger"
+          },
+          "caseWithCommunicationModule": {
+            "type": "string",
+            "title": "caseWithCommunicationModule",
+            "description": "The caseWithCommunicationModule to consume, by id.",
+            "enum": [
+              "casewithcommunicationmodule"
+            ]
+          },
+          "sensorModule": {
+            "type": "string",
+            "title": "sensorModule",
+            "description": "The sensorModule to consume, by id.",
+            "enum": [
+              "sensormodule"
+            ]
+          },
+          "caseWithSensorModule": {
+            "type": "string",
+            "title": "caseWithSensorModule",
+            "description": "The caseWithSensorModule to build, by id.",
+            "enum": [
+              "casewithsensormodule"
+            ]
+          }
+        },
+        "required": [
+          "trigger",
+          "caseWithCommunicationModule",
+          "sensorModule",
+          "caseWithSensorModule"
+        ]
       },
       "output": {
         "type": "object",
@@ -107,7 +215,7 @@
       },
       "safe": false,
       "idempotent": false,
-      "vre:effects": "const caseWithCommunicationModule = <casewithcommunicationmodule>;\nconst sensorModule = <sensormodule>;\nconst caseWithSensorModule = <casewithsensormodule>;\ncaseWithSensorModule.xpos' = caseWithCommunicationModule.xpos == xpos && caseWithCommunicationModule.ypos == ypos\n  && sensorModule.xpos == xpos && sensorModule.ypos == ypos ? xpos : caseWithSensorModule.xpos;\ncaseWithSensorModule.ypos' = caseWithCommunicationModule.xpos == xpos && caseWithCommunicationModule.ypos == ypos\n  && sensorModule.xpos == xpos && sensorModule.ypos == ypos ? ypos : caseWithSensorModule.ypos;\ncaseWithSensorModule.state' = caseWithCommunicationModule.xpos == xpos && caseWithCommunicationModule.ypos == ypos\n  && sensorModule.xpos == xpos && sensorModule.ypos == ypos ? \"initialState\" : caseWithSensorModule.state;\ncaseWithSensorModule.madeFrom' = caseWithCommunicationModule.xpos == xpos && caseWithCommunicationModule.ypos == ypos\n  && sensorModule.xpos == xpos && sensorModule.ypos == ypos ? [].append(\"casewithcommunicationmodule\").append(\"sensormodule\") : caseWithSensorModule.madeFrom;\ncaseWithCommunicationModule.xpos' = caseWithCommunicationModule.xpos == xpos && caseWithCommunicationModule.ypos == ypos\n  && sensorModule.xpos == xpos && sensorModule.ypos == ypos ? null : caseWithCommunicationModule.xpos;\ncaseWithCommunicationModule.ypos' = caseWithCommunicationModule.xpos == xpos && caseWithCommunicationModule.ypos == ypos\n  && sensorModule.xpos == xpos && sensorModule.ypos == ypos ? null : caseWithCommunicationModule.ypos;\ncaseWithCommunicationModule.state' = caseWithCommunicationModule.xpos == xpos && caseWithCommunicationModule.ypos == ypos\n  && sensorModule.xpos == xpos && sensorModule.ypos == ypos ? \"consumed\" : caseWithCommunicationModule.state;\nsensorModule.xpos' = caseWithCommunicationModule.xpos == xpos && caseWithCommunicationModule.ypos == ypos\n  && sensorModule.xpos == xpos && sensorModule.ypos == ypos ? null : sensorModule.xpos;\nsensorModule.ypos' = caseWithCommunicationModule.xpos == xpos && caseWithCommunicationModule.ypos == ypos\n  && sensorModule.xpos == xpos && sensorModule.ypos == ypos ? null : sensorModule.ypos;\nsensorModule.state' = caseWithCommunicationModule.xpos == xpos && caseWithCommunicationModule.ypos == ypos\n  && sensorModule.xpos == xpos && sensorModule.ypos == ypos ? \"consumed\" : sensorModule.state;\noutput.success = caseWithCommunicationModule.xpos == xpos && caseWithCommunicationModule.ypos == ypos\n  && sensorModule.xpos == xpos && sensorModule.ypos == ypos;"
+      "vre:effects": "caseWithSensorModule.xpos' = caseWithCommunicationModule.xpos == xpos && caseWithCommunicationModule.ypos == ypos\n  && sensorModule.xpos == xpos && sensorModule.ypos == ypos ? xpos : caseWithSensorModule.xpos;\ncaseWithSensorModule.ypos' = caseWithCommunicationModule.xpos == xpos && caseWithCommunicationModule.ypos == ypos\n  && sensorModule.xpos == xpos && sensorModule.ypos == ypos ? ypos : caseWithSensorModule.ypos;\ncaseWithSensorModule.state' = caseWithCommunicationModule.xpos == xpos && caseWithCommunicationModule.ypos == ypos\n  && sensorModule.xpos == xpos && sensorModule.ypos == ypos ? \"initialState\" : caseWithSensorModule.state;\ncaseWithSensorModule.madeFrom' = caseWithCommunicationModule.xpos == xpos && caseWithCommunicationModule.ypos == ypos\n  && sensorModule.xpos == xpos && sensorModule.ypos == ypos ? [].append(caseWithCommunicationModule).append(sensorModule) : caseWithSensorModule.madeFrom;\ncaseWithCommunicationModule.xpos' = caseWithCommunicationModule.xpos == xpos && caseWithCommunicationModule.ypos == ypos\n  && sensorModule.xpos == xpos && sensorModule.ypos == ypos ? null : caseWithCommunicationModule.xpos;\ncaseWithCommunicationModule.ypos' = caseWithCommunicationModule.xpos == xpos && caseWithCommunicationModule.ypos == ypos\n  && sensorModule.xpos == xpos && sensorModule.ypos == ypos ? null : caseWithCommunicationModule.ypos;\ncaseWithCommunicationModule.state' = caseWithCommunicationModule.xpos == xpos && caseWithCommunicationModule.ypos == ypos\n  && sensorModule.xpos == xpos && sensorModule.ypos == ypos ? \"consumed\" : caseWithCommunicationModule.state;\nsensorModule.xpos' = caseWithCommunicationModule.xpos == xpos && caseWithCommunicationModule.ypos == ypos\n  && sensorModule.xpos == xpos && sensorModule.ypos == ypos ? null : sensorModule.xpos;\nsensorModule.ypos' = caseWithCommunicationModule.xpos == xpos && caseWithCommunicationModule.ypos == ypos\n  && sensorModule.xpos == xpos && sensorModule.ypos == ypos ? null : sensorModule.ypos;\nsensorModule.state' = caseWithCommunicationModule.xpos == xpos && caseWithCommunicationModule.ypos == ypos\n  && sensorModule.xpos == xpos && sensorModule.ypos == ypos ? \"consumed\" : sensorModule.state;\noutput.success = caseWithCommunicationModule.xpos == xpos && caseWithCommunicationModule.ypos == ypos\n  && sensorModule.xpos == xpos && sensorModule.ypos == ypos;"
     }
   }
 }
