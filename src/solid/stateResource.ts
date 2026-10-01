@@ -17,10 +17,10 @@
  * blob is not.
  *
  * Every term is someone else's: PROV-O for who did what and when, the W3C HTTP
- * vocabulary for the request and its response, the W3C WoT Thing Description and
- * hypermedia vocabularies for the operation and the affordance it named, FOAF and
- * DCMI Terms for identity and names. The lab mints no vocabulary of its own, so a
- * record needs no documentation but the specifications it is written in.
+ * vocabulary for the request and its response, the W3C WoT Thing Description
+ * vocabulary for the names a state's members carry, FOAF and DCMI Terms for
+ * identity and names. The lab mints no vocabulary of its own, so a record needs
+ * no documentation but the specifications it is written in.
  *
  * What that costs is a term for `null`: RDF has none, and inventing one is what
  * this module no longer does. At predicate position saying nothing *is* how RDF
@@ -51,39 +51,8 @@ const vocabularies: [string, string][] = [
   ['httpm', 'http://www.w3.org/2011/http-methods#'],
   ['httpsc', 'http://www.w3.org/2011/http-statusCodes#'],
   ['td', 'https://www.w3.org/2019/wot/td#'],
-  ['hctl', 'https://www.w3.org/2019/wot/hypermedia#'],
   ['jsonschema', 'https://www.w3.org/2019/wot/json-schema#']
 ];
-
-/**
- * The Thing Description individual for each operation, as the TD 1.1 JSON-LD
- * context maps an `op` value — `hctl:hasOperationType td:invokeAction` rather
- * than a string, so a record joins against the Thing Description that declares
- * the form.
- */
-const operationTypes: Record<WotOperation, string> = {
-  readproperty: 'td:readProperty',
-  writeproperty: 'td:writeProperty',
-  readallproperties: 'td:readAllProperties',
-  writeallproperties: 'td:writeAllProperties',
-  observeproperty: 'td:observeProperty',
-  invokeaction: 'td:invokeAction',
-  subscribeevent: 'td:subscribeEvent'
-};
-
-/**
- * Which kind of affordance the named one is — the operation already says it, and
- * the `all` operations name none, which is why two of these are undefined.
- */
-const affordanceClasses: Record<WotOperation, string | undefined> = {
-  readproperty: 'td:PropertyAffordance',
-  writeproperty: 'td:PropertyAffordance',
-  observeproperty: 'td:PropertyAffordance',
-  invokeaction: 'td:ActionAffordance',
-  subscribeevent: 'td:EventAffordance',
-  readallproperties: undefined,
-  writeallproperties: undefined
-};
 
 /**
  * The status-code individuals of the HTTP-in-RDF vocabulary, by code. From the
@@ -110,16 +79,6 @@ const statusCodes: Record<number, string> = {
   506: 'VariantAlsoNegotiates', 507: 'InsufficientStorage', 510: 'NotExtended'
 };
 
-/** The WoT operation a request performed, named as the TD's `op` values are. */
-export type WotOperation =
-  | 'readproperty'
-  | 'writeproperty'
-  | 'readallproperties'
-  | 'writeallproperties'
-  | 'observeproperty'
-  | 'invokeaction'
-  | 'subscribeevent';
-
 /**
  * Who made the request.
  *
@@ -138,9 +97,6 @@ export type RequestAgent =
 export interface Interaction {
   /** The id the Thing is exposed under. */
   thingId: string;
-  operation: WotOperation;
-  /** The Property, Action or Event named in the path; absent for the `all` operations. */
-  affordance?: string;
   method: string;
   /** The absolute URI the client addressed. */
   requestUri: string;
@@ -166,8 +122,6 @@ export interface ThingState {
 
 export interface StateSnapshot {
   interaction: Interaction;
-  /** The addressed Thing's URI on this lab, for the activity to point at. */
-  thingIri: string;
   /**
    * The URI of the environment running when the interaction arrived, when one is.
    * An IRI rather than its name, so a reader can follow it to the manifest the
@@ -305,18 +259,13 @@ function thingStateSubject(id: string): string {
  * Render one interaction and the state it left as a Turtle document.
  *
  * Everything hangs off hash subjects of the resource itself (`<#request>`,
- * `<#response>`, `<#interaction>`, `<#form>`, `<#affordance>`, `<#state>`, one
- * `<#state-‹id›>` per Thing), so the pod mints one URI and every subject comes
- * with it — no counter, and no identifier the lab would have to keep unique
- * across restarts.
+ * `<#response>`, `<#interaction>`, `<#state>`, one `<#state-‹id›>` per Thing), so
+ * the pod mints one URI and every subject comes with it — no counter, and no
+ * identifier the lab would have to keep unique across restarts.
  */
 export function provenanceToTurtle(snapshot: StateSnapshot): string {
   const { interaction } = snapshot;
   const statusCode = statusCodes[interaction.status];
-  const affordanceClass = affordanceClasses[interaction.operation];
-  // A form's target is an IRI, so a request URI that is not usable as one is left
-  // to `htv:requestURI`, which records it as the literal it is.
-  const target = isAbsoluteHttpIri(interaction.requestUri) ? `<${interaction.requestUri}>` : undefined;
 
   // Each subject is written as a list of statements joined with `;`, so whichever
   // one comes last closes the subject — an optional statement cannot leave a
@@ -349,32 +298,13 @@ export function provenanceToTurtle(snapshot: StateSnapshot): string {
       `    a prov:Activity`,
       // The agent first: the question a provenance log is read for is who did this.
       interaction.agent ? `    prov:wasAssociatedWith ${agentTerm(interaction.agent)}` : undefined,
-      // The addressed Thing and the affordance are what the activity used, beside
-      // the request itself. Which Thing was addressed is a fact about the activity,
-      // not about the state: the state covers every Thing, and only the request
-      // named one.
-      `    prov:used ${[`<#request>`, `<#form>`, ...(interaction.affordance && affordanceClass ? [`<#affordance>`] : []), `<${snapshot.thingIri}>`].join(', ')}`,
+      // The request is the whole of what the activity used: it carries the method,
+      // the URI and the body, which is everything this record knows about what
+      // arrived.
+      `    prov:used <#request>`,
       `    prov:generated <#response>, <#state>`,
       `    prov:startedAtTime "${interaction.startedAt.toISOString()}"^^xsd:dateTime`,
       `    prov:endedAtTime   "${interaction.endedAt.toISOString()}"^^xsd:dateTime`),
-
-    // The form the request exercised. `hctl:hasOperationType` belongs to a form,
-    // which is also where a Thing Description puts the target and the method — so
-    // the operation is recorded in the shape the TD it came from uses.
-    ...subject(`<#form>`,
-      `    a hctl:Form`,
-      `    hctl:hasOperationType ${operationTypes[interaction.operation]}`,
-      target ? `    hctl:hasTarget ${target}` : undefined,
-      methodToken.test(interaction.method) ? `    htv:methodName "${interaction.method.toUpperCase()}"` : undefined),
-
-    // The affordance the form belongs to, when the request named one: the `all`
-    // operations address the Thing itself, and there is no affordance to name.
-    ...(interaction.affordance && affordanceClass
-      ? subject(`<#affordance>`,
-        `    a ${affordanceClass}`,
-        `    td:name "${escapeLiteral(interaction.affordance)}"`,
-        `    td:hasForm <#form>`)
-      : []),
 
     // A `prov:Collection` so the members are reachable as what they are — the
     // parts of one state — rather than only through the activity that made them.

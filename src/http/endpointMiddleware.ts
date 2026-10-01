@@ -3,7 +3,7 @@ import { URL } from 'url';
 import { labPrefix } from './labApi.js';
 import { brotliCompressSync, constants as zlibConstants, gzipSync } from 'zlib';
 import * as WoT from 'wot-typescript-definitions';
-import { isAgentIri, RequestAgent, WotOperation } from '../solid/stateResource.js';
+import { isAgentIri, RequestAgent } from '../solid/stateResource.js';
 import { agentHeaderName, isStateSinkEnabled, publishThingState } from '../solid/stateSink.js';
 
 interface Endpoint {
@@ -451,6 +451,21 @@ function renderThing(thing: WoT.ExposedThing, html: boolean, res: ServerResponse
 }
 
 /**
+ * The WoT operation a request performed, named as the TD's `op` values are.
+ *
+ * Used to decide whether a request is an interaction worth recording at all; the
+ * record itself does not carry it, so this never leaves the routing in here.
+ */
+type WotOperation =
+  | 'readproperty'
+  | 'writeproperty'
+  | 'readallproperties'
+  | 'writeallproperties'
+  | 'observeproperty'
+  | 'invokeaction'
+  | 'subscribeevent';
+
+/**
  * Which WoT operation, if any, a request path and method name.
  *
  * Only the affordance routes count: a Thing Description fetch reads no state and
@@ -654,8 +669,9 @@ async function reportInteraction(
     return;
   }
   const method = req.method ?? 'GET';
-  const operation = operationFor(method, pathParts);
-  if (!operation) {
+  // The operation itself is not recorded; whether there is one decides whether
+  // this request is an interaction at all.
+  if (!operationFor(method, pathParts)) {
     return;
   }
 
@@ -670,8 +686,6 @@ async function reportInteraction(
   res.once('finish', () => {
     publishThingState({
       thingId: decodeURIComponent(pathParts[0]),
-      operation,
-      affordance: pathParts[2] ? decodeURIComponent(pathParts[2]) : undefined,
       method,
       requestUri: requestUrl.href,
       body,

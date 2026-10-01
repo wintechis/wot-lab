@@ -171,7 +171,6 @@ export function publishThingState(interaction: Interaction): void {
 
   const snapshot: StateSnapshot = {
     interaction: { ...interaction, thingId: id },
-    thingIri: thingIri(sink, id),
     environmentIri: sink.environmentIri?.(),
     // Read now, not when the POST runs: by then the next interaction may have
     // changed it, and this resource claims to be the state *this* request left.

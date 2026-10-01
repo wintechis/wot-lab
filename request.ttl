@@ -1,0 +1,72 @@
+# An example of the record the lab posts to a Solid pod: one WoT interaction as
+# PROV-O, produced by `provenanceToTurtle` in src/solid/stateResource.ts.
+#
+# The interaction shown is a POST invoking the `produce` Action on `station1`,
+# by an agent that identified itself with a URI. Both running Things appear in
+# the state because a cross-Thing effect is not confined to the Thing addressed:
+# producing a widget drew bolts and plates from `bin1`, which the record of
+# `station1` alone would not show.
+#
+# Every subject is a hash of the record's own URI, so the pod mints one URI and
+# the whole record comes with it.
+
+@prefix xsd:        <http://www.w3.org/2001/XMLSchema#> .
+@prefix prov:       <http://www.w3.org/ns/prov#> .
+@prefix dcterms:    <http://purl.org/dc/terms/> .
+@prefix foaf:       <http://xmlns.com/foaf/0.1/> .
+@prefix htv:        <http://www.w3.org/2011/http#> .
+@prefix httpm:      <http://www.w3.org/2011/http-methods#> .
+@prefix httpsc:     <http://www.w3.org/2011/http-statusCodes#> .
+@prefix td:         <https://www.w3.org/2019/wot/td#> .
+@prefix jsonschema: <https://www.w3.org/2019/wot/json-schema#> .
+
+<#request>
+    a prov:Entity, htv:Request ;
+    htv:mthd httpm:POST ;
+    htv:requestURI "http://localhost:8081/station1/actions/produce" ;
+    htv:resp <#response> ;
+    htv:body [ prov:value "{\"recipe\":\"widget\"}" ] .
+
+<#response>
+    a prov:Entity, htv:Response ;
+    htv:statusCodeValue 200 ;
+    htv:sc httpsc:OK .
+
+<#interaction>
+    a prov:Activity ;
+    prov:wasAssociatedWith <http://example.org/agent1> ;
+    prov:used <#request> ;
+    prov:generated <#response>, <#state> ;
+    prov:startedAtTime "2026-09-29T10:00:00.000Z"^^xsd:dateTime ;
+    prov:endedAtTime   "2026-09-29T10:00:00.120Z"^^xsd:dateTime .
+
+<#state>
+    a prov:Entity, prov:Collection ;
+    prov:generatedAtTime "2026-09-29T10:00:00.120Z"^^xsd:dateTime ;
+    dcterms:isPartOf <http://localhost:8081/_lab/environments/assembly> ;
+    prov:hadMember
+        <#state-station1>,
+        <#state-bin1> .
+
+<#state-station1>
+    a prov:Entity, prov:Collection ;
+    prov:specializationOf <http://localhost:8081/station1> ;
+    dcterms:identifier "station1" ;
+    prov:hadMember
+        [ td:name "busy" ; prov:value false ] ,
+        [ td:name "produced" ; prov:value 3 ] ,
+        [ td:name "recipe" ; prov:value [ a prov:Collection ; prov:hadMember
+            [ jsonschema:propertyName "name" ; prov:value "widget" ] ,
+            [ jsonschema:propertyName "inputs" ; prov:value (
+              "bolt"
+              "plate"
+            ) ]
+          ] ] .
+
+<#state-bin1>
+    a prov:Entity, prov:Collection ;
+    prov:specializationOf <http://localhost:8081/bin1> ;
+    dcterms:identifier "bin1" ;
+    prov:hadMember
+        [ td:name "bolt" ; prov:value 7 ] ,
+        [ td:name "plate" ; prov:value 2 ] .
