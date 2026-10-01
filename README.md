@@ -285,9 +285,11 @@ around it has a state.
 
 The pod is never in the request's path. Records queue in the lab and drain behind
 the response down four connections, so a slow or unreachable pod costs a warning
-(`DEBUG=wot-lab:solid:*`) and never a slow WoT response. The queue is bounded at
-256; past that, records are dropped and the drop is logged, because an observer
-that runs the lab out of memory is worse than one that misses a reading.
+(logged by default; `DEBUG=wot-lab:solid:*` adds every post) and never a slow WoT
+response. The queue is bounded at 10,000 records - enough to absorb a scripted
+replay firing hundreds of interactions a second; past that, records are dropped
+and the drop is logged, because an observer that runs the lab out of memory is
+worse than one that misses a reading.
 
 ### The resource
 

@@ -11,7 +11,9 @@ import { createLabApi, labPrefix } from './http/labApi.js';
 import { configureStateSink, flushStateSink } from './solid/stateSink.js';
 
 if (!process.env.DEBUG) {
-  enable('wot-lab:system:*');
+  // The Solid sink's warnings too: a dropped or refused provenance record is
+  // data lost from a run, and must not go unnoticed for want of a DEBUG flag.
+  enable('wot-lab:system:*,wot-lab:solid:warn');
 }
 
 const { debug } = createLoggers('system');

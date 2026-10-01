@@ -40,7 +40,13 @@ export interface StateSinkOptions {
 // retained memory; past this many waiting snapshots the lab drops them and says
 // so, which is the right failure for an observer that must not perturb what it
 // observes.
-const maxPending = 256;
+//
+// The bound is generous because the records are the point of a run: a scripted
+// replay fires a few hundred interactions a second, far faster than a pod
+// accepts them, and a bound of a few hundred silently cut the tail off such a
+// run. A record is the whole environment as Turtle, tens of kilobytes, so this
+// many waiting is a few hundred megabytes at worst.
+const maxPending = 10_000;
 
 // Long enough for a pod on a slow link, short enough that a black-holed
 // connection cannot hold a queue slot indefinitely.
