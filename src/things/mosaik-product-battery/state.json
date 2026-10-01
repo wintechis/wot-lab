@@ -1,0 +1,19 @@
+{
+  "xpos": null,
+  "ypos": null,
+  "state": "uninitialised",
+  "mpn": "",
+  "model": "",
+  "url": "",
+  "chemistry": "",
+  "ratedCapacity": 0,
+  "typicalCapacity": 0,
+  "nominalVoltage": 0,
+  "declaredEnergy": 0,
+  "mass": 0,
+  "manufacturer": {
+    "name": "",
+    "address": {}
+  },
+  "madeFrom": []
+}

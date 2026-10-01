@@ -65,12 +65,38 @@ const resources = new Map<string, ResourceMeta>();
 export interface ResourceMeta {
   /** The classes the model gives itself, e.g. `arena:Product`. */
   types: string[];
-  /** The class each Property is annotated with, by Property name. */
-  propertyTypes: Record<string, string>;
+  /** What the model says about each Property, by Property name. */
+  properties: Record<string, PropertyMeta>;
 }
 
+/**
+ * What a model says about one Property, or about one member of an object
+ * Property — a manufacturer's address is described the way the product is.
+ */
+export interface PropertyMeta {
+  /** The class the Property is annotated with, e.g. `arena:XPosition`. */
+  type?: string;
+  /** The Property's `unit`, as a compact QUDT IRI such as `unit:MilliA-HR`. */
+  unit?: string;
+  /**
+   * The predicate the model asks for with `lab:predicate`, e.g. `schema:mpn`,
+   * where a product passport uses a term from a vocabulary of its own.
+   */
+  predicate?: string;
+  /** The members of an object Property, by name. */
+  properties?: Record<string, PropertyMeta>;
+}
+
+/**
+ * The Property in which a product records what it was made from: the ids of the
+ * recipe inputs a station consumed to produce it, written by the recipe's
+ * `vre:effects`. Empty for a product nobody produced — a raw material, or one not
+ * made yet.
+ */
+export const inputsProperty = 'madeFrom';
+
 /** Note that an id names a resource, not a Thing, and what it says it is. */
-export function registerResourceId(id: string, meta: ResourceMeta = { types: [], propertyTypes: {} }): void {
+export function registerResourceId(id: string, meta: ResourceMeta = { types: [], properties: {} }): void {
   resources.set(id, meta);
 }
 
@@ -95,22 +121,40 @@ export function resourceMeta(id: string): ResourceMeta | undefined {
 }
 
 /**
- * The `@type` annotations a Thing Description carries, as a resource's metadata.
+ * The annotations a Thing Description carries, as a resource's metadata.
  *
  * `@type` is one term or several in a Thing Description, and only the first is
  * kept for a Property: a Property is one kind of quantity, and a representation
  * that typed a value twice would be asserting something the model did not.
  */
 export function metaFromThingDescription(td: Record<string, unknown>): ResourceMeta {
-  const asList = (value: unknown): string[] =>
-    (Array.isArray(value) ? value : [value]).filter((item): item is string => typeof item === 'string');
-  const properties = (td.properties ?? {}) as Record<string, { '@type'?: unknown }>;
   return {
     types: asList(td['@type']),
-    propertyTypes: Object.fromEntries(
-      Object.entries(properties)
-        .map(([name, schema]) => [name, asList(schema['@type'])[0]])
-        .filter((entry): entry is [string, string] => entry[1] !== undefined)
-    )
+    properties: propertiesMeta(td.properties)
   };
+}
+
+function asList(value: unknown): string[] {
+  return (Array.isArray(value) ? value : [value]).filter((item): item is string => typeof item === 'string');
+}
+
+function propertiesMeta(properties: unknown): Record<string, PropertyMeta> {
+  const schemas = (properties ?? {}) as Record<string, Record<string, unknown>>;
+  return Object.fromEntries(Object.entries(schemas).map(([name, schema]) => {
+    const meta: PropertyMeta = {};
+    const type = asList(schema['@type'])[0];
+    if (type !== undefined) {
+      meta.type = type;
+    }
+    if (typeof schema.unit === 'string') {
+      meta.unit = schema.unit;
+    }
+    if (typeof schema['lab:predicate'] === 'string') {
+      meta.predicate = schema['lab:predicate'];
+    }
+    if (schema.type === 'object' && schema.properties) {
+      meta.properties = propertiesMeta(schema.properties);
+    }
+    return [name, meta];
+  }));
 }

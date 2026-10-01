@@ -45,13 +45,37 @@
   "actions": {
     "produceBattery": {
       "title": "produce battery",
-      "description": "Run the battery recipe: consume batterycell and place battery at this station. Has no effect unless every input already lies at the station.",
+      "description": "Run the battery recipe: consume batterycell and place the given battery at this station. Has no effect unless every input already lies at the station.",
       "input": {
-        "type": "string",
-        "enum": [
-          "produceIt"
-        ],
-        "title": "trigger"
+        "type": "object",
+        "title": "recipe input",
+        "properties": {
+          "trigger": {
+            "type": "string",
+            "enum": [
+              "produceIt"
+            ],
+            "title": "trigger"
+          },
+          "battery": {
+            "type": "string",
+            "title": "battery",
+            "description": "The battery to use: 'battery' for the generic battery product, or the id of one of the battery spare parts, which is its manufacturer part number (schema:mpn) in lowercase.",
+            "enum": [
+              "battery",
+              "661-44796",
+              "f6batt-1zw-ww1",
+              "f5batt-1zw-ww1",
+              "g949-00975-00",
+              "gh82-39193a",
+              "1330102000188b"
+            ]
+          }
+        },
+        "required": [
+          "trigger",
+          "battery"
+        ]
       },
       "output": {
         "type": "object",
@@ -63,7 +87,7 @@
       },
       "safe": false,
       "idempotent": false,
-      "vre:effects": "const batterycell = <batterycell>;\nconst battery = <battery>;\nbattery.xpos' = batterycell.xpos == xpos && batterycell.ypos == ypos ? xpos : battery.xpos;\nbattery.ypos' = batterycell.xpos == xpos && batterycell.ypos == ypos ? ypos : battery.ypos;\nbattery.state' = batterycell.xpos == xpos && batterycell.ypos == ypos ? \"initialState\" : battery.state;\nbatterycell.xpos' = batterycell.xpos == xpos && batterycell.ypos == ypos ? null : batterycell.xpos;\nbatterycell.ypos' = batterycell.xpos == xpos && batterycell.ypos == ypos ? null : batterycell.ypos;\nbatterycell.state' = batterycell.xpos == xpos && batterycell.ypos == ypos ? \"consumed\" : batterycell.state;\noutput.success = batterycell.xpos == xpos && batterycell.ypos == ypos;"
+      "vre:effects": "const batterycell = <batterycell>;\nbattery.xpos' = batterycell.xpos == xpos && batterycell.ypos == ypos ? xpos : battery.xpos;\nbattery.ypos' = batterycell.xpos == xpos && batterycell.ypos == ypos ? ypos : battery.ypos;\nbattery.state' = batterycell.xpos == xpos && batterycell.ypos == ypos ? \"initialState\" : battery.state;\nbattery.madeFrom' = batterycell.xpos == xpos && batterycell.ypos == ypos ? [].append(\"batterycell\") : battery.madeFrom;\nbatterycell.xpos' = batterycell.xpos == xpos && batterycell.ypos == ypos ? null : batterycell.xpos;\nbatterycell.ypos' = batterycell.xpos == xpos && batterycell.ypos == ypos ? null : batterycell.ypos;\nbatterycell.state' = batterycell.xpos == xpos && batterycell.ypos == ypos ? \"consumed\" : batterycell.state;\noutput.success = batterycell.xpos == xpos && batterycell.ypos == ypos;"
     }
   }
 }

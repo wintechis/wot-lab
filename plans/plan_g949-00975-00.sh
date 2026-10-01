@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 #
 # Executes the optimal plan of task "s6" (mosaik, L3: "Produce the smartphone.")
+# with the Google Pixel 9 battery: spare part G949-00975-00 (Google GVYZ7),
+# the battery resource "g949-00975-00" in place of the generic battery product,
 # as a sequence of HTTP POST requests:
 #
 #   POST <BASE_URI>/<thing>/actions/<action>
@@ -8,8 +10,8 @@
 #   application/json body when it is an object)
 #
 # Usage:
-#   ./s6_plan.sh http://localhost:8080          # base URI as first argument
-#   BASE_URI=http://localhost:8080 ./s6_plan.sh # or as environment variable
+#   ./plans/plan_g949-00975-00.sh http://localhost:8080          # base URI as first argument
+#   BASE_URI=http://localhost:8080 ./plans/plan_g949-00975-00.sh # or as environment variable
 #
 # Optional environment variables:
 #   DELAY=0.2          seconds to wait between requests (default: 0)
@@ -112,7 +114,7 @@ step t1 moveDown
 step t1 moveDown
 step t1 moveDown
 step t1 drop
-step combine produceBattery '{"trigger": "produceIt", "battery": "battery"}'
+step combine produceBattery '{"trigger": "produceIt", "battery": "g949-00975-00"}'
 step t1 moveRight
 step t1 moveRight
 step t1 moveRight
@@ -557,7 +559,7 @@ step t1 moveUp
 step t1 moveUp
 step t1 moveUp
 step t1 moveUp
-step t1 pickup battery
+step t1 pickup g949-00975-00
 step t1 moveLeft
 step t1 moveLeft
 step t1 moveLeft
@@ -580,7 +582,7 @@ step t1 moveDown
 step t1 moveDown
 step t1 moveDown
 step t1 drop
-step glue1 produceCaseWithBattery '{"trigger": "produceIt", "battery": "battery"}'
+step glue1 produceCaseWithBattery '{"trigger": "produceIt", "battery": "g949-00975-00"}'
 step t1 moveRight
 step t1 moveRight
 step t1 moveRight

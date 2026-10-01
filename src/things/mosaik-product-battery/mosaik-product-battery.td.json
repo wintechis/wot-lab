@@ -1,0 +1,206 @@
+{
+  "@context": [
+    "https://www.w3.org/2022/wot/td/v1.1",
+    {
+      "arena": "https://solid.ti.rw.fau.de/public/ns/arena#",
+      "ex": "https://example.org/passport/",
+      "schema": "https://schema.org/",
+      "qudt": "http://qudt.org/schema/qudt/",
+      "unit": "http://qudt.org/vocab/unit/",
+      "lab": "https://example.org/wot-lab#"
+    }
+  ],
+  "@type": [
+    "arena:Product",
+    "ex:Battery"
+  ],
+  "title": "Battery",
+  "description": "A battery product on the shopfloor, one specific spare part identified by its manufacturer part number (schema:mpn). Like every product, its state says whether it exists as a physical item: 'uninitialised' before it has been produced, 'initialState' while it lies on the floor, and 'consumed' once a station has used it up as a recipe input; xpos and ypos are null unless it lies on the floor. The remaining Properties are the battery's passport data and never change. Only workstations and the transporter change these Properties.",
+  "securityDefinitions": {
+    "nosec_sc": {
+      "scheme": "nosec"
+    }
+  },
+  "security": "nosec_sc",
+  "properties": {
+    "xpos": {
+      "oneOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Position on the x axis",
+      "description": "Where the product lies on the x axis, or null while it has no position — it has not been produced yet, or a station has consumed it.",
+      "readOnly": true,
+      "writeOnly": false,
+      "observable": true,
+      "@type": "arena:XPosition"
+    },
+    "ypos": {
+      "oneOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Position on the y axis",
+      "description": "Where the product lies on the y axis, or null while it has no position — it has not been produced yet, or a station has consumed it.",
+      "readOnly": true,
+      "writeOnly": false,
+      "observable": true,
+      "@type": "arena:YPosition"
+    },
+    "state": {
+      "type": "string",
+      "enum": [
+        "uninitialised",
+        "initialState",
+        "consumed"
+      ],
+      "title": "Production state",
+      "description": "'uninitialised' until the product has been produced, 'initialState' while it lies on the floor, 'consumed' after a station used it as a recipe input.",
+      "readOnly": true,
+      "writeOnly": false,
+      "observable": true,
+      "@type": "arena:State"
+    },
+    "mpn": {
+      "type": "string",
+      "title": "Manufacturer part number",
+      "readOnly": true,
+      "writeOnly": false,
+      "observable": false,
+      "description": "The part number this battery is identified by; its id is this value in lowercase.",
+      "lab:predicate": "schema:mpn"
+    },
+    "model": {
+      "type": "string",
+      "title": "Battery model",
+      "readOnly": true,
+      "writeOnly": false,
+      "observable": false,
+      "lab:predicate": "schema:model"
+    },
+    "url": {
+      "type": "string",
+      "title": "Where the spare part is offered",
+      "readOnly": true,
+      "writeOnly": false,
+      "observable": false,
+      "format": "uri",
+      "lab:predicate": "schema:url"
+    },
+    "chemistry": {
+      "type": "string",
+      "title": "Cell chemistry",
+      "readOnly": true,
+      "writeOnly": false,
+      "observable": false
+    },
+    "ratedCapacity": {
+      "type": "integer",
+      "title": "Rated capacity",
+      "readOnly": true,
+      "writeOnly": false,
+      "observable": false,
+      "unit": "unit:MilliA-HR"
+    },
+    "typicalCapacity": {
+      "type": "integer",
+      "title": "Typical capacity",
+      "readOnly": true,
+      "writeOnly": false,
+      "observable": false,
+      "unit": "unit:MilliA-HR"
+    },
+    "nominalVoltage": {
+      "type": "number",
+      "title": "Nominal voltage",
+      "readOnly": true,
+      "writeOnly": false,
+      "observable": false,
+      "unit": "unit:V"
+    },
+    "declaredEnergy": {
+      "type": "number",
+      "title": "Declared energy",
+      "readOnly": true,
+      "writeOnly": false,
+      "observable": false,
+      "unit": "unit:W-HR"
+    },
+    "mass": {
+      "type": "number",
+      "title": "Mass",
+      "readOnly": true,
+      "writeOnly": false,
+      "observable": false,
+      "unit": "unit:GM"
+    },
+    "manufacturer": {
+      "type": "object",
+      "title": "Manufacturer",
+      "@type": "schema:Organization",
+      "lab:predicate": "schema:manufacturer",
+      "readOnly": true,
+      "writeOnly": false,
+      "observable": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "title": "Name",
+          "lab:predicate": "schema:name"
+        },
+        "address": {
+          "type": "object",
+          "title": "Address",
+          "@type": "schema:PostalAddress",
+          "lab:predicate": "schema:address",
+          "properties": {
+            "description": {
+              "type": "string",
+              "title": "Description",
+              "lab:predicate": "schema:description"
+            },
+            "streetAddress": {
+              "type": "string",
+              "title": "Street address",
+              "lab:predicate": "schema:streetAddress"
+            },
+            "postalCode": {
+              "type": "string",
+              "title": "Postal code",
+              "lab:predicate": "schema:postalCode"
+            },
+            "addressLocality": {
+              "type": "string",
+              "title": "Locality",
+              "lab:predicate": "schema:addressLocality"
+            },
+            "addressCountry": {
+              "type": "string",
+              "title": "Country",
+              "lab:predicate": "schema:addressCountry"
+            }
+          }
+        }
+      }
+    },
+    "madeFrom": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "title": "Made from",
+      "description": "The ids of the products a station consumed to produce this one, in recipe order; empty until it has been produced, and always empty for a raw material.",
+      "readOnly": true,
+      "writeOnly": false,
+      "observable": true
+    }
+  }
+}

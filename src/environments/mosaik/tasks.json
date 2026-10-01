@@ -1760,7 +1760,7 @@
       {
         "thing": "combine",
         "action": "produceBattery",
-        "input": "produceIt"
+        "input": { "trigger": "produceIt", "battery": "battery" }
       },
       {
         "thing": "t1",
@@ -4100,7 +4100,7 @@
       {
         "thing": "glue1",
         "action": "produceCaseWithBattery",
-        "input": "produceIt"
+        "input": { "trigger": "produceIt", "battery": "battery" }
       },
       {
         "thing": "t1",

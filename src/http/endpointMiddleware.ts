@@ -6,7 +6,7 @@ import * as WoT from 'wot-typescript-definitions';
 import { isAgentIri, RequestAgent, WotOperation } from '../solid/stateResource.js';
 import { agentHeaderName, currentRunContainer, isStateSinkEnabled, publishThingState } from '../solid/stateSink.js';
 import { createLoggers } from '../utils/debug.js';
-import { isResourceId, resourceIdList, resourceMeta, resourcePrefix } from '../things/resources.js';
+import { isResourceId, resourceIdList, resourceMeta, resourcePrefix, ResourceMeta } from '../things/resources.js';
 import { resourceToTurtle } from '../things/resourceTurtle.js';
 import { globalState, normalizeThingId } from '../globalState.js';
 
@@ -496,7 +496,13 @@ function serveResource(req: IncomingMessage, segments: string[], res: ServerResp
     writeJson(res, state);
     return true;
   }
-  writeTurtle(res, resourceToTurtle(normalized, state, resourceMeta(normalized), currentRunContainer()));
+  // The products this one was made from are resources too; the writer follows its
+  // inputs through them to the raw parts at the end of each chain.
+  const lookup = (inputId: string): { state: Record<string, unknown>; meta?: ResourceMeta } | undefined => {
+    const input = normalizeThingId(inputId);
+    return isResourceId(input) && states[input] ? { state: states[input], meta: resourceMeta(input) } : undefined;
+  };
+  writeTurtle(res, resourceToTurtle(normalized, state, resourceMeta(normalized), currentRunContainer(), lookup));
   return true;
 }
 

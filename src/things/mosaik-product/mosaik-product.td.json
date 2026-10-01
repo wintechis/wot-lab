@@ -60,6 +60,17 @@
       "writeOnly": false,
       "observable": true,
       "@type": "arena:State"
+    },
+    "madeFrom": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "title": "Made from",
+      "description": "The ids of the products a station consumed to produce this one, in recipe order; empty until it has been produced, and always empty for a raw material.",
+      "readOnly": true,
+      "writeOnly": false,
+      "observable": true
     }
   }
 }

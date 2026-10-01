@@ -7,40 +7,55 @@
  * joined against anything. JSON is still served to a client that asks for it.
  *
  * The shape follows the product passports under `phone resources/`: a lowercase
- * predicate carries each Property, and a Property the model gave a class to
- * becomes a node of that class rather than a bare number, the way a passport
- * writes `ex:ratedCapacity` pointing at a `qudt:QuantityValue`. The classes come
- * from the model's own `@type` annotations, so the semantics a Thing Description
- * carried survive the product no longer being a Thing.
+ * predicate carries each Property, and a Property the model gave a class or a
+ * unit becomes a `qudt:QuantityValue` node rather than a bare number, the way a
+ * passport writes `ex:ratedCapacity` pointing at a quantity in `unit:MilliA-HR`.
+ * An object Property becomes a node of its own, typed by its `@type`, the way a
+ * passport's manufacturer is a `schema:Organization` with an address. The classes
+ * and units come from the model's own annotations, so the semantics a Thing
+ * Description carried survive the product no longer being a Thing.
  *
- * Only in type position. Every term the shopfloor vocabulary defines is
+ * Classes only in type position. Every term the shopfloor vocabulary defines is
  * initial-capital — `arena:XPosition`, `arena:State` — which names a kind of
  * thing, not a way of relating two, so none of them is used as a predicate.
  * Predicates come from the passport namespace, named after the Property they
  * carry: mechanical rather than prettier, so a reader can predict the predicate
- * from the Thing Description and a new model needs no mapping added here.
+ * from the Thing Description and a new model needs no mapping added here. A model
+ * that wants a passport's own term — `schema:mpn` — says so with `lab:predicate`.
  *
- * No `qudt:unit` is written, because no model declares one. A unit invented here
+ * A `qudt:unit` is written only where a model declares one. A unit invented here
  * would be a measurement claim the lab has no basis for — a position on a
  * shopfloor grid is not metres unless someone says so.
+ *
+ * A product that was produced links the products it was ultimately made from:
+ * not the intermediate products a recipe consumed, but the raw inputs at the end
+ * of each chain — the parts that went into it — plus `ex:battery` for the battery
+ * among them, as a phone passport links its battery.
  */
 
 import { escapeLiteral, isAbsoluteHttpIri } from '../solid/stateResource.js';
-import { ResourceMeta } from './resources.js';
+import { inputsProperty, PropertyMeta, ResourceMeta } from './resources.js';
 
 /** The vocabularies a representation is written in, by prefix. */
 const namespaces: Record<string, string> = {
   ex: 'https://example.org/passport/',
   schema: 'https://schema.org/',
   qudt: 'http://qudt.org/schema/qudt/',
+  unit: 'http://qudt.org/vocab/unit/',
   arena: 'https://solid.ti.rw.fau.de/public/ns/arena#',
   xsd: 'http://www.w3.org/2001/XMLSchema#'
 };
+
+/** The class a passport gives a battery, which a phone links with `ex:battery`. */
+const batteryClass = 'ex:Battery';
 
 /**
  * One state value as a Turtle literal, or `undefined` when RDF has no literal for
  * it — `null`, which a product carries whenever it has no position, and which at
  * predicate position is said by saying nothing.
+ *
+ * A fraction is written as a decimal, `3.87`, as the passports write it; only a
+ * number decimal notation cannot spell exactly falls back to `xsd:double`.
  */
 function literal(value: unknown): string | undefined {
   if (typeof value === 'boolean') {
@@ -50,7 +65,10 @@ function literal(value: unknown): string | undefined {
     if (!Number.isFinite(value)) {
       return undefined;
     }
-    return Number.isSafeInteger(value) && !Object.is(value, -0) ? String(value) : `"${value}"^^xsd:double`;
+    if (Number.isSafeInteger(value) && !Object.is(value, -0)) {
+      return String(value);
+    }
+    return /^-?\d+\.\d+$/.test(String(value)) ? String(value) : `"${value}"^^xsd:double`;
   }
   if (typeof value === 'string') {
     return isAbsoluteHttpIri(value) ? `<${value}>` : `"${escapeLiteral(value)}"`;
@@ -58,8 +76,17 @@ function literal(value: unknown): string | undefined {
   return undefined;
 }
 
-/** A Property name as a predicate local name, safe to write after a prefix. */
-function predicateFor(name: string): string | undefined {
+/** A compact IRI whose prefix this writer declares, safe to write as is. */
+function isCompactIri(term: string | undefined): term is string {
+  const match = term === undefined ? null : /^([a-z]+):[A-Za-z][A-Za-z0-9_-]*$/.exec(term);
+  return match !== null && match[1] in namespaces;
+}
+
+/** The predicate a Property is carried by: the model's own, or one named after it. */
+function predicateFor(name: string, meta: PropertyMeta | undefined): string | undefined {
+  if (isCompactIri(meta?.predicate)) {
+    return meta.predicate;
+  }
   return /^[A-Za-z][A-Za-z0-9_-]*$/.test(name) ? `ex:${name}` : undefined;
 }
 
@@ -68,41 +95,141 @@ interface Statement {
   object: string;
 }
 
+/** One subject and what is said about it, ready to be written. */
+interface Node {
+  subject: string;
+  classes: string[];
+  statements: Statement[];
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+/**
+ * The statements for a set of Property values, and the nodes they point at.
+ *
+ * `path` names the node the values belong to — empty for the product itself — and
+ * every node made here is a fragment named after the path to it, so a
+ * manufacturer's address is `<#manufacturer-address>`, as a passport names it.
+ */
+function describe(
+  values: Record<string, unknown>,
+  metas: Record<string, PropertyMeta>,
+  path: string[],
+  nodes: Node[]
+): Statement[] {
+  const statements: Statement[] = [];
+  for (const [name, value] of Object.entries(values)) {
+    const meta = metas[name];
+    const predicate = predicateFor(name, meta);
+    if (predicate === undefined) {
+      continue;
+    }
+    const subject = `<#${[...path, name].join('-')}>`;
+
+    if (isRecord(value)) {
+      const node: Node = { subject, classes: meta?.type ? [meta.type] : [], statements: [] };
+      nodes.push(node);
+      node.statements = describe(value, meta?.properties ?? {}, [...path, name], nodes);
+      statements.push({ predicate, object: subject });
+      continue;
+    }
+
+    const object = literal(value);
+    if (object === undefined) {
+      continue;
+    }
+    // A Property the model classified or gave a unit, holding a number, becomes a
+    // quantity node: the class and unit say what the number is, which a bare
+    // literal cannot.
+    if (typeof value === 'number' && (meta?.type !== undefined || meta?.unit !== undefined)) {
+      const quantity: Statement[] = [{ predicate: 'qudt:numericValue', object }];
+      if (isCompactIri(meta.unit)) {
+        quantity.push({ predicate: 'qudt:unit', object: meta.unit });
+      }
+      nodes.push({
+        subject,
+        classes: [...(meta.type ? [meta.type] : []), 'qudt:QuantityValue'],
+        statements: quantity
+      });
+      statements.push({ predicate, object: subject });
+      continue;
+    }
+    statements.push({ predicate, object });
+  }
+  return statements;
+}
+
+/** Another product's state and metadata, as the HTTP surface knows them. */
+// eslint-disable-next-line no-unused-vars
+export type ResourceLookup = (id: string) => { state: Record<string, unknown>; meta?: ResourceMeta } | undefined;
+
+/** The ids a product's state says it was made from. */
+function inputsOf(state: Record<string, unknown>): string[] {
+  const inputs = state[inputsProperty];
+  return Array.isArray(inputs) ? inputs.filter((input): input is string => typeof input === 'string') : [];
+}
+
+/**
+ * The raw inputs a product was made from, and the batteries among everything that
+ * went into it.
+ *
+ * Follows each recorded input down to a product nobody made — the end of the
+ * chain — so a smartphone names its CPU and its glass, not the main module and
+ * display unit those went into. A battery is noted wherever it occurs in the
+ * chain: a passport links a phone's battery whether or not the factory made that
+ * battery from something else first. An id seen once is not followed again.
+ */
+function rawInputs(state: Record<string, unknown>, lookup: ResourceLookup): { parts: string[]; batteries: string[] } {
+  const parts: string[] = [];
+  const batteries: string[] = [];
+  const seen = new Set<string>();
+  const visit = (id: string): void => {
+    if (seen.has(id)) {
+      return;
+    }
+    seen.add(id);
+    const input = lookup(id);
+    if (input?.meta?.types.includes(batteryClass)) {
+      batteries.push(id);
+    }
+    const further = input ? inputsOf(input.state) : [];
+    if (further.length === 0) {
+      parts.push(id);
+      return;
+    }
+    further.forEach(visit);
+  };
+  inputsOf(state).forEach(visit);
+  return { parts, batteries };
+}
+
+/** Where another product resource's description is, relative to this one. */
+function productLink(id: string): string {
+  return `<${encodeURIComponent(id)}#product>`;
+}
+
 /**
  * Render one product resource.
  *
  * `iri` is where the resource is served, and every subject is a fragment of it, so
- * the document names nothing it does not also define.
+ * the document names nothing it does not also define. Another product is linked
+ * by a relative IRI, which resolves beside this one under the same prefix.
  */
 export function resourceToTurtle(
   id: string,
   state: Record<string, unknown>,
   meta?: ResourceMeta,
-  traceIri?: string
+  traceIri?: string,
+  lookup: ResourceLookup = () => undefined
 ): string {
-  const statements: Statement[] = [];
-  const qualified: string[] = [];
+  const nodes: Node[] = [];
+  const statements = describe(state, meta?.properties ?? {}, [], nodes);
 
-  for (const [name, value] of Object.entries(state)) {
-    const predicate = predicateFor(name);
-    const object = literal(value);
-    if (predicate === undefined || object === undefined) {
-      continue;
-    }
-    const propertyType = meta?.propertyTypes[name];
-    // A Property the model classified, holding a number, becomes a quantity node:
-    // the class says what the number is, which a bare literal cannot.
-    if (propertyType !== undefined && typeof value === 'number') {
-      statements.push({ predicate, object: `<#${name}>` });
-      qualified.push([
-        `<#${name}>`,
-        `    a                  ${propertyType}, qudt:QuantityValue ;`,
-        `    qudt:numericValue  ${object} .`
-      ].join('\n'));
-      continue;
-    }
-    statements.push({ predicate, object });
-  }
+  const { parts, batteries } = rawInputs(state, lookup);
+  statements.push(...batteries.map(battery => ({ predicate: 'ex:battery', object: productLink(battery) })));
+  statements.push(...parts.map(part => ({ predicate: 'ex:input', object: productLink(part) })));
 
   if (traceIri !== undefined) {
     // How this product came to be: the records of the interactions that made it.
@@ -110,21 +237,24 @@ export function resourceToTurtle(
   }
   statements.unshift({ predicate: 'schema:name', object: `"${escapeLiteral(id)}"` });
 
-  const classes = meta?.types.length ? meta.types.join(', ') : 'schema:Product';
-  const body = [`    a                  ${classes}`, ...statements.map(
-    ({ predicate, object }) => `    ${predicate.padEnd(18)} ${object}`
-  )].join(' ;\n');
+  const product: Node = {
+    subject: '<#product>',
+    classes: meta?.types.length ? meta.types : ['schema:Product'],
+    statements
+  };
 
-  const used = new Set<string>();
-  const document = [`<#product>\n${body} .`, ...qualified].join('\n\n');
-  for (const prefix of Object.keys(namespaces)) {
-    if (new RegExp(`\\b${prefix}:`).test(document)) {
-      used.add(prefix);
-    }
-  }
-
-  const header = [...used]
+  const document = [product, ...nodes].map(writeNode).join('\n\n');
+  const used = Object.keys(namespaces).filter(prefix => new RegExp(`\\b${prefix}:`).test(document));
+  const header = used
     .map(prefix => `@prefix ${`${prefix}:`.padEnd(8)}<${namespaces[prefix]}> .`)
     .join('\n');
   return `${header}\n\n${document}\n`;
+}
+
+function writeNode({ subject, classes, statements }: Node): string {
+  const lines = [
+    ...(classes.length ? [`    ${'a'.padEnd(22)} ${classes.join(', ')}`] : []),
+    ...statements.map(({ predicate, object }) => `    ${predicate.padEnd(22)} ${object}`)
+  ];
+  return `${subject}\n${lines.join(' ;\n')} .`;
 }

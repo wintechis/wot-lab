@@ -1,5 +1,6 @@
 {
   "xpos": null,
   "ypos": null,
-  "state": "uninitialised"
+  "state": "uninitialised",
+  "madeFrom": []
 }
