@@ -5,9 +5,9 @@ import { resourceMeta, resourcePrefix } from '../things/resources.js';
 import { finishedProductClass } from '../things/resourceTurtle.js';
 import { createLoggers } from '../utils/debug.js';
 import { SolidFetch } from './dpopFetch.js';
-import { agentHeaderName } from './stateSink.js';
+import { agentHeaderName, currentProductIri } from './stateSink.js';
 
-const { debug, warn } = createLoggers('solid');
+const { debug, info, warn } = createLoggers('solid');
 
 /**
  * Production driven by orders on a Solid pod.
@@ -63,6 +63,16 @@ export interface OrderRunnerOptions {
 const fulfilledPredicate = 'https://example.org/passport/fulfilled';
 const trueLiteral = '"true"^^<http://www.w3.org/2001/XMLSchema#boolean>';
 
+/**
+ * The predicate a fulfilled order names what was made for it with.
+ *
+ * The copy in the pod, not the lab's `/products/<id>`: the lab serves the product
+ * of whichever run made one last, so a link there would come to mean a different
+ * phone as soon as the next order was built. The pod's copy belongs to this
+ * order's run and keeps saying what this order produced.
+ */
+const productPredicate = 'https://example.org/passport/product';
+
 const ldpContains = 'http://www.w3.org/ns/ldp#contains';
 
 // Long enough for a pod on a slow link, short enough that a black-holed
@@ -82,6 +92,24 @@ const settled = new Set<string>();
 // stay written off. Remembered only so the reason is said once rather than every
 // few seconds.
 const notOrders = new Set<string>();
+// Orders built in this process whose triples are not on the pod yet. A pod that
+// refused the write — it was busy, or the container grants append but not write —
+// must not cost a rebuild: the order is built, `settled` says so, and only the
+// marking is retried. What to write is worked out when the order is built and
+// kept, because by the time a retry runs the next order may have begun a run of
+// its own, and the products of this one are in the run that made them.
+const unmarked = new Map<string, Fulfilment>();
+
+/** What a built order has still to be told about itself. */
+interface Fulfilment {
+  /** The subject the triples are said about — the order as it names itself. */
+  subject: string;
+  /** Where the pod holds what the order produced. */
+  products: string[];
+}
+// The last failure reported for an order, so a pod that keeps refusing the same
+// request is reported once instead of every few seconds.
+const lastFailure = new Map<string, string>();
 // Said once rather than once per sweep: a lab with no environment loaded would
 // otherwise repeat it for as long as it is up.
 let warnedWithoutPlan = false;
@@ -164,21 +192,43 @@ async function sweep(): Promise<void> {
     .sort();
 
   for (const iri of members) {
+    // Built already, and only the pod does not know it yet.
+    if (unmarked.has(iri)) {
+      await markFulfilled(sink, iri, unmarked.get(iri) as Fulfilment);
+      continue;
+    }
     if (settled.has(iri)) {
       continue;
     }
     try {
       await consider(sink, iri);
     } catch (cause) {
-      warn(`Order ${iri} failed: ${message(cause)}`);
-      settled.add(iri);
+      // Reading an order can fail for reasons that have nothing to do with the
+      // order: a pod still digesting the hundreds of records the last one
+      // produced, a token being renewed, a timeout. None of those is a verdict
+      // on the order, so it is left for the next sweep rather than written off —
+      // only an order whose plan has actually run is settled, in `build`.
+      report(iri, `could not be read: ${message(cause)}`);
     }
   }
+}
+
+/** Report an order's failure once, however many sweeps it goes on failing for. */
+function report(iri: string, detail: string): void {
+  if (lastFailure.get(iri) === detail) {
+    return;
+  }
+  lastFailure.set(iri, detail);
+  warn(`Order ${iri} ${detail}; trying again on the next sweep`);
 }
 
 /** Read one member and build it, unless it is not an order or is already fulfilled. */
 async function consider(sink: OrderRunnerOptions, iri: string): Promise<void> {
   const order = await read(sink, iri);
+  // The read worked, so whatever it last failed with is no longer the state of
+  // things. Only a read failure is forgotten here: a marking that was refused is
+  // held by `unmarked`, which never reaches this far.
+  lastFailure.delete(iri);
   if (order.countQuads(null, fulfilledPredicate, null, null) > 0) {
     debug(`Order ${iri} is already fulfilled`);
     settled.add(iri);
@@ -257,21 +307,35 @@ async function build(
     warn(`Order ${iri} names ${unused.join(', ')}, which no recipe of '${environment}' uses`);
   }
 
-  debug(`Order ${iri}: building ${task.id} of '${environment}' with ${describe(choice)}`);
+  const started = Date.now();
+  info(`Order started: ${iri} — running ${task.optimalPlan.length} step(s) of '${environment}' task ${task.id} with ${describe(choice)}`);
   sink.reset();
   for (const step of task.optimalPlan) {
     await invoke(sink, iri, { ...step, input: substitute(step.input, choice.replacing) });
   }
 
+  // The plan has run, so the order is settled whatever came of it: a plan that
+  // leaves no product is one that would leave none the next time either, and
+  // retrying it every few seconds would be hundreds of invocations a minute.
+  settled.add(iri);
+  const seconds = ((Date.now() - started) / 1_000).toFixed(1);
   const produced = goalProducts(task, choice.replacing);
   const missing = produced.filter(id => (globalState.things as Record<string, Record<string, unknown>>)[id]?.state !== 'initialState');
-  settled.add(iri);
   if (missing.length) {
-    warn(`Order ${iri} ran ${task.optimalPlan.length} step(s) but ${missing.join(', ')} was not produced; not marked fulfilled`);
+    warn(`Order ${iri} ran ${task.optimalPlan.length} step(s) in ${seconds}s but ${missing.join(', ')} was not produced; not marked fulfilled`);
     return;
   }
-  debug(`Order ${iri} produced ${produced.join(', ')}`);
-  await markFulfilled(sink, iri, components.subject ?? iri);
+  const fulfilment: Fulfilment = {
+    subject: components.subject ?? iri,
+    // Where the pod will hold them. Written from the same interaction that made
+    // them, behind the response, so the document may land a moment after the
+    // order says it exists — the same way a record naming a product it generated
+    // can name one not written yet.
+    products: produced.map(currentProductIri).filter((product): product is string => product !== undefined)
+  };
+  info(`Order processed: ${iri} — produced ${fulfilment.products.join(', ') || produced.join(', ')} in ${seconds}s`);
+  unmarked.set(iri, fulfilment);
+  await markFulfilled(sink, iri, fulfilment);
 }
 
 /**
@@ -468,37 +532,48 @@ function request(input: unknown): { headers: Record<string, string>; body?: stri
  * pod that will not take a SPARQL update is read and written back instead, which
  * costs the formatting but still records the fact.
  */
-async function markFulfilled(sink: OrderRunnerOptions, iri: string, subject: string): Promise<void> {
-  const triple = `<${subject}> <${fulfilledPredicate}> ${trueLiteral} .`;
+async function markFulfilled(sink: OrderRunnerOptions, iri: string, fulfilment: Fulfilment): Promise<void> {
+  const { subject, products } = fulfilment;
+  const triples = [
+    `<${subject}> <${fulfilledPredicate}> ${trueLiteral} .`,
+    ...products.map(product => `<${subject}> <${productPredicate}> <${product}> .`)
+  ].join('\n');
   try {
     const patched = await send(sink, iri, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/sparql-update' },
-      body: `INSERT DATA { ${triple} }`
+      body: `INSERT DATA {\n${triples}\n}`
     });
     if (patched.ok) {
-      debug(`Marked ${iri} fulfilled`);
+      marked(iri);
       return;
     }
     debug(`Pod would not PATCH ${iri} (${patched.status}); writing it back instead`);
     const current = await send(sink, iri, { method: 'GET', headers: { Accept: 'text/turtle' } });
     if (!current.ok) {
-      warn(`Could not re-read ${iri} to mark it fulfilled: ${current.status} ${current.statusText}`);
+      report(iri, `could not be re-read to be marked fulfilled: ${current.status} ${current.statusText}`);
       return;
     }
     const put = await send(sink, iri, {
       method: 'PUT',
       headers: { 'Content-Type': 'text/turtle' },
-      body: `${await current.text()}\n${triple}\n`
+      body: `${await current.text()}\n${triples}\n`
     });
     if (!put.ok) {
-      warn(`Could not mark ${iri} fulfilled: ${put.status} ${put.statusText}`);
+      report(iri, `could not be marked fulfilled: ${put.status} ${put.statusText} (a container that grants append but not write cannot take the triple)`);
       return;
     }
-    debug(`Marked ${iri} fulfilled`);
+    marked(iri);
   } catch (cause) {
-    warn(`Could not mark ${iri} fulfilled: ${message(cause)}`);
+    report(iri, `could not be marked fulfilled: ${message(cause)}`);
   }
+}
+
+/** The pod now carries the triple, so neither the marking nor the build is owed. */
+function marked(iri: string): void {
+  unmarked.delete(iri);
+  lastFailure.delete(iri);
+  debug(`Marked ${iri} fulfilled`);
 }
 
 /** One pod resource, parsed, with its own URI as the base for relative terms. */

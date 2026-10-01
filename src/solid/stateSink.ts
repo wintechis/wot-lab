@@ -176,6 +176,25 @@ function productsContainer(sink: StateSinkOptions): string {
   return `${sink.container}products/`;
 }
 
+/** Where a given run's products go — the flat container when there is no run. */
+function productsRunContainer(sink: StateSinkOptions, runId: string | undefined): string {
+  return runId ? `${productsContainer(sink)}${encodeURIComponent(runId)}/` : productsContainer(sink);
+}
+
+/**
+ * Where the pod holds a product of the run currently going, when products are
+ * being written.
+ *
+ * So something that caused a product to be made can point at the copy in the pod
+ * rather than at the lab: the lab serves one product per id and will serve the
+ * next run's as soon as that one is made, while the pod's copy belongs to the run
+ * that made it and stays what it was.
+ */
+export function currentProductIri(id: string): string | undefined {
+  const sink = options;
+  return sink ? `${productsRunContainer(sink, sink.runId?.())}${encodeURIComponent(id)}` : undefined;
+}
+
 /**
  * Whether a product an Action generated is one the pod gets a copy of: a finished
  * product, or a battery, which a finished product links. Every other generated
@@ -409,7 +428,7 @@ export function publishThingState(interaction: Interaction, productsBefore?: Set
 
   // Where this record will go, decided now so the next one can point at it.
   const runContainer = runId ? `${tracesContainer(sink)}${encodeURIComponent(runId)}/` : undefined;
-  const productsRun = runId ? `${productsContainer(sink)}${encodeURIComponent(runId)}/` : productsContainer(sink);
+  const productsRun = productsRunContainer(sink, runId);
   const recordIri = runContainer ? `${runContainer}${recordName(position, id)}` : undefined;
   const previous = previousRecordIri;
   if (recordIri) {

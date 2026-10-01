@@ -1,4 +1,4 @@
-@prefix ex:     <https://example.org/passport/> .
+@prefix ex:     <https://solidtest.iis.fraunhofer.de/rocky/shapes/passport.vocab.ttl#> .
 @prefix schema: <https://schema.org/> .
 @prefix qudt:   <http://qudt.org/schema/qudt/> .
 @prefix unit:   <http://qudt.org/vocab/unit/> .

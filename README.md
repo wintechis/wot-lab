@@ -280,7 +280,15 @@ wot-lab/
 └── orders/           smartphones to build; the lab reads this one
 ```
 
-A run is the environment plus the moment it came up. A product counts as finished
+A run is the environment plus the moment it was last put into its initial
+conditions - brought up, or reset by `POST /_lab/reset`. A reset counts because a
+run is a sequence of interactions from a known starting state, and that is what a
+reset re-establishes: without it, two replays of a task, or two orders of a
+session, would share one run, their records would read as one sequence, and the
+resources they both write would overwrite each other - a product has the same id
+every time it is made.
+
+A product counts as finished
 when its model or manifest types it `ex:Smartphone`; when an Action produces one,
 the lab writes its Turtle representation and those of its battery and raw inputs
 beside it, so its relative links resolve inside the pod. Each links back to the
@@ -581,8 +589,17 @@ anyway, with that component logged as unused.
 
 Each order starts from the environment's initial state - the same reset
 `POST /_lab/reset` performs - because an order consumes raw materials and the one
-after it would otherwise find the floor empty. The records of the orders before it
-are already in the pod, so nothing recorded is lost.
+after it would otherwise find the floor empty. That reset also makes each order a
+**run of its own**, so an order's traces and products get containers no other
+order writes into:
+
+```
+wot-lab/
+├── traces/mosaik-…-18-011Z/     order-1: 618 records, starting at 00000000
+├── traces/mosaik-…-27-514Z/     order-2: its own 618
+├── products/mosaik-…-18-011Z/   order-1's phone, its battery and its parts
+└── products/mosaik-…-27-514Z/   order-2's
+```
 
 Every invocation carries the order's URI as its agent, so the run's traces say
 which order caused them:
@@ -595,19 +612,52 @@ which order caused them:
 
 ### When an order is done
 
-The lab adds one triple to the order on the pod:
+The lab adds two triples to the order on the pod - that it is done, and what was
+made for it:
 
 ```turtle
-<#order> <https://example.org/passport/fulfilled> true .
+<#order>
+    <https://example.org/passport/fulfilled> true ;
+    <https://example.org/passport/product>
+        <https://solid.example.org/alice/wot-lab/products/mosaik-…-18-011Z/smartphone> .
 ```
+
+The product link is the pod's copy, not the lab's `/products/smartphone`: the lab
+serves whichever phone was made last, so a link there would come to mean a
+different phone as soon as the next order was built, while the copy in the pod
+belongs to this order's run and keeps saying what this order produced. It is
+written from the same interaction that made it, behind the response, so the
+document can land a moment after the order says it exists.
 
 A `PATCH` with a SPARQL update, so the document keeps the comments and layout it
 was written with; a pod that will not take one is read and written back instead.
 An order that already carries the triple is skipped, which is what keeps a restart
-from building everything in the container again. An order whose plan ran but whose
-product did not appear is **not** marked, and is logged - it is not retried while
-the lab is up, because a plan that cannot run would otherwise be retried every few
-seconds.
+from building everything in the container again.
+
+What happens when something goes wrong depends on what went wrong, because the
+three cases deserve different answers:
+
+- **The order could not be read** - the pod was busy, a token was being renewed, a
+  request timed out. That is no verdict on the order, so it is read again on the
+  next sweep. A pod that keeps refusing is reported once, not once per sweep.
+- **The pod would not take the triple** - a container that grants append but not
+  write cannot. The order is built and stays built; only the *marking* is retried,
+  so a refusal never costs a second production run.
+- **The plan ran and left no product.** Logged as a warning, not marked, and not
+  retried while the lab is up: a plan that cannot run would otherwise run again
+  every few seconds.
+
+### Watching it happen
+
+Two lines per order, on by default - no `DEBUG` needed:
+
+```
+wot-lab:solid:info Order started: https://…/orders/order-1.ttl — running 618 step(s) of 'mosaik' task s6 with batterycell, 661-44796, ingot, …
+wot-lab:solid:info Order processed: https://…/orders/order-1.ttl — produced smartphone in 0.4s
+```
+
+`DEBUG=wot-lab:solid:*` adds the rest: the sweeps, which documents were not
+orders, and every record posted.
 
 ## API Reference
 

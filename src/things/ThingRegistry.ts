@@ -281,8 +281,15 @@ export class ThingRegistry {
   }
 
   /**
-   * When the current environment was brought up — what distinguishes one run of a
-   * manifest from the next, which its name does not.
+   * When the environment was last put into its initial conditions — brought up,
+   * or reset — which is what distinguishes one run of a manifest from the next,
+   * and what its name cannot.
+   *
+   * A reset counts, because a run is a sequence of interactions from a known
+   * starting state and that is exactly what a reset re-establishes. Without it
+   * the orders of a session, or two replays of a task, would share one run: their
+   * records would read as a single sequence, and the ones they both write — a
+   * product has the same id every time it is made — would overwrite each other.
    */
   environmentStartedAt(): Date | undefined {
     return this.currentEnvironmentStartedAt;
@@ -308,13 +315,23 @@ export class ThingRegistry {
     return true;
   }
 
-  /** Reset every running Thing to its initial state. Returns the ids reset. */
+  /**
+   * Reset every running Thing to its initial state. Returns the ids reset.
+   *
+   * This begins a new run: the environment is back at its starting state, so what
+   * follows is a fresh sequence of interactions rather than a continuation of the
+   * one before. Resetting one Thing does not — that is a correction inside a run,
+   * not the start of another.
+   */
   resetAll(): string[] {
     const reset: string[] = [];
     for (const id of this.things.keys()) {
       if (this.resetThing(id)) {
         reset.push(id);
       }
+    }
+    if (this.currentEnvironment) {
+      this.currentEnvironmentStartedAt = new Date();
     }
     info(`Reset ${reset.length} Thing(s) to initial state`);
     return reset;

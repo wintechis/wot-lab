@@ -15,7 +15,10 @@ import { createDpopFetch } from './solid/dpopFetch.js';
 if (!process.env.DEBUG) {
   // The Solid sink's warnings too: a dropped or refused provenance record is
   // data lost from a run, and must not go unnoticed for want of a DEBUG flag.
-  enable('wot-lab:system:*,wot-lab:solid:warn');
+  // And its info lines, which are where an order the pod placed says that it
+  // started and that it was built — a production run the lab began by itself is
+  // not something to find out about only by setting a flag.
+  enable('wot-lab:system:*,wot-lab:solid:info,wot-lab:solid:warn');
 }
 
 const { debug } = createLoggers('system');

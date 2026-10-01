@@ -39,7 +39,7 @@ import { inputsProperty, isResourceId, PropertyMeta, resourceMeta, ResourceMeta 
 
 /** The vocabularies a representation is written in, by prefix. */
 const namespaces: Record<string, string> = {
-  ex: 'https://example.org/passport/',
+  ex: 'https://solidtest.iis.fraunhofer.de/rocky/shapes/passport.vocab.ttl#',
   schema: 'https://schema.org/',
   qudt: 'http://qudt.org/schema/qudt/',
   unit: 'http://qudt.org/vocab/unit/',

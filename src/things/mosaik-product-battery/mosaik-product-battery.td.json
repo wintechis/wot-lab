@@ -3,7 +3,7 @@
     "https://www.w3.org/2022/wot/td/v1.1",
     {
       "arena": "https://solid.ti.rw.fau.de/public/ns/arena#",
-      "ex": "https://example.org/passport/",
+      "ex": "https://solidtest.iis.fraunhofer.de/rocky/shapes/passport.vocab.ttl#",
       "schema": "https://schema.org/",
       "qudt": "http://qudt.org/schema/qudt/",
       "unit": "http://qudt.org/vocab/unit/",

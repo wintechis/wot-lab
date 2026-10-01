@@ -63,7 +63,7 @@
       "state": { "xpos": null, "ypos": null, "state": "uninitialised" } },
     { "model": "mosaik-product", "id": "smartphone", "title": "smartphone",
       "state": { "xpos": null, "ypos": null, "state": "uninitialised" },
-      "td": { "@context": ["https://www.w3.org/2022/wot/td/v1.1", { "arena": "https://solid.ti.rw.fau.de/public/ns/arena#", "ex": "https://example.org/passport/" }],
+      "td": { "@context": ["https://www.w3.org/2022/wot/td/v1.1", { "arena": "https://solid.ti.rw.fau.de/public/ns/arena#", "ex": "https://solidtest.iis.fraunhofer.de/rocky/shapes/passport.vocab.ttl#" }],
               "@type": ["arena:Product", "ex:Smartphone"] } },
     { "model": "mosaik-bolt1", "id": "bolt1", "title": "bolt1",
       "state": { "xpos": 19.0, "ypos": 10.0, "service": "BoltingService" } },
