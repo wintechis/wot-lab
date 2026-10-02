@@ -5,7 +5,7 @@ import { resourceMeta, resourcePrefix } from '../things/resources.js';
 import { finishedProductClass } from '../things/resourceTurtle.js';
 import { createLoggers } from '../utils/debug.js';
 import { SolidFetch } from './dpopFetch.js';
-import { agentHeaderName, backdateRun, currentProductIri, podNow } from './stateSink.js';
+import { agentHeaderName, backdateRun, currentProductIri, drainStateSink, podNow } from './stateSink.js';
 
 const { debug, info, warn } = createLoggers('solid');
 
@@ -399,6 +399,14 @@ async function build(
   // retrying it every few seconds would be hundreds of invocations a minute.
   settled.add(iri);
   const seconds = ((Date.now() - started) / 1_000).toFixed(1);
+  // When the run ended, by its own clock — taken before the wait below, which is
+  // the pod's pace and not part of what the order took to build.
+  const finishedAt = podNow();
+  // The records of this run are queued behind the responses, and the next order
+  // starts producing at once. Without waiting, a stretch of orders outruns the
+  // pod and the sink drops the tail of every run past its queue; with it, the
+  // product the order links is also in the pod by the time the order says so.
+  await drainStateSink();
   const produced = goalProducts(task, choice.replacing);
   const missing = produced.filter(id => (globalState.things as Record<string, Record<string, unknown>>)[id]?.state !== 'initialState');
   if (missing.length) {
@@ -414,7 +422,7 @@ async function build(
     products: produced.map(currentProductIri).filter((product): product is string => product !== undefined),
     // By the run's own clock, so a backdated order was filled when it asked to
     // have been and not when the lab got round to it.
-    at: podNow()
+    at: finishedAt
   };
   info(`Order processed: ${iri} — produced ${fulfilment.products.join(', ') || produced.join(', ')} in ${seconds}s`);
   unmarked.set(iri, fulfilment);

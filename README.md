@@ -721,6 +721,47 @@ it, and so is an interaction someone fires by hand before anything starts anothe
 run. A reset or the next order begins one, and that run is on the clock again
 unless its own order says otherwise.
 
+### Generating a history
+
+[`scripts/generate-history.ts`](scripts/generate-history.ts) puts N dated orders in the
+pod, which is all it takes: the lab does the building, numbering and tracing.
+
+```bash
+bun run dev -- --env mosaik --solid-container https://solid.example.org/alice/wot-lab/
+# then, in another terminal:
+bun scripts/generate-history.ts --container https://solid.example.org/alice/wot-lab/ --wait
+```
+
+By default that is **150 smartphones spread over the last 3 days**: each of the six
+examples under [`orders/`](orders) is a template, picked at random, with its date
+replaced. Orders are named `history-0001.ttl`, `history-0002.ttl`, ... in date order,
+and the lab builds a container's orders in name order, so serials read
+chronologically as well - the phone with serial `000001` is the oldest.
+
+| Option | Default | |
+|---|---|---|
+| `--container <url>` | `WOT_LAB_SOLID_CONTAINER` | the pod container the lab works against |
+| `--count <n>` | `150` | smartphones to generate |
+| `--days <n>` | `3` | spread them over the last n days, ending a minute before now |
+| `--lab-url <url>` | `http://localhost:8081` | where the lab is served; orders name products by it |
+| `--seed <n>` | `1` | the schedule and the choice of phones repeat for a seed |
+| `--prefix <name>` | `history` | order file names |
+| `--dry-run` | | print the schedule and write nothing |
+| `--wait` | | after writing, follow the lab until every order is built |
+
+Credentials are read the way the lab reads them (`WOT_LAB_SOLID_CLIENT_ID` and
+`WOT_LAB_SOLID_CLIENT_SECRET`, from the environment or `.env`). An order is only
+ever *created*, never overwritten, so running it again skips what is already in the
+pod instead of rewinding a built order's marking and having the lab build it twice.
+
+**What 150 phones cost.** Each is a 618-step run, so 150 phones is 92,700 trace
+records (about 5.7 KB each, roughly 550 MB) and 2,250 product documents. The lab
+builds them one after another and waits for each run's records to reach the pod
+before starting the next, so how long it takes is how fast the pod accepts writes:
+seconds against a local pod, tens of minutes against a remote one. Without that
+wait the lab would outrun the pod and the sink would drop the tail of every run
+past its 10,000-record queue.
+
 ### How an order is built
 
 The plan is the environment's own: the benchmark task whose goal puts a finished

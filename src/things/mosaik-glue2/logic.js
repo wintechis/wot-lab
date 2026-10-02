@@ -15,6 +15,8 @@ thing.setPropertyReadHandler('xpos', async () => state.xpos);
 thing.setPropertyReadHandler('ypos', async () => state.ypos);
 thing.setPropertyReadHandler('temperature', async () => state.temperature);
 thing.setPropertyReadHandler('service', async () => state.service);
+thing.setPropertyReadHandler('target-temperature', async () => state['target-temperature']);
+thing.setPropertyReadHandler('max-temperature-deviation', async () => state['max-temperature-deviation']);
 
 const setActionHandler = thing.setActionHandler.bind(thing);
 thing.setActionHandler = (name, handler) =>

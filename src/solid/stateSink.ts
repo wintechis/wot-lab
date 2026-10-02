@@ -620,6 +620,24 @@ function enqueue(write: () => Promise<void>, what: string): void {
 }
 
 /**
+ * Wait until everything queued so far has reached the pod, however long that takes.
+ *
+ * For a producer that can outrun the pod: an order builds its 618 steps in about
+ * half a second and the lanes drain into the pod at the pod's pace, so builds run
+ * back to back would pile records up past `maxPending` and have the tail dropped.
+ * Waiting here is the backpressure that keeps a long run of orders whole.
+ *
+ * Unbounded, unlike `flushStateSink`, because dropping the records is exactly what
+ * the caller is trying to avoid; it still ends, since every write has its own
+ * timeout and a lane's chain settles when the last of them does.
+ */
+export async function drainStateSink(): Promise<void> {
+  while (pending) {
+    await Promise.all(lanes);
+  }
+}
+
+/**
  * Wait for what is already queued to drain, up to `timeoutMs` — for a shutdown
  * that should not lose snapshots. Work enqueued after the call is not covered,
  * which is the right shape for a shutdown: the lab has stopped answering by then.
