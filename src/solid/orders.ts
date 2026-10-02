@@ -142,6 +142,12 @@ const lastFailure = new Map<string, string>();
 // Said once rather than once per sweep: a lab with no environment loaded would
 // otherwise repeat it for as long as it is up.
 let warnedWithoutPlan = false;
+// What the last sweep found in the container, as one string, so a sweep can tell
+// whether the container changed since the one before. Without it the poller is
+// silent about everything that is not an order it builds: a document the lab never
+// listed, one it listed and ruled out, and an empty container all look the same
+// from outside — nothing in the log.
+let lastListing: string | undefined;
 
 /** Where orders are read from, inside the container the lab was pointed at. */
 export function ordersContainer(container: string): string {
@@ -164,6 +170,7 @@ export function stopOrderRunner(): void {
   clearTimeout(timer);
   timer = undefined;
   options = undefined;
+  lastListing = undefined;
 }
 
 function schedule(): void {
@@ -219,6 +226,7 @@ async function sweep(): Promise<void> {
     .map(object => object.value)
     .filter(iri => !iri.endsWith('/'))
     .sort();
+  reportListing(ordersContainer(sink.container), members);
 
   for (const iri of members) {
     // Built already, and only the pod does not know it yet.
@@ -240,6 +248,27 @@ async function sweep(): Promise<void> {
       report(iri, `could not be read: ${message(cause)}`);
     }
   }
+}
+
+/**
+ * Say what the container holds, when that is not what it held last sweep.
+ *
+ * At `info`, so it shows without `DEBUG` set: this is the one fact that tells a
+ * lab that cannot see an order apart from one that sees it and does not build it.
+ * Only a change is said — a sweep every few seconds would otherwise fill the log
+ * with the same line — and the first sweep always is, so a lab that starts against
+ * an empty or unreadable-looking container says so once.
+ */
+function reportListing(container: string, members: string[]): void {
+  const key = members.join('\n');
+  if (key === lastListing) {
+    return;
+  }
+  lastListing = key;
+  const shown = 8;
+  const names = members.slice(0, shown).map(iri => (iri.startsWith(container) ? iri.slice(container.length) : iri));
+  const more = members.length > shown ? `, … and ${members.length - shown} more` : '';
+  info(`${container} lists ${members.length} document(s)${members.length ? `: ${names.join(', ')}${more}` : ''}`);
 }
 
 /** Report an order's failure once, however many sweeps it goes on failing for. */

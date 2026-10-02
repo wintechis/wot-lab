@@ -854,15 +854,30 @@ three cases deserve different answers:
 
 ### Watching it happen
 
-Two lines per order, on by default - no `DEBUG` needed:
+Two lines per order, on by default - no `DEBUG` needed, plus one whenever the
+contents of `orders/` change:
 
 ```
 wot-lab:solid:info Order started: https://…/orders/order-1.ttl — running 618 step(s) of 'mosaik' task s6 with batterycell, 661-44796, ingot, …, dated 2024-09-20T08:15:00.000Z
 wot-lab:solid:info Order processed: https://…/orders/order-1.ttl — produced smartphone in 0.4s
 ```
 
-`DEBUG=wot-lab:solid:*` adds the rest: the sweeps, which documents were not
-orders, and every record posted.
+The listing line is what tells a lab that cannot see an order from one that sees it
+and does not build it - the two look the same from outside, as silence:
+
+```
+wot-lab:solid:info https://…/orders/ lists 0 document(s)
+wot-lab:solid:info https://…/orders/ lists 2 document(s): history-0001.ttl, probe-0001.ttl
+```
+
+It is said when the set of documents changes and on the first sweep, not every few
+seconds, and names at most eight. An order named in it but followed by no `Order
+started` is one the lab saw and did not build: check that it names the lab's own
+`http://localhost:<port>` products, and that a plan for the running environment
+exists. An order that never appears in it is one the lab was not shown.
+
+`DEBUG=wot-lab:solid:*` adds the rest: which documents were not orders, and every
+record posted.
 
 ## API Reference
 
