@@ -284,6 +284,21 @@ function isSavedProduct(id: string): boolean {
 const lanes: Promise<void>[] = Array.from({ length: concurrency }, () => Promise.resolve());
 let nextLane = 0;
 let dropped = 0;
+// Writes that did not reach the pod, since the lab came up: refused by it, failed
+// on the way, or dropped for want of room in the queue. Counted so that something
+// which *depends* on the pod holding a run — an order saying it is fulfilled — can
+// ask whether it does. `drainStateSink` says when the queue is empty, which is not
+// the same as saying everything in it arrived: a pod answering 401 to every write
+// empties the queue as fast as one that accepts them.
+let unwritten = 0;
+
+/**
+ * How many writes have failed to reach the pod so far. Read before and after a
+ * stretch of work, the difference is what that stretch failed to record.
+ */
+export function unwrittenCount(): number {
+  return unwritten;
+}
 
 /**
  * Point the sink at a container. Without this call nothing is posted, which is
@@ -438,6 +453,7 @@ async function post(snapshot: StateSnapshot, sink: StateSinkOptions, target?: st
   if (!response.ok) {
     const detail = (await response.text().catch(() => '')).slice(0, 200);
     warn(`Pod refused a snapshot of '${snapshot.interaction.thingId}': ${response.status} ${response.statusText} ${detail}`);
+    unwritten += 1;
     return;
   }
 
@@ -481,6 +497,7 @@ export function publishThingState(interaction: Interaction, productsBefore?: Set
 
   if (pending >= maxPending) {
     dropped += 1;
+    unwritten += 1;
     // One line per backlog, not one per drop: the pod being unreachable would
     // otherwise be as noisy as the traffic it is failing to record.
     if (dropped === 1 || dropped % 100 === 0) {
@@ -583,6 +600,7 @@ async function putProduct(sink: StateSinkOptions, target: string, body: string):
   const send = sink.fetch ?? fetch;
   if (!await ensureContainer(sink, productsContainer(sink)) || !await ensureContainer(sink, containerOf(target))) {
     warn(`No container for ${target}; product not written`);
+    unwritten += 1;
     return;
   }
   const response = await send(target, {
@@ -594,6 +612,7 @@ async function putProduct(sink: StateSinkOptions, target: string, body: string):
   if (!response.ok) {
     const detail = (await response.text().catch(() => '')).slice(0, 200);
     warn(`Pod refused ${target}: ${response.status} ${response.statusText} ${detail}`);
+    unwritten += 1;
     return;
   }
   debug(`Wrote ${target}`);
@@ -609,6 +628,7 @@ function enqueue(write: () => Promise<void>, what: string): void {
     .catch(cause => {
       const message = cause instanceof Error ? cause.message : String(cause);
       warn(`Failed to write ${what} to ${options?.container ?? 'the pod'}: ${message}`);
+      unwritten += 1;
     })
     .finally(() => {
       pending -= 1;
@@ -630,6 +650,9 @@ function enqueue(write: () => Promise<void>, what: string): void {
  * Unbounded, unlike `flushStateSink`, because dropping the records is exactly what
  * the caller is trying to avoid; it still ends, since every write has its own
  * timeout and a lane's chain settles when the last of them does.
+ *
+ * It says the queue is empty, not that its writes succeeded: whether they did is
+ * `unwrittenCount`'s to say.
  */
 export async function drainStateSink(): Promise<void> {
   while (pending) {
@@ -647,17 +670,20 @@ export async function drainStateSink(): Promise<void> {
  * that.
  */
 export async function flushStateSink(timeoutMs = 2_000): Promise<void> {
-  if (!pending) {
-    return;
+  const deadline = Date.now() + timeoutMs;
+  // A loop, not one wait: a run still producing when the signal arrives keeps
+  // queueing behind the lanes this call first saw, and one `Promise.all` of those
+  // would return with the later records unsent.
+  while (pending && Date.now() < deadline) {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    await Promise.race([
+      Promise.all(lanes),
+      new Promise<void>(resolve => {
+        timer = setTimeout(resolve, Math.max(0, deadline - Date.now()));
+      })
+    ]);
+    clearTimeout(timer);
   }
-  let timer: ReturnType<typeof setTimeout> | undefined;
-  await Promise.race([
-    Promise.all(lanes),
-    new Promise<void>(resolve => {
-      timer = setTimeout(resolve, timeoutMs);
-    })
-  ]);
-  clearTimeout(timer);
   if (pending) {
     warn(`Shut down with ${pending} snapshot(s) still unsent`);
   }

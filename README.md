@@ -395,6 +395,13 @@ replay firing hundreds of interactions a second; past that, records are dropped
 and the drop is logged, because an observer that runs the lab out of memory is
 worse than one that misses a reading.
 
+The queue is flushed on shutdown. `SIGINT` (Ctrl-C) waits up to 2 seconds, so a stop
+at a prompt never reads as a hang; `SIGTERM` - what `systemctl stop`, `restart` and
+every deploy send - waits up to 15, well inside systemd's 90. A pod too slow to
+drain in that time loses what is still queued, and the lab says how much (`Shut down
+with N snapshot(s) still unsent`); an order caught in that is left unmarked and is
+rebuilt on the next start.
+
 ### The resource
 
 ```turtle
@@ -756,11 +763,13 @@ pod instead of rewinding a built order's marking and having the lab build it twi
 
 **What 150 phones cost.** Each is a 618-step run, so 150 phones is 92,700 trace
 records (about 5.7 KB each, roughly 550 MB) and 2,250 product documents. The lab
-builds them one after another and waits for each run's records to reach the pod
-before starting the next, so how long it takes is how fast the pod accepts writes:
-seconds against a local pod, tens of minutes against a remote one. Without that
-wait the lab would outrun the pod and the sink would drop the tail of every run
-past its 10,000-record queue.
+builds them one after another and waits for each run's records to be written
+before starting the next, so how long it takes is how fast the pod accepts writes.
+Without that wait the lab would outrun the pod and the sink would drop the tail of
+every run past its 10,000-record queue. The wait is for the queue to empty; whether
+what was in it arrived is a separate question, answered in
+[When an order is done](#when-an-order-is-done): an order is only marked fulfilled
+if none of its writes were refused.
 
 ### How an order is built
 
@@ -840,7 +849,7 @@ An order that already carries the triple is skipped, which is what keeps a resta
 from building everything in the container again.
 
 What happens when something goes wrong depends on what went wrong, because the
-three cases deserve different answers:
+four cases deserve different answers:
 
 - **The order could not be read** - the pod was busy, a token was being renewed, a
   request timed out. That is no verdict on the order, so it is read again on the
@@ -851,6 +860,20 @@ three cases deserve different answers:
 - **The plan ran and left no product.** Logged as a warning, not marked, and not
   retried while the lab is up: a plan that cannot run would otherwise run again
   every few seconds.
+- **The pod refused some of what the run wrote.** A 401, a 500, a timeout, or a
+  queue that overflowed: the run's records or products did not all land. The order
+  is **not** marked fulfilled, because "fulfilled" next to a link to a phone the pod
+  does not hold is worse than no marking at all. It is not retried while the lab is
+  up either - a 618-step run every few seconds against a pod that refuses it would
+  be worse - but nothing records it as done, so it is built again the next time the
+  lab starts, once whatever stopped the pod accepting writes has been put right.
+  Logged as `Order … ran N step(s) … but M write(s) to the pod failed`. What the
+  failed attempt did write stays in the pod, under a serial the rebuild does not
+  reuse.
+
+A lab stopped while a run is still draining behaves the same way: the order is not
+marked until its records have all been written, so it is built again rather than
+left claiming a phone that never fully arrived.
 
 ### Watching it happen
 

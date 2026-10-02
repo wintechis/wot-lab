@@ -202,15 +202,27 @@ if (options.solidContainer) {
   }
 }
 
-// Graceful shutdown
-process.on('SIGINT', async () => {
-  debug('\nShutting down gracefully...');
+// Graceful shutdown. SIGINT is Ctrl-C at a prompt; SIGTERM is what `systemctl stop`,
+// `systemctl restart` and so every deploy send. Both must flush, or a deploy that
+// lands while a run is still draining throws the queued records away.
+let shuttingDown = false;
+function shutdown(signal: string, flushMs: number): void {
+  // A second signal is someone who has stopped waiting.
+  if (shuttingDown) {
+    process.exit(1);
+  }
+  shuttingDown = true;
+  debug(`\n${signal}: shutting down gracefully...`);
   // Before the flush, so a sweep cannot start another production run while the
   // records of the last one are draining.
   stopOrderRunner();
   // Snapshots already queued are in flight to the pod; losing them would leave
-  // its record of the session ending before the session did. Briefly — a pod that
-  // has stopped answering must not turn Ctrl-C into a hang.
-  await flushStateSink();
-  process.exit(0);
-});
+  // its record of the session ending before the session did. Bounded, because a
+  // pod that has stopped answering must not turn a stop into a hang.
+  void flushStateSink(flushMs).finally(() => process.exit(0));
+}
+// Briefly at a prompt, where Ctrl-C reading as a hang is the worse failure.
+process.on('SIGINT', () => shutdown('SIGINT', 2_000));
+// Longer under a supervisor, which waits (systemd: 90 s by default) and for which
+// a half-written run is the worse failure.
+process.on('SIGTERM', () => shutdown('SIGTERM', 15_000));

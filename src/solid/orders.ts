@@ -5,7 +5,7 @@ import { resourceMeta, resourcePrefix } from '../things/resources.js';
 import { finishedProductClass } from '../things/resourceTurtle.js';
 import { createLoggers } from '../utils/debug.js';
 import { SolidFetch } from './dpopFetch.js';
-import { agentHeaderName, backdateRun, currentProductIri, drainStateSink, podNow } from './stateSink.js';
+import { agentHeaderName, backdateRun, currentProductIri, drainStateSink, podNow, unwrittenCount } from './stateSink.js';
 
 const { debug, info, warn } = createLoggers('solid');
 
@@ -419,6 +419,10 @@ async function build(
   // is set after it, on the run the steps below will be recorded under.
   sink.reset();
   backdateRun(asOf);
+  // What the pod has refused so far, so the run can be asked afterwards what it
+  // failed to record: the count only ever grows, and this run's share is the
+  // difference.
+  const unwrittenBefore = unwrittenCount();
   for (const step of task.optimalPlan) {
     await invoke(sink, iri, { ...step, input: substitute(step.input, choice.replacing) });
   }
@@ -433,13 +437,27 @@ async function build(
   const finishedAt = podNow();
   // The records of this run are queued behind the responses, and the next order
   // starts producing at once. Without waiting, a stretch of orders outruns the
-  // pod and the sink drops the tail of every run past its queue; with it, the
-  // product the order links is also in the pod by the time the order says so.
+  // pod and the sink drops the tail of every run past its queue. One turn of the
+  // event loop first, because the last record is queued when its response
+  // finishes, which a client can see a moment before the server's own hook runs.
+  await new Promise(resolve => setImmediate(resolve));
   await drainStateSink();
   const produced = goalProducts(task, choice.replacing);
   const missing = produced.filter(id => (globalState.things as Record<string, Record<string, unknown>>)[id]?.state !== 'initialState');
   if (missing.length) {
     warn(`Order ${iri} ran ${task.optimalPlan.length} step(s) in ${seconds}s but ${missing.join(', ')} was not produced; not marked fulfilled`);
+    return;
+  }
+  // The queue being empty is not the pod holding the run: a pod refusing every
+  // write empties it as fast as one taking them. An order that says "fulfilled"
+  // and names a phone the pod does not have is worse than one that says nothing,
+  // so it is only marked when nothing this run wrote was refused. Left unmarked,
+  // it is built again the next time the lab starts — after whatever stopped the
+  // pod accepting writes has been put right — and not before, since retrying a
+  // 618-step run every few seconds against a pod that refuses it would be worse.
+  const unwritten = unwrittenCount() - unwrittenBefore;
+  if (unwritten > 0) {
+    warn(`Order ${iri} ran ${task.optimalPlan.length} step(s) in ${seconds}s but ${unwritten} write(s) to the pod failed, so what it produced is incomplete there; not marked fulfilled, and built again on the next start`);
     return;
   }
   const fulfilment: Fulfilment = {
