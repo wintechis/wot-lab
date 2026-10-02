@@ -275,12 +275,16 @@ The container holds three of its own, which the lab creates:
 
 ```
 wot-lab/
-├── traces/<run>/     one record per interaction, in order
-├── products/<run>/   each finished product and every product it links
+├── traces/000007/    one record per interaction, in order
+├── products/000007/  each finished product and every product it links
 └── orders/           smartphones to build; the lab reads this one
 ```
 
-A run is the environment plus the moment it was last put into its initial
+`000007` is the **serial number** of the phone that run built, so a reader holding
+a phone can find its history from the number on its back. See
+[Serial numbers](#serial-numbers).
+
+A run is one build: the environment plus the moment it was last put into its initial
 conditions - brought up, or reset by `POST /_lab/reset`. A reset counts because a
 run is a sequence of interactions from a known starting state, and that is what a
 reset re-establishes: without it, two replays of a task, or two orders of a
@@ -291,8 +295,65 @@ every time it is made.
 A product counts as finished
 when its model or manifest types it `ex:Smartphone`; when an Action produces one,
 the lab writes its Turtle representation and those of its battery and raw inputs
-beside it, so its relative links resolve inside the pod. Each links back to the
-run's traces with `ex:trace`.
+beside it, so its relative links resolve inside the pod. Each carries the serial of
+the item it is, links back to the run's traces with `ex:trace`, and says when it was
+made with `prov:generatedAtTime` - the interaction that brought it into existence, so
+a phone and the battery inside it carry the two different moments they were built
+rather than the one moment their documents were written:
+
+```turtle
+<#product>
+    a                      arena:Product, ex:Smartphone ;
+    schema:name            "smartphone" ;
+    schema:serialNumber    "000007" ;
+    prov:generatedAtTime   "2023-09-14T09:30:00.576Z"^^xsd:dateTime ;
+    ex:trace               <https://solid.example.org/alice/wot-lab/traces/000007/> ;
+    ex:battery             <f5batt-1zw-ww1#product> ;
+    ex:input               <glass#product> , <lcd#product> .
+```
+
+A raw material carries no time: it was on the floor before the run began, and the
+lab did not see it made. Neither does a product in a lab with no container
+configured, which observes no production at all - so the `GET /products/<id>` the
+lab serves itself carries the time exactly when the pod's copy of it would.
+
+### Serial numbers
+
+A build makes one finished product, so a build and a serial are the same thing
+counted two ways: the serial names the phone that came out of the run, and it names
+the two containers holding how that phone came to be.
+
+Every part written beside the phone gets a serial of its own, derived from the
+build's - two items must not share a serial, and a battery is not the phone it went
+into, but it *is* that phone's battery and a serial saying so is worth more than an
+unrelated number:
+
+| Document | `schema:serialNumber` |
+|---|---|
+| `products/000007/smartphone` | `000007` - the build is for it, so it takes the serial unsuffixed |
+| `products/000007/f5batt-1zw-ww1` | `000007-001` |
+| `products/000007/glass` | `000007-013` |
+
+Parts are numbered in the order the phone links them, which is the order the
+documents go to the pod: the battery and the raw inputs at the end of each recipe
+chain. `schema:serialNumber` is schema.org's own term for the identifier of one
+manufactured item, as against the `schema:name` every item of that kind shares - and
+a passport already speaks schema.org for `mpn` and `model`.
+
+Serials are allocated in order, six digits wide so a pod's listing sorts in build
+order, and **continue past whatever the pod already holds**. The lab reads
+`products/` once at startup and resumes from the highest serial in it, which is what
+makes them safe across restarts: the timestamps they replace were unique by
+construction, while a counter beginning at one every time the lab came up would have
+the second session overwrite the first session's traces and products. A pod that
+grants append but not read cannot be listed, so the count starts at one and the lab
+says so in a warning.
+
+Gaps are normal. A serial is spent when a run begins, so a run that is reset without
+building anything leaves its number unused - the sequence says what order builds
+happened in, not that every number names a phone. A container the lab did not name -
+left by hand, or by the timestamp scheme this replaced - is not a serial and is not
+counted past.
 
 `orders/` is the one container the lab reads rather than writes - see
 [Building what a Solid pod orders](#building-what-a-solid-pod-orders).
@@ -303,12 +364,22 @@ container has to grant append to the public; the lab sends no credentials.
 
 ### What is posted, and when
 
-One `POST` per **affordance** request - a Property read or write, an Action
-invocation, a Property observation, an Event subscription - fired after the
+One record per **affordance** request - a Property read or write, an Action
+invocation, a Property observation, an Event subscription - written after the
 response has been written, so the state it reports is the state the request
-produced. A Thing Description fetch posts nothing (it reads no state), nor do the
+produced. A Thing Description fetch records nothing (it reads no state), nor do the
 dashboard, its assets, or the [lab API](#lab-api-_lab). A long-poll observation
-the client abandons posts nothing either: it changed nothing.
+the client abandons records nothing either: it changed nothing.
+
+A `PUT` to a URI the lab chose, not a `POST` for the pod to name: a record has to
+name the record before it, and a pod-minted name is not known until that POST
+returns, so a chain built from those would either be wrong or would make every write
+wait for the one before it. The name is the record's position in its run, zero-padded
+and followed by the Thing - `00000617-glue1` - so the listing a pod gives for free
+reads in the order the interactions happened, which `10` before `9` would spoil. A
+pod that will not take the run's container is not worth losing records over: those
+fall back to a `POST` into the flat `traces/`, with a `Slug` naming the Thing and the
+time.
 
 A refused interaction is recorded like any other, with its status on the response it
 produced and the state it did not change - an agent's rejected write is as much a
@@ -327,6 +398,7 @@ worse than one that misses a reading.
 ### The resource
 
 ```turtle
+@prefix rdf:        <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix xsd:        <http://www.w3.org/2001/XMLSchema#> .
 @prefix prov:       <http://www.w3.org/ns/prov#> .
 @prefix dcterms:    <http://purl.org/dc/terms/> .
@@ -336,61 +408,64 @@ worse than one that misses a reading.
 @prefix httpsc:     <http://www.w3.org/2011/http-statusCodes#> .
 @prefix td:         <https://www.w3.org/2019/wot/td#> .
 @prefix hctl:       <https://www.w3.org/2019/wot/hypermedia#> .
-@prefix jsonschema: <https://www.w3.org/2019/wot/json-schema#> .
+@prefix cnt:        <http://www.w3.org/2011/content#> .
+
+<>
+    a prov:Bundle .
 
 <#request>
     a prov:Entity, htv:Request ;
     htv:mthd httpm:POST ;
     htv:requestURI "http://localhost:8081/lamp/actions/setBrightness" ;
     htv:resp <#response> ;
-    htv:body [ prov:value "{\"level\":40}" ] .
+    dcterms:subject <http://localhost:8081/lamp> ;
+    dcterms:conformsTo <#form> ;
+    htv:body [ a cnt:ContentAsText ; cnt:chars "{\"level\":40}" ] .
 
 <#response>
     a prov:Entity, htv:Response ;
-    htv:statusCodeValue 200 ;
     htv:sc httpsc:OK .
+
+<#form>
+    a hctl:Form ;
+    hctl:hasOperationType td:invokeAction .
 
 <#interaction>
     a prov:Activity ;
     prov:wasAssociatedWith <https://pod.example.org/alice/profile/card#me> ;
-    prov:used <#request>, <#form>, <#affordance>, <http://localhost:8081/lamp> ;
+    prov:used <#request> ;
     prov:generated <#response>, <#state> ;
     prov:startedAtTime "2026-09-30T10:11:29.251Z"^^xsd:dateTime ;
     prov:endedAtTime   "2026-09-30T10:11:29.265Z"^^xsd:dateTime .
 
-<#form>
-    a hctl:Form ;
-    hctl:hasOperationType td:invokeAction ;
-    hctl:hasTarget <http://localhost:8081/lamp/actions/setBrightness> ;
-    htv:methodName "POST" .
-
-<#affordance>
-    a td:ActionAffordance ;
-    td:name "setBrightness" ;
-    td:hasForm <#form> .
-
 <#state>
-    a prov:Entity, prov:Collection ;
-    prov:generatedAtTime "2026-09-30T10:11:29.265Z"^^xsd:dateTime ;
+    a prov:Collection ;
+    dcterms:isPartOf <https://solid.example.org/alice/wot-lab/traces/smart-home-2026-09-30T10-10-02-004Z/> ;
     dcterms:isPartOf <http://localhost:8081/_lab/environments/smart-home> ;
+    prov:wasRevisionOf <https://solid.example.org/alice/wot-lab/traces/smart-home-2026-09-30T10-10-02-004Z/00000011-lamp#state> ;
     prov:hadMember
         <#state-lamp>,
         <#state-thermostat> .
 
 <#state-lamp>
-    a prov:Entity, prov:Collection ;
+    a prov:Dictionary ;
     prov:specializationOf <http://localhost:8081/lamp> ;
-    dcterms:identifier "lamp" ;
-    prov:hadMember
-        [ td:name "poweredOn" ; prov:value true ] ,
-        [ td:name "brightness" ; prov:value 40 ] .
+    prov:hadDictionaryMember
+        [ prov:pairKey "poweredOn" ; prov:pairEntity [ prov:value true ] ] ,
+        [ prov:pairKey "brightness" ; prov:pairEntity [ prov:value 40 ] ] ,
+        [ prov:pairKey "colour" ; prov:pairEntity <#value-10373ae2e2ce3496> ] .
 
 <#state-thermostat>
-    a prov:Entity, prov:Collection ;
+    a prov:Dictionary ;
     prov:specializationOf <http://localhost:8081/thermostat> ;
-    dcterms:identifier "thermostat" ;
-    prov:hadMember
-        [ td:name "target" ; prov:value 21 ] .
+    prov:hadDictionaryMember
+        [ prov:pairKey "target" ; prov:pairEntity [ prov:value 21 ] ] .
+
+<#value-10373ae2e2ce3496>
+    a prov:Dictionary ;
+    prov:hadDictionaryMember
+        [ prov:pairKey "hue" ; prov:pairEntity [ prov:value 36 ] ] ,
+        [ prov:pairKey "saturation" ; prov:pairEntity [ prov:value 80 ] ] .
 ```
 
 Every term is someone else's, so a record needs no documentation but the
@@ -398,32 +473,51 @@ specifications it is written in - there is no wot-lab vocabulary to look up:
 
 | What it says | Term | From |
 |---|---|---|
-| who did it, when, what came out | `prov:Activity`, `prov:used`, `prov:generated`, `prov:startedAtTime`, `prov:endedAtTime` | [PROV-O](https://www.w3.org/TR/prov-o/) |
-| the request and its response | `htv:Request`, `htv:mthd`, `htv:requestURI`, `htv:body`, `htv:resp`, `htv:Response`, `htv:statusCodeValue`, `htv:sc` | [HTTP in RDF](https://www.w3.org/TR/HTTP-in-RDF10/) |
-| the WoT operation and what it addressed | `hctl:Form`, `hctl:hasOperationType`, `hctl:hasTarget`, `td:ActionAffordance`, `td:name`, `td:hasForm` | [WoT TD 1.1](https://www.w3.org/TR/wot-thing-description11/) |
-| a state, and one Thing's part of it | `prov:Collection`, `prov:hadMember`, `prov:specializationOf`, `prov:generatedAtTime`, `prov:value` | PROV-O |
-| identity and names | `foaf:name`, `prov:atLocation`, `dcterms:identifier`, `dcterms:isPartOf` | [FOAF](http://xmlns.com/foaf/spec/), [DCMI Terms](https://www.dublincore.org/specifications/dublin-core/dcmi-terms/) |
+| that this document is one record | `prov:Bundle` | [PROV-O](https://www.w3.org/TR/prov-o/) |
+| who did it, when, what came out | `prov:Activity`, `prov:used`, `prov:generated`, `prov:startedAtTime`, `prov:endedAtTime` | PROV-O |
+| the request and its response | `htv:Request`, `htv:mthd`, `htv:methodName`, `htv:requestURI`, `htv:body`, `htv:resp`, `htv:Response`, `htv:statusCodeValue`, `htv:sc` | [HTTP in RDF](https://www.w3.org/TR/HTTP-in-RDF10/) |
+| the body the client sent | `cnt:ContentAsText`, `cnt:chars` | [Content in RDF](https://www.w3.org/TR/Content-in-RDF10/) |
+| the WoT operation | `hctl:Form`, `hctl:hasOperationType`, `td:invokeAction` and the other `op` individuals | [WoT TD 1.1](https://www.w3.org/TR/wot-thing-description11/) |
+| a state, and one Thing's part of it | `prov:Collection`, `prov:hadMember`, `prov:specializationOf`, `prov:wasRevisionOf` | PROV-O |
+| a Property by name, and a structured value's members | `prov:Dictionary`, `prov:hadDictionaryMember`, `prov:pairKey`, `prov:pairEntity`, `prov:value`, `rdf:value` | [PROV-DICTIONARY](https://www.w3.org/TR/prov-dictionary/), [RDF](https://www.w3.org/TR/rdf11-concepts/) |
+| identity and names | `foaf:name`, `prov:atLocation`, `dcterms:identifier`, `dcterms:isPartOf`, `dcterms:subject`, `dcterms:conformsTo` | [FOAF](http://xmlns.com/foaf/spec/), [DCMI Terms](https://www.dublincore.org/specifications/dublin-core/dcmi-terms/) |
+
+A record says each fact once. Where a vocabulary has an individual for a value, the
+individual is written and the name or code beside it is not: `htv:mthd httpm:POST`
+rather than that and `htv:methodName "POST"`, `htv:sc httpsc:OK` rather than that and
+`htv:statusCodeValue 200`. A method or a status the vocabulary has no individual for
+falls back to the name or the number, which is the fact either way - so a refused
+interaction reads `htv:sc httpsc:MethodNotAllowed`, and an extension method reads
+`htv:methodName "PROPFIND"`.
 
 The operation is the Thing Description's own IRI for it (`td:invokeAction`, not the
-string `"invokeaction"`), hung off a `hctl:Form` because that is what a TD hangs it
-off - together with the target and the method, so the form in a record has the shape
-of the form in the Thing Description it came from. The `all` operations
-(`td:readAllProperties`, `td:writeAllProperties`) address the Thing itself and name
-no affordance, so those records carry no `<#affordance>`.
+string `"invokeaction"`), hung off a `hctl:Form` because a form is what a TD hangs
+it off and `td:` has no Form of its own. The form carries the operation and nothing
+else: its target and method are the request's, and `<#request>` says them already.
+Which Thing was addressed is `dcterms:subject` on the request, for the same reason -
+it is a fact about what arrived, not about the state - and `dcterms:conformsTo`
+points at the form the request exercised.
 
-`htv:sc` links the [status-code vocabulary's](http://www.w3.org/2011/http-statusCodes)
-own individual for the code, beside the plain `htv:statusCodeValue`; a refused
-interaction therefore reads `htv:statusCodeValue 405 ; htv:sc httpsc:MethodNotAllowed`.
-`dcterms:isPartOf` appears only while an [environment](#environments) is running,
-and points at the environment's own resource in the [lab API](#lab-api-_lab), so the
-manifest a run came from is one hop from any record of it.
+`dcterms:isPartOf` appears twice where both are known: the run's container, which
+is what separates two runs of one manifest, and the [environment](#environments)'s
+own resource in the [lab API](#lab-api-_lab), so the manifest a run came from is one
+hop from any record of it. `prov:wasRevisionOf` is the state this one followed - one
+step back rather than a scan of every record's timestamp, and a URI that resolves,
+because the lab chose where that record went before writing it.
 
 `<#state>` is the state of the **whole environment**: a `prov:Collection` whose
 members are one state per running Thing, in the order the Things were created, each
-a `prov:specializationOf` its Thing - the same Thing, as this record found it -
-carrying the Property values the interaction left. The Thing the request addressed
-is what the activity `prov:used`, because that is a fact about the request, not
-about the state.
+a `prov:specializationOf` its Thing - the same Thing, as this record found it - and
+a `prov:Dictionary` of the Property values the interaction left. A Property is a
+`prov:KeyEntityPair`: `prov:pairKey` for the name it is stored under, `prov:pairEntity`
+for its value. That is what PROV defines for a named member, which `td:name` and
+`jsonschema:propertyName` are not - those name an affordance and a schema, and a
+recorded value is neither.
+
+Products are not in there. A product is a resource with a representation of its
+own, written to `products/` and linking back to the run, so its state is not
+repeated in every record of the run that made it. A mosaik record therefore carries
+the environment's 12 Things, not the hundred-odd products on the floor.
 
 Recording every Thing is what makes a cross-Thing `vre:effects` effect legible: a
 MOSAIK station's `produce` Action places a new product and consumes the ones it
@@ -432,13 +526,24 @@ Thing alone would show that Action changing nothing. It also means a run reads
 back as a sequence of complete states - each record answers "what did the
 environment look like at this point", with no need to fold earlier records
 together - at the cost of record size, which grows with the environment: a mosaik
-record (37 Things) is roughly 12 KB, against 700 bytes for one Thing.
+record (12 Things) is around 5.6 KB, against 1.8 KB for one Thing, most of which is
+the prefix header every record carries.
 
-The subjects are hash URIs of the resource the pod mints, so a record needs no
-identifier of its own. The activity's `prov:startedAtTime` is when the request
-arrived and `prov:endedAtTime` when its response finished, which is also the
-state's `prov:generatedAtTime` - and that is what orders a session, rather than
-the order the pod received the records.
+The subjects are hash URIs of the record itself (`<#request>`, `<#response>`,
+`<#interaction>`, `<#form>`, `<#state>`, one `<#state-‹id›>` per Thing and one
+`<#value-‹digest›>` per structured value), so one URI is minted and every subject
+comes with it - no counter, and no identifier the lab has to keep unique across
+restarts. `<>` carries `prov:Bundle`, so a container of records can be filtered to
+the records and a reader who merges several has something per record to tell them
+apart.
+
+The activity's `prov:startedAtTime` is when the request arrived and
+`prov:endedAtTime` when its response finished, which is when the state it generated
+came into being - and that is what orders a session, rather than the order the pod
+received the records. Neither `<>` nor `<#state>` repeats it as a
+`prov:generatedAtTime` of its own: it is the activity's time, and the activity says
+it. For an order that asked to have been built in the past, both times are that
+order's - see [Ordering a build into the past](#ordering-a-build-into-the-past).
 
 ### Who the agent is
 
@@ -484,28 +589,37 @@ literal that does not read back as the bytes that arrived is worse than no liter
 Property values are serialised faithfully, so a record reads back as the state it
 recorded:
 
+Each one is a `prov:KeyEntityPair` in its Thing's dictionary - the name it is
+stored under and an entity carrying the value:
+
 | State value | Turtle |
 |-------------|--------|
-| boolean, integer | `true`, `42` |
-| other number | `"3.5"^^xsd:double` |
-| string | `"text"`, or `<https://...>` when it reads as an http(s) IRI, so a cross-Thing reference stays followable |
-| array | an RDF collection, `( "a" "b" )` - ordered, because order carries meaning in a state like a recipe's `inputs` |
-| object | `[ a prov:Collection ; prov:hadMember [ jsonschema:propertyName "label" ; prov:value "battery" ] ... ]` |
-| `null` | omitted at predicate position; a blank node inside a collection, where dropping it would shift everything after it |
+| boolean, integer | `[ prov:pairKey "flag" ; prov:pairEntity [ prov:value true ] ]` |
+| other number | `[ prov:value "3.5"^^xsd:double ]`, and `"-0"^^xsd:double` for negative zero, which `xsd:integer` has no value for |
+| string | `[ prov:value "hello" ]`, or the bare `<https://other.example/thing>` when it reads as an http(s) IRI, so a cross-Thing reference stays followable |
+| array | `<#value-‹digest›>`, a `prov:Collection` whose `rdf:value` is an RDF list - ordered, because order carries meaning in a state like a recipe's `inputs`; `prov:EmptyCollection` when there is nothing in it |
+| object | `<#value-‹digest›>`, a `prov:Dictionary` of the same pairs; `prov:EmptyDictionary` when there are no members |
+| `null` | omitted at predicate position; `[ a prov:Entity ]` inside a list, where dropping it would shift everything after it |
 
-A Property is a member of its Thing's state carrying the name it is stored under
-and its value: `[ td:name "brightness" ; prov:value 40 ]`. Both naming terms are
-the indexing properties the WoT specifications define for exactly this - `td:name`
-for a Thing's own Property (what a Thing Description calls an affordance's name)
-and `jsonschema:propertyName` for a member inside a structured value (what it calls
-an object member's name) - so no Property name has to be minted into a namespace,
-and a name Turtle could not abbreviate needs no special case.
+A structured value is **a subject of its own, named by a digest of its contents**,
+not a blank node nested where it was found. Two reasons. A blank node is a fresh
+identity in every record, so two records holding an unchanged value would disagree
+about it and the value would read as having changed in every diff; a digest is the
+same fragment in every record that holds that value, so a diff joins on it and an
+unchanged value stays silent. And nesting cost a line's indentation per level, which
+made a deep value quadratic in its own depth. The digest is not repeated as a
+literal - it *is* the fragment the subject is named by.
+
+Two Things sharing a value share the subject, so `recipe` appearing in a station and
+in the shopfloor is written once. Past 32 levels deep a value is recorded as present
+and not expanded, which bounds what a recursive state can do to a record; a value
+JSON cannot canonicalise is written inline rather than shared.
 
 `null` is the one thing no standard vocabulary has a term for. At predicate position
 that is no loss: saying nothing *is* how RDF says absent, which is why a product
-with no position simply has no `xpos` member. Inside a collection the place is held
-by a blank node, which says "an element RDF cannot state" - the closest a standard
-vocabulary gets.
+with no position simply has no `xpos` member. Inside a list the place is held by an
+entity that says nothing about itself, which is "an element RDF cannot state" - the
+closest a standard vocabulary gets.
 
 ### What configuring a container exposes
 
@@ -542,14 +656,16 @@ each named by the **URI the lab serves it at**:
 ```turtle
 @prefix schema: <https://schema.org/> .
 @prefix ex:     <https://example.org/passport/> .
+@prefix xsd:    <http://www.w3.org/2001/XMLSchema#> .
 
 <#order>
-    a             schema:Order ;
-    schema:name   "One smartphone with the Apple iPhone 16 battery" ;
-    ex:component  <http://localhost:8081/products/661-44796> ,
-                  <http://localhost:8081/products/batterycell> ,
-                  <http://localhost:8081/products/glass> ,
-                  <http://localhost:8081/products/lcd> .
+    a                schema:Order ;
+    schema:name      "One smartphone with the Apple iPhone 16 battery" ;
+    schema:orderDate "2024-09-20T08:15:00.000Z"^^xsd:dateTime ;
+    ex:component     <http://localhost:8081/products/661-44796> ,
+                     <http://localhost:8081/products/batterycell> ,
+                     <http://localhost:8081/products/glass> ,
+                     <http://localhost:8081/products/lcd> .
 ```
 
 What makes a URI a component is that it names a product of *this* lab, so the
@@ -562,7 +678,48 @@ the bundled examples under [`orders/`](orders) say `8081` and need editing for a
 lab started elsewhere.
 
 Six examples ship, one per phone in `phone resources/` - the same six the plan
-scripts under `plans/` were written for.
+scripts under `plans/` were written for, each dated to its own phone's era, so
+dropping all six in a pod leaves three years of production rather than six phones
+built in the same minute.
+
+### Ordering a build into the past
+
+An order may say **when** it was placed, and the lab builds it now and records it
+as having been built then. That is what lets a pod hold a history: the same lab,
+the same plan and the same products, run six times, leave six phones made over
+three years.
+
+The time is any literal in the order typed `xsd:dateTime` or `xsd:date` - the same
+liberty the components are read with, so `schema:orderDate`, `dcterms:created` or a
+term of the author's own all read the same. The datatype is what makes that safe to
+be liberal about: a date inside a `schema:description` is prose, and prose is not
+typed. An order that names several times is dated from the earliest, and says so in
+a warning; an order that names none is built as of now.
+
+What moves is every time the lab *claims* about that order's run, shifted by one
+offset so the run keeps the length it really had:
+
+| Dated from the order | Left on the clock |
+|---|---|
+| each record's `prov:startedAtTime` / `prov:endedAtTime` | the [serial](#serial-numbers) the run's containers are named by, which counts builds rather than dating them - so two orders backdated to one instant still get a container each |
+| each product's `prov:generatedAtTime` | the lab's logs, the poll loop, every timeout |
+| the order's own `ex:fulfilledAt` | |
+
+So a run that took half a second reads as half a second of production on the day
+the order asked for:
+
+```turtle
+# traces/000001/00000000-t1
+<#interaction> prov:endedAtTime "2023-09-14T09:30:00.013Z"^^xsd:dateTime .
+# traces/000001/00000617-glue1
+<#interaction> prov:endedAtTime "2023-09-14T09:30:00.576Z"^^xsd:dateTime .
+```
+
+The date belongs to the **run**, not to the lab: a record that reaches the pod
+after the order has finished is still a record of its run and is still dated with
+it, and so is an interaction someone fires by hand before anything starts another
+run. A reset or the next order begins one, and that run is on the clock again
+unless its own order says otherwise.
 
 ### How an order is built
 
@@ -595,10 +752,10 @@ order writes into:
 
 ```
 wot-lab/
-├── traces/mosaik-…-18-011Z/     order-1: 618 records, starting at 00000000
-├── traces/mosaik-…-27-514Z/     order-2: its own 618
-├── products/mosaik-…-18-011Z/   order-1's phone, its battery and its parts
-└── products/mosaik-…-27-514Z/   order-2's
+├── traces/000001/     order-1: 618 records, starting at 00000000
+├── traces/000002/     order-2: its own 618
+├── products/000001/   order-1's phone, its battery and its parts
+└── products/000002/   order-2's
 ```
 
 Every invocation carries the order's URI as its agent, so the run's traces say
@@ -612,15 +769,22 @@ which order caused them:
 
 ### When an order is done
 
-The lab adds two triples to the order on the pod - that it is done, and what was
-made for it:
+The lab adds three triples to the order on the pod - that it is done, when it was
+done, and what was made for it:
 
 ```turtle
 <#order>
-    <https://example.org/passport/fulfilled> true ;
+    <https://example.org/passport/fulfilled>   true ;
+    <https://example.org/passport/fulfilledAt> "2023-09-14T09:30:00.580Z"^^xsd:dateTime ;
     <https://example.org/passport/product>
-        <https://solid.example.org/alice/wot-lab/products/mosaik-…-18-011Z/smartphone> .
+        <https://solid.example.org/alice/wot-lab/products/000001/smartphone> .
 ```
+
+`fulfilledAt` is when this lab finished building the order, by its run's own clock -
+not when the order was placed, which the order itself says. For a backdated order it
+is the moment it asked for plus however long the run took. It is taken when the run
+ends rather than when the triple lands, so a marking the pod refused and the lab
+retried still records when the order was built.
 
 The product link is the pod's copy, not the lab's `/products/smartphone`: the lab
 serves whichever phone was made last, so a link there would come to mean a
@@ -652,7 +816,7 @@ three cases deserve different answers:
 Two lines per order, on by default - no `DEBUG` needed:
 
 ```
-wot-lab:solid:info Order started: https://…/orders/order-1.ttl — running 618 step(s) of 'mosaik' task s6 with batterycell, 661-44796, ingot, …
+wot-lab:solid:info Order started: https://…/orders/order-1.ttl — running 618 step(s) of 'mosaik' task s6 with batterycell, 661-44796, ingot, …, dated 2024-09-20T08:15:00.000Z
 wot-lab:solid:info Order processed: https://…/orders/order-1.ttl — produced smartphone in 0.4s
 ```
 

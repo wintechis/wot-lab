@@ -10,15 +10,22 @@
 #
 # Every URI here resolves. The subjects are fragments of the record itself, so the
 # pod mints one URI and the whole record comes with it. The run is the container
-# the record lives in, which answers a GET and lists the run's records. The record
+# the record lives in, which answers a GET and lists the run's records; it is named
+# by the serial number of the phone that run built. The record
 # before this one is named by the lab rather than the pod — the lab PUTs each
 # record to a URI it chose, which is why a record can name its predecessor without
 # waiting to be told where the predecessor landed.
 #
-# A structured value is a fragment too, named by a digest of its contents, and
-# carries that digest as a literal. The literal is what makes two records
-# comparable: the same fragment in two records is two URIs, so a diff joins on the
-# digest and an unchanged value stays silent.
+# A structured value is a fragment too, named by a digest of its contents. The name
+# is what makes two records comparable: the same value is the same fragment in
+# every record that holds it, so a diff joins on the digest and an unchanged value
+# stays silent. `recipe` is one subject here though two Things carry it. The digest
+# is not repeated as a literal — it is already the name.
+#
+# A record says each fact once: the vocabulary's individual where there is one
+# (`httpm:POST`, `httpsc:OK`) and the name or code only where there is none, no
+# `prov:generatedAtTime` on what the activity already timestamps, and no class
+# stated beside a subclass of it.
 
 @prefix rdf:        <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix xsd:        <http://www.w3.org/2001/XMLSchema#> .
@@ -33,13 +40,11 @@
 @prefix cnt:        <http://www.w3.org/2011/content#> .
 
 <>
-    a prov:Bundle ;
-    prov:generatedAtTime "2026-10-01T08:15:06.120Z"^^xsd:dateTime .
+    a prov:Bundle .
 
 <#request>
     a prov:Entity, htv:Request ;
     htv:mthd httpm:POST ;
-    htv:methodName "POST" ;
     htv:requestURI "http://localhost:8081/station1/actions/produce" ;
     htv:resp <#response> ;
     dcterms:subject <http://localhost:8081/station1> ;
@@ -48,22 +53,11 @@
 
 <#response>
     a prov:Entity, htv:Response ;
-    htv:statusCodeValue 200 ;
     htv:sc httpsc:OK .
 
 <#form>
     a hctl:Form ;
-    hctl:hasOperationType td:invokeAction ;
-    hctl:hasTarget "http://localhost:8081/station1/actions/produce" ;
-    htv:methodName "POST" .
-
-<#affordance>
-    a td:ActionAffordance ;
-    td:name "produce" ;
-    td:hasForm <#form> .
-
-<http://localhost:8081/station1>
-    td:hasActionAffordance <#affordance> .
+    hctl:hasOperationType td:invokeAction .
 
 <#interaction>
     a prov:Activity ;
@@ -74,44 +68,40 @@
     prov:endedAtTime   "2026-10-01T08:15:06.120Z"^^xsd:dateTime .
 
 <#state>
-    a prov:Entity, prov:Collection ;
-    prov:generatedAtTime "2026-10-01T08:15:06.120Z"^^xsd:dateTime ;
-    dcterms:isPartOf <http://localhost:3000/prov/mosaik-2026-10-01T08-14-20-844Z/> ;
+    a prov:Collection ;
+    dcterms:isPartOf <http://localhost:3000/prov/traces/000007/> ;
     dcterms:isPartOf <http://localhost:8081/_lab/environments/mosaik> ;
-    prov:wasRevisionOf <http://localhost:3000/prov/mosaik-2026-10-01T08-14-20-844Z/00000005-station1#state> ;
+    prov:wasRevisionOf <http://localhost:3000/prov/traces/000007/00000005-station1#state> ;
     prov:hadMember
         <#state-station1>,
         <#state-bin1> .
 
 <#state-station1>
-    a prov:Entity, prov:Dictionary ;
+    a prov:Dictionary ;
     prov:specializationOf <http://localhost:8081/station1> ;
-    dcterms:identifier "station1" ;
     prov:hadDictionaryMember
         [ prov:pairKey "busy" ; prov:pairEntity [ prov:value false ] ] ,
         [ prov:pairKey "produced" ; prov:pairEntity [ prov:value 3 ] ] ,
         [ prov:pairKey "recipe" ; prov:pairEntity <#value-5346dd1b7d503c0a> ] .
 
 <#state-bin1>
-    a prov:Entity, prov:Dictionary ;
+    a prov:Dictionary ;
     prov:specializationOf <http://localhost:8081/bin1> ;
-    dcterms:identifier "bin1" ;
     prov:hadDictionaryMember
         [ prov:pairKey "bolt" ; prov:pairEntity [ prov:value 7 ] ] ,
         [ prov:pairKey "plate" ; prov:pairEntity [ prov:value 2 ] ] ,
         [ prov:pairKey "recipe" ; prov:pairEntity <#value-5346dd1b7d503c0a> ] .
 
 <#value-5346dd1b7d503c0a>
-    a prov:Entity, prov:Dictionary ;
-    dcterms:identifier "5346dd1b7d503c0a" ;
+    a prov:Dictionary ;
     prov:hadDictionaryMember
         [ prov:pairKey "name" ; prov:pairEntity [ prov:value "widget" ] ] ,
         [ prov:pairKey "inputs" ; prov:pairEntity <#value-40ef698f58cd21de> ] .
 
 <#value-40ef698f58cd21de>
-    a prov:Entity, prov:Collection ;
-    dcterms:identifier "40ef698f58cd21de" ;
+    a prov:Collection ;
     rdf:value (
         [ prov:value "bolt" ]
         [ prov:value "plate" ]
       ) .
+

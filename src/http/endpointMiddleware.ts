@@ -4,10 +4,12 @@ import { labPrefix } from './labApi.js';
 import { brotliCompressSync, constants as zlibConstants, gzipSync } from 'zlib';
 import * as WoT from 'wot-typescript-definitions';
 import { isAgentIri, RequestAgent, WotOperation } from '../solid/stateResource.js';
-import { agentHeaderName, currentRunContainer, existingProducts, isStateSinkEnabled, publishThingState } from '../solid/stateSink.js';
+import { productSerial } from '../solid/serials.js';
+import { agentHeaderName, currentRunContainer, existingProducts, isStateSinkEnabled, productGeneratedAt, publishThingState } from '../solid/stateSink.js';
 import { createLoggers } from '../utils/debug.js';
 import { isResourceId, resourceIdList, resourcePrefix } from '../things/resources.js';
 import { productTurtle } from '../things/resourceTurtle.js';
+import { thingDescriptionTurtle } from '../things/tdTurtle.js';
 import { globalState, normalizeThingId } from '../globalState.js';
 
 const { warn } = createLoggers('state');
@@ -494,7 +496,11 @@ function serveResource(req: IncomingMessage, segments: string[], res: ServerResp
     writeJson(res, JSON.parse(JSON.stringify(states[normalized])));
     return true;
   }
-  writeTurtle(res, productTurtle(normalized, currentRunContainer()) as string);
+  writeTurtle(res, productTurtle(normalized, {
+    trace: currentRunContainer(),
+    generatedAt: productGeneratedAt(normalized),
+    serial: productSerial(normalized)
+  }) as string);
   return true;
 }
 
@@ -508,6 +514,14 @@ function serveResource(req: IncomingMessage, segments: string[], res: ServerResp
 function wantsJson(req: IncomingMessage): boolean {
   const accept = (req.headers.accept ?? '').toLowerCase();
   return /application\/(ld\+)?json/.test(accept) && !accept.includes('text/turtle');
+}
+
+/** Whether the client named Turtle in `Accept` (and did not rule it out with `q=0`). */
+function wantsTurtle(req: IncomingMessage): boolean {
+  return (req.headers.accept ?? '').split(',').some(value => {
+    const [mediaType, ...parameters] = value.trim().toLowerCase().split(';');
+    return mediaType === 'text/turtle' && !parameters.some(parameter => /^\s*q=0(\.0+)?\s*$/.test(parameter));
+  });
 }
 
 function writeTurtle(res: ServerResponse, body: string): void {
@@ -865,6 +879,21 @@ export function createEndpointMiddleware(
       }
       renderThing(thing, true, res);
       return;
+    }
+
+    // The TD itself is JSON-LD; a client that asks for Turtle gets the same graph
+    // in that syntax. Anything else is the WoT server's to answer.
+    if (thing && wantsTurtle(req)) {
+      try {
+        const turtle = await thingDescriptionTurtle(
+          thingId(thing), thingDescription(thing), new URL(requestUrl.pathname, requestUrl).href);
+        writeTurtle(res, turtle);
+        return;
+      } catch (error) {
+        warn(`Could not serialise the Thing Description of '${thingId(thing)}' as Turtle: ${error}`);
+        writeJson(res, { error: 'The Thing Description could not be serialised as Turtle' }, 500);
+        return;
+      }
     }
 
     await forwardToWot();

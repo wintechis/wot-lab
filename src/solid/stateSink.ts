@@ -4,6 +4,7 @@ import { batteryClass, finishedProductClass, linkedProducts, productTurtle } fro
 import { isResourceId, resourceMeta } from '../things/resources.js';
 import { createLoggers } from '../utils/debug.js';
 import { SolidFetch } from './dpopFetch.js';
+import { numberBuildProducts, productSerial, productsContainerIn } from './serials.js';
 import { Interaction, provenanceToTurtle, StateSnapshot, ThingState } from './stateResource.js';
 
 const { debug, warn } = createLoggers('solid');
@@ -67,13 +68,15 @@ export interface StateSinkOptions {
   // eslint-disable-next-line no-unused-vars
   environmentIri?: () => string | undefined;
   /**
-   * A name for the run currently going, when one is — the environment plus when it
-   * came up, as one path segment. Read at post time for the same reason as
+   * A name for the run currently going, when one is — the serial number of what it
+   * builds, as one path segment. Read at post time for the same reason as
    * `environmentIri`: a run can end and another begin while the lab stays up.
    *
    * A name and not a URI, because where a run's records live is this module's
    * business: it becomes a container under `container`, which is a resource that
-   * answers a GET and lists the records belonging to the run.
+   * answers a GET and lists the records belonging to the run. What the name *says*
+   * is the caller's: this module only needs one run to be told from the next, and
+   * `serials.ts` is where a name is chosen that a reader can also look up.
    */
   // eslint-disable-next-line no-unused-vars
   runId?: () => string | undefined;
@@ -125,6 +128,21 @@ let previousRecordIri: string | undefined;
 // One creation attempt per run, shared by every lane: four lanes starting at once
 // would otherwise race to create the same container.
 const containersMade = new Map<string, Promise<boolean>>();
+// How far the times the pod is told differ from the clock, and the run that
+// difference belongs to. Zero for a run nobody asked to date elsewhere, which is
+// every run but one an order backdated — see `backdateRun`.
+let backdateMs = 0;
+let backdateRunId: string | undefined;
+// When each product of the run now going came into existence, by the clock the run
+// is dated by. Filled as interactions are published, because that is where a
+// product's birth is observed: a product that exists now and did not when the
+// request arrived was made by it. Read when a product is written, so a phone and
+// the battery inside it each carry the moment it was made rather than the moment
+// the phone's documents happened to be rendered.
+//
+// A run's own, cleared with the sequence: a product has the same id every run, and
+// a time carried across would date this run's phone by the last run's.
+const producedAt = new Map<string, Date>();
 
 /**
  * Make sure a run's container exists, once per run.
@@ -166,14 +184,14 @@ function ensureContainer(sink: StateSinkOptions, container: string): Promise<boo
   containersMade.set(container, attempt);
   return attempt;
 }
-/** Where the records of every interaction go, one container per run inside. */
+/** Where the records of every interaction go, one container per build inside. */
 function tracesContainer(sink: StateSinkOptions): string {
   return `${sink.container}traces/`;
 }
 
-/** Where finished products and the products they link to go, one container per run inside. */
+/** Where finished products and the products they link to go, one container per build inside. */
 function productsContainer(sink: StateSinkOptions): string {
-  return `${sink.container}products/`;
+  return productsContainerIn(sink.container);
 }
 
 /** Where a given run's products go — the flat container when there is no run. */
@@ -193,6 +211,63 @@ function productsRunContainer(sink: StateSinkOptions, runId: string | undefined)
 export function currentProductIri(id: string): string | undefined {
   const sink = options;
   return sink ? `${productsRunContainer(sink, sink.runId?.())}${encodeURIComponent(id)}` : undefined;
+}
+
+/**
+ * Date what the run now going writes from `asOf` rather than from the clock.
+ *
+ * This is how a pod comes to hold history rather than only a present: an order
+ * that says when it was placed is built now and recorded as having been built
+ * then. What is shifted is every time the lab *claims* — each record's activity,
+ * each product's birth, the order's fulfilment — by one offset, so the run keeps
+ * the durations it really had and reads as a run of that length at that moment.
+ *
+ * The offset belongs to the run, not to the lab: a record that drains after the
+ * order has finished is still a record of its run and is still dated with it,
+ * while a run begun by a reset or by the next order is dated by the clock again
+ * unless it asks not to be. `undefined` says this run is not backdated at all.
+ *
+ * Only the times written to the pod move. Logs, the poll loop and every timeout
+ * stay on the clock, because a lab that moved its own sense of now would answer
+ * a request from a past it is not in.
+ */
+export function backdateRun(asOf: Date | undefined): void {
+  if (asOf === undefined || Number.isNaN(asOf.getTime())) {
+    backdateMs = 0;
+    backdateRunId = undefined;
+    return;
+  }
+  backdateMs = asOf.getTime() - Date.now();
+  backdateRunId = options?.runId?.();
+  debug(`Dating the run from ${asOf.toISOString()} (${backdateMs}ms off the clock)`);
+}
+
+/**
+ * One real time as the run it belongs to reports it.
+ *
+ * The run is checked rather than assumed, so an offset one run asked for cannot
+ * leak into the next: `runId` is what a record is filed under, and a time is
+ * shifted exactly when the record carrying it belongs to the backdated run.
+ */
+function runTime(real: Date, runId: string | undefined): Date {
+  return backdateMs && runId === backdateRunId ? new Date(real.getTime() + backdateMs) : real;
+}
+
+/** Now, as the run currently going reports it — the clock, unless it is backdated. */
+export function podNow(): Date {
+  return runTime(new Date(), options?.runId?.());
+}
+
+/**
+ * When a product of the run now going came into existence, if the lab saw it
+ * happen.
+ *
+ * Nothing for a raw material: it was on the floor when the run began, and the lab
+ * has no basis for a date it did not witness. Nothing either in a lab with no
+ * container configured, which observes no production at all.
+ */
+export function productGeneratedAt(id: string): Date | undefined {
+  return producedAt.get(normalizeThingId(id));
 }
 
 /**
@@ -422,6 +497,9 @@ export function publishThingState(interaction: Interaction, productsBefore?: Set
     sequenceRunId = runId;
     sequence = 0;
     previousRecordIri = undefined;
+    // And the products of the run that just ended: this run makes its own, and
+    // every id is about to be used again.
+    producedAt.clear();
   }
   const position = sequence;
   sequence += 1;
@@ -441,8 +519,20 @@ export function publishThingState(interaction: Interaction, productsBefore?: Set
     ? [...existingProducts()].filter(product => !productsBefore.has(product))
     : [];
 
+  // When this interaction happened, as the run it belongs to reports it — the
+  // clock, unless an order asked for its run to be dated elsewhere.
+  const startedAt = runTime(interaction.startedAt, runId);
+  const endedAt = runTime(interaction.endedAt, runId);
+  // The interaction that produced a product is when it came into existence, which
+  // is the one fact about a product's birth the lab is in a position to state.
+  // Overwritten rather than kept, because a product consumed and produced again in
+  // one run was last made now.
+  for (const product of generated) {
+    producedAt.set(product, endedAt);
+  }
+
   const snapshot: StateSnapshot = {
-    interaction: { ...interaction, thingId: id },
+    interaction: { ...interaction, thingId: id, startedAt, endedAt },
     thingIri: thingIri(sink, id),
     environmentIri: sink.environmentIri?.(),
     runIri: runContainer,
@@ -465,8 +555,17 @@ export function publishThingState(interaction: Interaction, productsBefore?: Set
   // A finished product goes to the pod with everything it links, rendered now for
   // the same reason the states are: this is what the interaction left.
   for (const finished of generated.filter(product => resourceMeta(product)?.types.includes(finishedProductClass))) {
-    for (const product of [finished, ...linkedProducts(finished)]) {
-      const body = productTurtle(product, runContainer);
+    const documents = [finished, ...linkedProducts(finished)];
+    // Numbered before any of them is rendered, because each one carries its own
+    // serial and the finished product's is the build's — which is the name of the
+    // container they are all about to be written into.
+    numberBuildProducts(documents);
+    for (const product of documents) {
+      const body = productTurtle(product, {
+        trace: runContainer,
+        generatedAt: producedAt.get(product),
+        serial: productSerial(product)
+      });
       if (body !== undefined) {
         enqueue(() => putProduct(sink, `${productsRun}${encodeURIComponent(product)}`, body), `product '${product}'`);
       }

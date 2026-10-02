@@ -5,7 +5,7 @@ import { resourceMeta, resourcePrefix } from '../things/resources.js';
 import { finishedProductClass } from '../things/resourceTurtle.js';
 import { createLoggers } from '../utils/debug.js';
 import { SolidFetch } from './dpopFetch.js';
-import { agentHeaderName, currentProductIri } from './stateSink.js';
+import { agentHeaderName, backdateRun, currentProductIri, podNow } from './stateSink.js';
 
 const { debug, info, warn } = createLoggers('solid');
 
@@ -34,6 +34,13 @@ const { debug, info, warn } = createLoggers('solid');
  *
  * A fulfilled order is marked as such on the pod, so a restart does not build it
  * again.
+ *
+ * An order may also say *when* it was placed, as any literal in it typed
+ * `xsd:dateTime` or `xsd:date`. It is built now and recorded as having been built
+ * then, which is what lets a pod hold a history rather than only a present: six
+ * orders with six dates leave six phones made over three years, each with the run
+ * that made it dated to match. Nothing else about the build changes — the same
+ * plan, the same products, the same steps.
  */
 
 export interface OrderRunnerOptions {
@@ -73,7 +80,21 @@ const trueLiteral = '"true"^^<http://www.w3.org/2001/XMLSchema#boolean>';
  */
 const productPredicate = 'https://example.org/passport/product';
 
+/**
+ * The predicate a fulfilled order carries the moment it was filled on.
+ *
+ * Beside `fulfilled`, in the same namespace and for the same reason: the lab is
+ * saying something about this order that no vocabulary of orders has a term for —
+ * not when it was placed, which the order itself says, but when this lab finished
+ * building it. For a backdated order that is the moment it asked to have been
+ * built, plus however long the run took.
+ */
+const fulfilledAtPredicate = 'https://example.org/passport/fulfilledAt';
+
 const ldpContains = 'http://www.w3.org/ns/ldp#contains';
+
+const xsdDateTime = 'http://www.w3.org/2001/XMLSchema#dateTime';
+const xsdDate = 'http://www.w3.org/2001/XMLSchema#date';
 
 // Long enough for a pod on a slow link, short enough that a black-holed
 // connection cannot stall the poll loop indefinitely.
@@ -106,6 +127,14 @@ interface Fulfilment {
   subject: string;
   /** Where the pod holds what the order produced. */
   products: string[];
+  /**
+   * When the order was filled, by the clock its run was dated by.
+   *
+   * Taken when the run ended rather than when the triple is written, because a
+   * marking the pod refused is retried later and the fact being recorded is when
+   * the order was built, not when the pod finally agreed to hear about it.
+   */
+  at: Date;
 }
 // The last failure reported for an order, so a pod that keeps refusing the same
 // request is reported once instead of every few seconds.
@@ -247,7 +276,50 @@ async function consider(sink: OrderRunnerOptions, iri: string): Promise<void> {
   }
   notOrders.delete(iri);
 
-  await build(sink, iri, components);
+  await build(sink, iri, components, placedAt(iri, order));
+}
+
+/**
+ * When an order says it was placed, if it says so at all.
+ *
+ * Any literal typed `xsd:dateTime` or `xsd:date`, whatever predicate carries it —
+ * the same liberty the components are read with, and for the same reason: a time
+ * in an order document is a time about the order, and which term an author reaches
+ * for (`schema:orderDate`, `dcterms:created`, one of their own) is their business.
+ * The datatype is what makes this safe to be liberal about: a date in a
+ * `schema:description` is prose, and prose is not typed.
+ *
+ * The earliest where there are several, because an order carrying a placed date
+ * and a due date was placed on the first of them — and because a rule has to be
+ * one thing or the pod's history would depend on which triple a parser happened to
+ * hand back first.
+ */
+function placedAt(iri: string, order: Store): Date | undefined {
+  const times: Date[] = [];
+  for (const quad of order) {
+    if (quad.object.termType !== 'Literal') {
+      continue;
+    }
+    const datatype = quad.object.datatype.value;
+    if (datatype !== xsdDateTime && datatype !== xsdDate) {
+      continue;
+    }
+    const time = new Date(quad.object.value);
+    if (Number.isNaN(time.getTime())) {
+      warn(`Order ${iri} carries '${quad.object.value}' as a ${datatype.split('#')[1]}, which is not one; ignoring it`);
+      continue;
+    }
+    times.push(time);
+  }
+  if (!times.length) {
+    return undefined;
+  }
+  const earliest = times.reduce((first, time) => (time < first ? time : first));
+  const distinct = new Set(times.map(time => time.getTime()));
+  if (distinct.size > 1) {
+    warn(`Order ${iri} names ${distinct.size} different times; dating it from the earliest, ${earliest.toISOString()}`);
+  }
+  return earliest;
 }
 
 /**
@@ -280,11 +352,15 @@ function componentsOf(sink: OrderRunnerOptions, order: Store): { subject?: strin
   return { subject, ids };
 }
 
-/** Run the environment's plan for a finished product, with the order's products in it. */
+/**
+ * Run the environment's plan for a finished product, with the order's products in
+ * it, dated from `asOf` where the order named a time.
+ */
 async function build(
   sink: OrderRunnerOptions,
   iri: string,
-  components: { subject?: string; ids: string[] }
+  components: { subject?: string; ids: string[] },
+  asOf?: Date
 ): Promise<void> {
   const environment = sink.environment();
   const task = environment ? await planFor(environment) : undefined;
@@ -308,8 +384,12 @@ async function build(
   }
 
   const started = Date.now();
-  info(`Order started: ${iri} — running ${task.optimalPlan.length} step(s) of '${environment}' task ${task.id} with ${describe(choice)}`);
+  const dated = asOf ? `, dated ${asOf.toISOString()}` : '';
+  info(`Order started: ${iri} — running ${task.optimalPlan.length} step(s) of '${environment}' task ${task.id} with ${describe(choice)}${dated}`);
+  // The reset begins the run, and the run is what a date belongs to — so the date
+  // is set after it, on the run the steps below will be recorded under.
   sink.reset();
+  backdateRun(asOf);
   for (const step of task.optimalPlan) {
     await invoke(sink, iri, { ...step, input: substitute(step.input, choice.replacing) });
   }
@@ -331,7 +411,10 @@ async function build(
     // them, behind the response, so the document may land a moment after the
     // order says it exists — the same way a record naming a product it generated
     // can name one not written yet.
-    products: produced.map(currentProductIri).filter((product): product is string => product !== undefined)
+    products: produced.map(currentProductIri).filter((product): product is string => product !== undefined),
+    // By the run's own clock, so a backdated order was filled when it asked to
+    // have been and not when the lab got round to it.
+    at: podNow()
   };
   info(`Order processed: ${iri} — produced ${fulfilment.products.join(', ') || produced.join(', ')} in ${seconds}s`);
   unmarked.set(iri, fulfilment);
@@ -533,9 +616,10 @@ function request(input: unknown): { headers: Record<string, string>; body?: stri
  * costs the formatting but still records the fact.
  */
 async function markFulfilled(sink: OrderRunnerOptions, iri: string, fulfilment: Fulfilment): Promise<void> {
-  const { subject, products } = fulfilment;
+  const { subject, products, at } = fulfilment;
   const triples = [
     `<${subject}> <${fulfilledPredicate}> ${trueLiteral} .`,
+    `<${subject}> <${fulfilledAtPredicate}> "${at.toISOString()}"^^<${xsdDateTime}> .`,
     ...products.map(product => `<${subject}> <${productPredicate}> <${product}> .`)
   ].join('\n');
   try {

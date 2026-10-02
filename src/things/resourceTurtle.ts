@@ -30,7 +30,10 @@
  * A product that was produced links the products it was ultimately made from:
  * not the intermediate products a recipe consumed, but the raw inputs at the end
  * of each chain — the parts that went into it — plus `ex:battery` for the battery
- * among them, as a phone passport links its battery.
+ * among them, as a phone passport links its battery. It also says when it was
+ * made, where the lab saw it happen: `prov:generatedAtTime`, the interaction that
+ * brought it into existence. A raw material carries none — it was on the floor
+ * before anything ran, and a date for it would be the lab's invention.
  */
 
 import { globalState, normalizeThingId } from '../globalState.js';
@@ -44,6 +47,10 @@ const namespaces: Record<string, string> = {
   qudt: 'http://qudt.org/schema/qudt/',
   unit: 'http://qudt.org/vocab/unit/',
   arena: 'https://solid.ti.rw.fau.de/public/ns/arena#',
+  // When a product came into existence is provenance, and PROV has the term for
+  // it. The passport vocabulary has none, and schema.org's creation dates belong
+  // to kinds of thing a workpiece is not.
+  prov: 'http://www.w3.org/ns/prov#',
   xsd: 'http://www.w3.org/2001/XMLSchema#'
 };
 
@@ -173,6 +180,25 @@ function describe(
 // eslint-disable-next-line no-unused-vars
 export type ResourceLookup = (id: string) => { state: Record<string, unknown>; meta?: ResourceMeta } | undefined;
 
+/**
+ * What a representation says about this product beyond its own state: where it
+ * came from, when, which item it is, and how to reach the products it was made of.
+ *
+ * All optional, and each one omitted says nothing rather than guessing: a product
+ * the lab did not see made has no time, a product outside a build has no serial,
+ * and a lab writing no provenance has neither.
+ */
+export interface ProductProvenance {
+  /** The container holding the records of the build that made this product. */
+  trace?: string;
+  /** When the interaction that produced it happened. */
+  generatedAt?: Date;
+  /** The serial written on this item. */
+  serial?: string;
+  /** How another product's state is read, for following what this one was made from. */
+  lookup?: ResourceLookup;
+}
+
 /** The ids a product's state says it was made from. */
 function inputsOf(state: Record<string, unknown>): string[] {
   const inputs = state[inputsProperty];
@@ -229,9 +255,9 @@ export function resourceToTurtle(
   id: string,
   state: Record<string, unknown>,
   meta?: ResourceMeta,
-  traceIri?: string,
-  lookup: ResourceLookup = () => undefined
+  provenance: ProductProvenance = {}
 ): string {
+  const { trace, generatedAt, serial, lookup = () => undefined } = provenance;
   const nodes: Node[] = [];
   const statements = describe(state, meta?.properties ?? {}, [], nodes);
 
@@ -239,9 +265,24 @@ export function resourceToTurtle(
   statements.push(...batteries.map(battery => ({ predicate: 'ex:battery', object: productLink(battery) })));
   statements.push(...parts.map(part => ({ predicate: 'ex:input', object: productLink(part) })));
 
-  if (traceIri !== undefined) {
+  if (trace !== undefined) {
     // How this product came to be: the records of the interactions that made it.
-    statements.unshift({ predicate: 'ex:trace', object: `<${traceIri}>` });
+    statements.unshift({ predicate: 'ex:trace', object: `<${trace}>` });
+  }
+  // When it came to be, said only where the lab saw it happen: a raw material was
+  // on the floor before the run began, and a date for it would be invented.
+  if (generatedAt !== undefined && !Number.isNaN(generatedAt.getTime())) {
+    statements.unshift({
+      predicate: 'prov:generatedAtTime',
+      object: `"${generatedAt.toISOString()}"^^xsd:dateTime`
+    });
+  }
+  // Which item this is. `schema:serialNumber` because that is schema.org's term for
+  // exactly this and a passport already speaks schema.org for `mpn` and `model` —
+  // the identifier of one manufactured item, as against the `name` every item of
+  // this kind shares.
+  if (serial !== undefined) {
+    statements.unshift({ predicate: 'schema:serialNumber', object: `"${escapeLiteral(serial)}"` });
   }
   statements.unshift({ predicate: 'schema:name', object: `"${escapeLiteral(id)}"` });
 
@@ -278,9 +319,10 @@ const liveLookup: ResourceLookup = inputId => {
 };
 
 /** One product resource as it is now, or `undefined` when no product has that id. */
-export function productTurtle(id: string, traceIri?: string): string | undefined {
+export function productTurtle(id: string, provenance: Omit<ProductProvenance, 'lookup'> = {}): string | undefined {
   const product = liveLookup(id);
-  return product && resourceToTurtle(normalizeThingId(id), product.state, product.meta, traceIri, liveLookup);
+  return product
+    && resourceToTurtle(normalizeThingId(id), product.state, product.meta, { ...provenance, lookup: liveLookup });
 }
 
 /**

@@ -9,6 +9,7 @@ import { createLoggers } from './utils/debug.js';
 import { createEndpointMiddleware, LabRequestHandler } from './http/endpointMiddleware.js';
 import { createLabApi, labPrefix } from './http/labApi.js';
 import { configureStateSink, flushStateSink } from './solid/stateSink.js';
+import { buildSerial, productsContainerIn, startSerials } from './solid/serials.js';
 import { ordersContainer, startOrderRunner, stopOrderRunner } from './solid/orders.js';
 import { createDpopFetch } from './solid/dpopFetch.js';
 
@@ -108,6 +109,11 @@ if (options.solidContainer) {
       clientSecret: options.solidClientSecret
     })
     : undefined;
+  // Before the sink takes a single record, because the first build of this session
+  // must not be given a serial the pod already holds — that container's traces and
+  // products would be overwritten. Awaited for the same reason: a serial is handed
+  // out synchronously when a run begins, so the count has to be right by then.
+  await startSerials(productsContainerIn(options.solidContainer), podFetch);
   configureStateSink({
     container: options.solidContainer,
     thingBaseUrl: baseUrl,
@@ -117,15 +123,14 @@ if (options.solidContainer) {
     // The run rather than the environment: the same manifest loaded twice is the
     // same environment, so records grouped only by that read two runs as one
     // sequence — and a restart as a change the next request caused. A name, which
-    // the sink turns into the container a run's records live in; the environment
-    // and the moment it came up are what tell two runs of one manifest apart.
-    runId: () => {
-      const environment = registry.environment();
-      const startedAt = registry.environmentStartedAt();
-      return environment && startedAt
-        ? `${environment}-${startedAt.toISOString().replace(/[:.]/g, '-')}`
-        : undefined;
-    }
+    // the sink turns into the container a run's records live in.
+    //
+    // The name is the serial of what the run builds, and the moment the run began
+    // is only how one run is told from the next — a reader with a phone in hand
+    // can find its history from the number on its back, which the moment it was
+    // made would not have told them. Allocated on demand, so a lab with no
+    // environment running numbers nothing.
+    runId: () => (registry.environment() ? buildSerial(registry.environmentStartedAt()) : undefined)
   });
 
   // The same container is read for orders. Nothing is built unless someone puts

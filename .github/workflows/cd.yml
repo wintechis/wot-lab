@@ -1,12 +1,14 @@
 name: Deploy
 
-# Only main deploys, so only main needs to build a release. Every other branch
-# is covered by CI, which runs the same lint/type-check/smoke gates — building
-# and uploading a tarball that can never be deployed was pure duplication.
+# Only main and hackathon deploy, so only they need to build a release. Every
+# other branch is covered by CI, which runs the same lint/type-check/smoke
+# gates — building and uploading a tarball that can never be deployed was pure
+# duplication.
 on:
   push:
     branches:
       - main
+      - hackathon
 
 # Deploys queue rather than cancel: interrupting one mid-ssh could leave the
 # server between releases.

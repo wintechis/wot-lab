@@ -6,12 +6,19 @@
 # A component is a component because it names a product of this lab, so the
 # predicate carrying it is the order author's choice. Change the port if the lab is
 # not on 8081.
+#
+# `schema:orderDate` is when this order asks to have been placed: the lab builds it
+# now and records it as having been built then, so the six examples together leave a
+# pod with three years of phones. Any `xsd:dateTime` or `xsd:date` literal does, so
+# the predicate is the author's choice here too; drop the line to be built as of now.
 @prefix schema: <https://schema.org/> .
 @prefix ex:     <https://example.org/passport/> .
+@prefix xsd:    <http://www.w3.org/2001/XMLSchema#> .
 
 <#order>
     a                  schema:Order ;
     schema:name        "One smartphone with the Samsung Galaxy S26 battery" ;
+    schema:orderDate   "2026-02-25T07:50:00.000Z"^^xsd:dateTime ;
     schema:description "GH82-39193A (Samsung EB-BS942ABE) in place of the generic battery product." ;
     ex:component
                        <http://localhost:8081/products/gh82-39193a> ,
