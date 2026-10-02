@@ -73,6 +73,18 @@ jobs:
             tar -xzf "$HOME/wot-lab-release.tar.gz" -C "$RELEASE"
             rm -f "$HOME/wot-lab-release.tar.gz"
 
+            # Bun loads `.env` from the working directory, so this is how the
+            # deployed lab learns where to store traces, products and orders.
+            # `shared/.env` (optional, never overwritten by a deploy) carries
+            # the pod credentials; the container is written last so a deploy
+            # always wins over a stale value there.
+            umask 077
+            {
+              if [ -f "$ROOT/shared/.env" ]; then cat "$ROOT/shared/.env"; echo; fi
+              echo "WOT_LAB_SOLID_CONTAINER=https://solid.ti.rw.fau.de/adrian/smartphone-factory/"
+            } > "$RELEASE/.env"
+            umask 022
+
             # One node_modules shared by every release: dependencies rarely
             # change, so this turns a cold install into a no-op most deploys.
             ln -sfn "$ROOT/shared/node_modules" "$RELEASE/node_modules"
