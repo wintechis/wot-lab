@@ -1,6 +1,8 @@
 {
   "xpos": 14.0,
   "ypos": 20.0,
-  "temperature": 100.0,
-  "service": "GluingService"
+  "temperature": 65.0,
+  "service": "GluingService",
+  "target-temperature": 65.0 ,
+  "max-temperature-deviation": 5.0
 }

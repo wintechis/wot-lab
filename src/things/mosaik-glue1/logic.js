@@ -4,8 +4,8 @@
 // this file runs, so we wrap `setActionHandler` to decorate each of them rather
 // than registering (and thereby losing) the recipe handlers ourselves.
 
-const MIN_TEMP = 90;
-const MAX_TEMP = 110;
+const MIN_TEMP = 55;
+const MAX_TEMP = 75;
 
 function randomTemperature() {
   return Math.round((MIN_TEMP + Math.random() * (MAX_TEMP - MIN_TEMP)) * 10) / 10;

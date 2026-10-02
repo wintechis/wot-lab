@@ -36,7 +36,23 @@
     },
     "temperature": {
       "type": "number",
-      "title": "Temperature of the station's glue gun in degrees celsius",
+      "title": "Current temperature of the station's glue gun in degrees celsius",
+      "readOnly": true,
+      "writeOnly": false,
+      "observable": true,
+      "@type": "http://qudt.org/vocab/quantitykind/Temperature"
+    },
+    "target-temperature": {
+      "type": "number",
+      "title": "Temperature that the station's glue gun is supposed to have in degrees celsius",
+      "readOnly": true,
+      "writeOnly": false,
+      "observable": true,
+      "@type": "http://qudt.org/vocab/quantitykind/Temperature"
+    },
+    "max-temperature-deviation": {
+      "type": "number",
+      "title": "Maximum  degrees celsius that the station's glue gun max be above or below the target temperature",
       "readOnly": true,
       "writeOnly": false,
       "observable": true,
