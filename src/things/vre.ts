@@ -28,6 +28,13 @@ import { parseVre, VREExpr, VreProgram, VreOutput } from './vre-parser.js';
  * unprimed reference is the pre-state value and a primed reference (`x'`) is the
  * post-state value; primes are not allowed on the right-hand side of an effect.
  * Outputs and events are evaluated after effects apply.
+ *
+ * Collections are arrays of scalars, with four pure operations: `xs.append(x)`
+ * and `xs.remove(x)` (every element equal to `x`) give a new array, `xs.length`
+ * the number of elements, and `xs.contains(x)` whether `x` is an element. Each
+ * applies to pre-state and primed references, on this Thing or another
+ * (`h.xs.length`, `items'.length`). `length` is therefore not a usable property
+ * name in a reference.
  */
 
 interface ActionInputSchema {
@@ -89,7 +96,7 @@ function genExpr(expr: VREExpr, ctx: Ctx): string {
     const op = expr.op === '==' ? '===' : expr.op === '!=' ? '!==' : expr.op;
     return `(${genExpr(expr.left, ctx)} ${op} ${genExpr(expr.right, ctx)})`;
   }
-  // call: append / remove
+  // call: append / remove / contains / length
   const base = genExpr(expr.base, ctx);
   if (expr.method === 'append') {
     if (expr.args.length !== 1) {
@@ -103,8 +110,17 @@ function genExpr(expr: VREExpr, ctx: Ctx): string {
     }
     return `(${base}).filter((__e) => __e !== ${genExpr(expr.args[0], ctx)})`;
   }
+  if (expr.method === 'contains') {
+    if (expr.args.length !== 1) {
+      throw new Error('VRE: contains(x) takes exactly one argument');
+    }
+    return `(${base}).includes(${genExpr(expr.args[0], ctx)})`;
+  }
+  if (expr.method === 'length') {
+    return `(${base}).length`;
+  }
   throw new Error(
-    `VRE: unsupported collection method '${expr.method}' (only append/remove)`
+    `VRE: unsupported collection method '${expr.method}' (only append/remove/contains/length)`
   );
 }
 

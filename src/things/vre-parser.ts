@@ -421,11 +421,17 @@ class Parser {
   }
   private parsePostfix(): VREExpr {
     let base = this.parsePrimary();
-    while (
-      this.peek().kind === 'DOT' &&
-      this.peekAt(1).kind === 'IDENT' &&
-      this.peekAt(2).kind === 'LPAREN'
-    ) {
+    while (this.peek().kind === 'DOT' && this.peekAt(1).kind === 'IDENT') {
+      // `.length` is the one collection operation without an argument list.
+      if (this.peekAt(1).value === 'length' && this.peekAt(2).kind !== 'LPAREN') {
+        this.consume();
+        this.consume();
+        base = { kind: 'call', base, method: 'length', args: [] };
+        continue;
+      }
+      if (this.peekAt(2).kind !== 'LPAREN') {
+        break;
+      }
       this.consume();
       const method = this.expect('IDENT').value;
       this.expect('LPAREN');
@@ -484,9 +490,13 @@ class Parser {
         return { kind: 'functionCall', name, args };
       }
       const parts: string[] = [name];
+      // A reference stops before a method call (`.append(`) and before
+      // `.length`, which parsePostfix applies to the reference, so `length`
+      // cannot name a property.
       while (
         this.peek().kind === 'DOT' &&
         this.peekAt(1).kind === 'IDENT' &&
+        this.peekAt(1).value !== 'length' &&
         this.peekAt(2).kind !== 'LPAREN'
       ) {
         this.consume();
