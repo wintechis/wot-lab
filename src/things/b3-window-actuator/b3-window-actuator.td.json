@@ -44,7 +44,7 @@
       },
       "safe": false,
       "idempotent": false,
-      "vre:effects": "sensor.isOpen' = open;\noutput.success = true;\noutput.isOpen = sensor.isOpen';"
+      "lab:effects": "sensor.isOpen' = open;\noutput.success = true;\noutput.isOpen = sensor.isOpen';"
     }
   }
 }

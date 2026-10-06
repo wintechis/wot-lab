@@ -118,7 +118,7 @@ async function evaluateLogicFile(
   (_thing: WoT.ExposedThing, _state: Record<string, unknown>) => Promise<void>
 > {
   // logic.js is optional. A Thing can be declared purely as TD + state.json
-  // (+ optional `vre:effects` annotations); when logic.js is absent we generate
+  // (+ optional `lab:effects` annotations); when logic.js is absent we generate
   // default property read handlers from the TD so the Thing's state is still
   // observable over WoT. A present logic.js is used verbatim (it wires its own
   // read handlers), preserving existing behavior.
@@ -151,7 +151,7 @@ async function evaluateLogicFile(
       .join('');
   }
 
-  // Generate action handlers from the `vre:effects` annotations in the Thing
+  // Generate action handlers from the `lab:effects` annotations in the Thing
   // Description. VRE (see ./vre.ts) compiles effect assignments into
   // `state.X = ...` + emitPropertyChange. Effects live on the affordance they
   // belong to, and work with or without logic.js.
@@ -212,7 +212,7 @@ export async function loadThing(
       join(basePath, `${modelName}.td.json`)
     ).json();
 
-    // Load TD, state, and behavior (logic.js and/or `vre:effects`)
+    // Load TD, state, and behavior (logic.js and/or `lab:effects`)
     const [loadedState, logicFunction] = await Promise.all([
       loadStateFile(join(basePath, 'state.json')),
       evaluateLogicFile(td, join(basePath, 'logic.js'), instanceId)

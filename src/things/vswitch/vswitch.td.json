@@ -4,7 +4,7 @@
         "https://www.w3.org/2022/wot/td/v1.1"
     ],
     "title": "Virtual Switch",
-    "description": "A minimal demo Thing defined with no logic.js \u2014 its behavior comes entirely from the Thing Description's vre:effects annotations and state.json.",
+    "description": "A minimal demo Thing defined with no logic.js \u2014 its behavior comes entirely from the Thing Description's lab:effects annotations and state.json.",
     "properties": {
         "level": {
             "title": "Level",
@@ -21,7 +21,7 @@
             "input": {
                 "type": "number"
             },
-            "vre:effects": "level' = input;"
+            "lab:effects": "level' = input;"
         }
     }
 }

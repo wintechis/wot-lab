@@ -16,13 +16,13 @@
             "description": "Begin charging.",
             "input": { "type": "object", "properties": { "mode": { "type": "string" } } },
             "output": { "type": "object", "properties": { "success": { "type": "boolean" }, "isCharging": { "type": "boolean" } } },
-            "vre:effects": "const home = <home>; home.currentPowerUsageW' = home.currentPowerUsageW + (isCharging ? 0 : powerWatts); home.currentMonthUsageKWh' = home.currentMonthUsageKWh + (isCharging ? 0 : kwhPerCycle); isCharging' = true; output.success = true; output.isCharging = isCharging';"
+            "lab:effects": "const home = <home>; home.currentPowerUsageW' = home.currentPowerUsageW + (isCharging ? 0 : powerWatts); home.currentMonthUsageKWh' = home.currentMonthUsageKWh + (isCharging ? 0 : kwhPerCycle); isCharging' = true; output.success = true; output.isCharging = isCharging';"
         },
         "stopCharging": {
             "title": "Stop Charging",
             "description": "Stop charging.",
             "output": { "type": "object", "properties": { "success": { "type": "boolean" }, "isCharging": { "type": "boolean" } } },
-            "vre:effects": "const home = <home>; home.currentPowerUsageW' = home.currentPowerUsageW - (isCharging ? powerWatts : 0); isCharging' = false; output.success = true; output.isCharging = isCharging';"
+            "lab:effects": "const home = <home>; home.currentPowerUsageW' = home.currentPowerUsageW - (isCharging ? powerWatts : 0); isCharging' = false; output.success = true; output.isCharging = isCharging';"
         }
     }
 }

@@ -147,7 +147,7 @@
       },
       "safe": false,
       "idempotent": false,
-      "vre:effects": "carrying' = carrying == false\n             && product.xpos == xpos\n             && product.ypos == ypos\n  ? product\n  : carrying;\noutput.success = carrying == false\n                 && product.xpos == xpos\n                 && product.ypos == ypos;\noutput.carrying = carrying';"
+      "lab:effects": "carrying' = carrying == false\n             && product.xpos == xpos\n             && product.ypos == ypos\n  ? product\n  : carrying;\noutput.success = carrying == false\n                 && product.xpos == xpos\n                 && product.ypos == ypos;\noutput.carrying = carrying';"
     },
     "drop": {
       "title": "drop any carried product",
@@ -162,7 +162,7 @@
       },
       "safe": false,
       "idempotent": false,
-      "vre:effects": "carrying' = false;\noutput.success = carrying != false;"
+      "lab:effects": "carrying' = false;\noutput.success = carrying != false;"
     },
     "moveLeft": {
       "title": "move transporter left",
@@ -180,7 +180,7 @@
       },
       "safe": false,
       "idempotent": false,
-      "vre:effects": "xpos' = xpos - 1;\ncarrying.xpos' = (xpos - 1);\noutput.success = true;\noutput.xpos = xpos';"
+      "lab:effects": "xpos' = xpos - 1;\ncarrying.xpos' = (xpos - 1);\noutput.success = true;\noutput.xpos = xpos';"
     },
     "moveRight": {
       "title": "move transporter right",
@@ -198,7 +198,7 @@
       },
       "safe": false,
       "idempotent": false,
-      "vre:effects": "xpos' = xpos + 1;\ncarrying.xpos' = (xpos + 1);\noutput.success = true;\noutput.xpos = xpos';"
+      "lab:effects": "xpos' = xpos + 1;\ncarrying.xpos' = (xpos + 1);\noutput.success = true;\noutput.xpos = xpos';"
     },
     "moveUp": {
       "title": "move transporter up",
@@ -216,7 +216,7 @@
       },
       "safe": false,
       "idempotent": false,
-      "vre:effects": "ypos' = ypos - 1;\ncarrying.ypos' = (ypos - 1);\noutput.success = true;\noutput.ypos = ypos';"
+      "lab:effects": "ypos' = ypos - 1;\ncarrying.ypos' = (ypos - 1);\noutput.success = true;\noutput.ypos = ypos';"
     },
     "moveDown": {
       "title": "move transporter down",
@@ -234,7 +234,7 @@
       },
       "safe": false,
       "idempotent": false,
-      "vre:effects": "ypos' = ypos + 1;\ncarrying.ypos' = (ypos + 1);\noutput.success = true;\noutput.ypos = ypos';"
+      "lab:effects": "ypos' = ypos + 1;\ncarrying.ypos' = (ypos + 1);\noutput.success = true;\noutput.ypos = ypos';"
     }
   }
 }

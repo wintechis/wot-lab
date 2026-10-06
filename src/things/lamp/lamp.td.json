@@ -28,12 +28,12 @@
         "toggle": {
             "title": "Toggle",
             "description": "Toggle the lamp between on and off.",
-            "vre:effects": "on' = !on;"
+            "lab:effects": "on' = !on;"
         },
         "setBrightness": {
             "title": "Set Brightness",
             "description": "Set the brightness (0–100%); ignored while the lamp is off.",
-            "vre:effects": "brightness' = on ? input : brightness;",
+            "lab:effects": "brightness' = on ? input : brightness;",
             "input": {
                 "type": "number",
                 "description": "Target brightness from 0 to 100 percent.",

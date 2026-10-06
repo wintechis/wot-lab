@@ -8,10 +8,10 @@ A Thing is a folder of convention-named files:
 
 - **Thing Description** (`.td.json`) - Properties, Actions and Events in W3C WoT format, each Action's effect declared inline. **Required.**
 - **State** (`state.json`) - initial Property values. **Required.**
-- **Effects** (`vre:effects` on an Action) - the declarative effect specification, written in VRE. **Optional.**
+- **Effects** (`lab:effects` on an Action) - the declarative effect specification, written in VRE. **Optional.**
 - **Logic** (`logic.js`) - imperative behavior, for the little that a declarative effect cannot express. **Optional.**
 
-A Thing needs only its Thing Description and state; behavior can come from `vre:effects` specifications, `logic.js`, or both. With neither, Property handlers are generated from the Thing Description - reads for every Property, writes for the ones it does not mark `readOnly` - so the Thing is usable without any code. See [Creating Things](#creating-things) for detailed examples.
+A Thing needs only its Thing Description and state; behavior can come from `lab:effects` specifications, `logic.js`, or both. With neither, Property handlers are generated from the Thing Description - reads for every Property, writes for the ones it does not mark `readOnly` - so the Thing is usable without any code. See [Creating Things](#creating-things) for detailed examples.
 
 ## Table of Contents
 
@@ -99,11 +99,11 @@ writes exactly the files described below, so you can add them via the dashboard 
 
 A Thing Model directory contains:
 
-1. **Thing Description** (TD) - JSON file describing capabilities. With `vre:effects`, describing the Thing's behavior. **Required.**
+1. **Thing Description** (TD) - JSON file describing capabilities. With `lab:effects`, describing the Thing's behavior. **Required.**
 2. **State** - JSON object defining initial properties. **Required.**
 3. **Logic** - JavaScript code defining behavior. **Optional.**
 
-Provide behavior with `logic.js`, `vre:effects` annotations, or both. With neither, WoT-Lab generates property handlers from the TD: a read handler for every property, and a write handler for each one not marked `readOnly`, so a writable property can actually be set. The Thing's state is readable, writable and observable without a line of code.
+Provide behavior with `logic.js`, `lab:effects` annotations, or both. With neither, WoT-Lab generates property handlers from the TD: a read handler for every property, and a write handler for each one not marked `readOnly`, so a writable property can actually be set. The Thing's state is readable, writable and observable without a line of code.
 
 ### Folder Structure
 
@@ -185,22 +185,22 @@ thing.setActionHandler("toggle", async () => {
 console.log("mydevice logic initialized");
 ```
 
-#### 4. Effects (`vre:effects`) - optional
+#### 4. Effects (`lab:effects`) - optional
 
 An Action's effect specification is declared on the affordance itself, so the
 Thing Description the agent fetches is also what executes: behaviour read is
 behaviour met. The specification is written in **VRE**, the declarative effect
-language, in a `vre:effects` annotation, and needs no hand-written handler:
+language, in a `lab:effects` annotation, and needs no hand-written handler:
 
 ```json
 "actions": {
   "toggle": {
     "title": "Toggle",
-    "vre:effects": "status' = !status; emitEvent(\"changed\", status');"
+    "lab:effects": "status' = !status; emitEvent(\"changed\", status');"
   },
   "setLevel": {
     "input": { "type": "number" },
-    "vre:effects": "level' = input;"
+    "lab:effects": "level' = input;"
   }
 }
 ```
@@ -232,7 +232,7 @@ language, in a `vre:effects` annotation, and needs no hand-written handler:
 - **Outputs**: `output.<path> = expr` (nested paths allowed) builds the action's
   return value, evaluated after effects apply. Behaviour VRE cannot express
   (array lookups, sums, object construction) stays in `logic.js`, which composes
-  with `vre:effects`.
+  with `lab:effects`.
 - **No functions**: an effect reads the Thing's state and the action's input and
   nothing else - no time, no calls - so a run is reproducible from its initial
   state alone. Behaviour that needs more belongs in `logic.js`.
@@ -320,7 +320,7 @@ curl -X POST localhost:8081/_lab/state  -d '{"id":"bank-alice","values":{"balanc
 
 Six environments make up the benchmark - **76 tasks across seven difficulty
 levels** (L0-L5 and S) - each built from Thing Models under `src/things/` with
-cross-Thing `vre:effects` (and `logic.js` only where VRE can't reach):
+cross-Thing `lab:effects` (and `logic.js` only where VRE can't reach):
 
 | Environment | Things | Tasks | Description |
 | --- | --- | --- | --- |
@@ -345,7 +345,7 @@ All `/_lab` writes are loopback-only unless `WOT_LAB_ALLOW_REMOTE_WRITE=1`.
 A new Thing Model is sent either as a `spec` (the shape the dashboard form
 produces) or as a `draft` (the two files verbatim). Both go through the same
 validation: names must be slugs, every property and nested member needs a type,
-every property needs an initial state value of that type, and any `vre:effects`
+every property needs an initial state value of that type, and any `lab:effects`
 program must compile - so a Thing that would not work never reaches disk.
 
 Writes are refused from anywhere but localhost, since this API creates files and
@@ -394,7 +394,7 @@ WoT-Lab comes with example Things:
 WoT-Lab is a development tool, and it is built to be run on a machine you trust, for people you trust.
 
 - **A Thing Model is code.** `logic.js` is `eval`'d in the lab's process with no isolation. Treat a
-  Thing Model from someone else like any other script you are about to run. (`vre:effects` are
+  Thing Model from someone else like any other script you are about to run. (`lab:effects` are
   narrower: they are parsed, and only what the parser accepts is compiled - literals and names are
   emitted as quoted strings - so an effect can change state but cannot call out of it.)
 - **The server listens on every interface** (`*:8081`), so the Things - their Thing Descriptions,

@@ -38,7 +38,7 @@
                     "credited": { "type": "number" }
                 }
             },
-            "vre:effects": "balance' = balance + amount; output.success = true; output.balance = balance'; output.credited = amount;"
+            "lab:effects": "balance' = balance + amount; output.success = true; output.balance = balance'; output.credited = amount;"
         },
         "withdraw": {
             "title": "Withdraw",
@@ -56,7 +56,7 @@
                     "debited": { "type": "number" }
                 }
             },
-            "vre:effects": "balance' = balance - amount; output.success = true; output.balance = balance'; output.debited = amount;"
+            "lab:effects": "balance' = balance - amount; output.success = true; output.balance = balance'; output.debited = amount;"
         },
         "transfer": {
             "title": "Transfer",
@@ -83,7 +83,7 @@
                     }
                 }
             },
-            "vre:effects": "balance' = balance - amount; bankAccount.balance' = bankAccount.balance + amount; output.amount = amount; output.from.balance = balance'; output.from.accountNumber = accountNumber; output.to.balance = bankAccount.balance'; output.to.accountNumber = bankAccount.accountNumber;"
+            "lab:effects": "balance' = balance - amount; bankAccount.balance' = bankAccount.balance + amount; output.amount = amount; output.from.balance = balance'; output.from.accountNumber = accountNumber; output.to.balance = bankAccount.balance'; output.to.accountNumber = bankAccount.accountNumber;"
         }
     }
 }

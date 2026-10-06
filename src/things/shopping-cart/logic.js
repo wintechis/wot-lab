@@ -1,7 +1,7 @@
 // The cart's price-aware behaviour. addItem/removeItem look a price up in the
 // catalog and recompute the total — an array lookup and a sum, which VRE cannot
 // express — so they live here, while `checkout` (a cross-Thing effect) is
-// generated from the TD's `vre:effects`. A logic.js Thing wires its own reads.
+// generated from the TD's `lab:effects`. A logic.js Thing wires its own reads.
 
 function priceOf(itemId) {
   const product = (state.availableProducts || []).find((p) => p.identifier === itemId);

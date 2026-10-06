@@ -76,7 +76,7 @@
       },
       "safe": false,
       "idempotent": false,
-      "vre:effects": "desiredTemperature' = value;\noutput.success = true;\noutput.desiredTemperature = desiredTemperature';"
+      "lab:effects": "desiredTemperature' = value;\noutput.success = true;\noutput.desiredTemperature = desiredTemperature';"
     },
     "increaseTemperature": {
       "title": "Increase temperature",
@@ -94,7 +94,7 @@
       },
       "safe": false,
       "idempotent": false,
-      "vre:effects": "temperatureSensor.temperature' = !doorSensor.isOpen\n  && !windowSensor.isOpen\n  && desiredTemperature != null\n  && desiredTemperature > temperatureSensor.temperature\n  ? temperatureSensor.temperature + 1\n  : temperatureSensor.temperature;\noutput.success = !doorSensor.isOpen\n  && !windowSensor.isOpen\n  && desiredTemperature != null\n  && desiredTemperature > temperatureSensor.temperature;\noutput.temperature = temperatureSensor.temperature';"
+      "lab:effects": "temperatureSensor.temperature' = !doorSensor.isOpen\n  && !windowSensor.isOpen\n  && desiredTemperature != null\n  && desiredTemperature > temperatureSensor.temperature\n  ? temperatureSensor.temperature + 1\n  : temperatureSensor.temperature;\noutput.success = !doorSensor.isOpen\n  && !windowSensor.isOpen\n  && desiredTemperature != null\n  && desiredTemperature > temperatureSensor.temperature;\noutput.temperature = temperatureSensor.temperature';"
     }
   }
 }

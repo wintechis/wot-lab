@@ -73,7 +73,7 @@
                 "type": "object",
                 "properties": { "success": { "type": "boolean" }, "followed": { "type": "string" } }
             },
-            "vre:effects": "following' = following.append(pageUri); pageUri.followers' = pageUri.followers.append(this.id); output.success = true; output.followed = pageUri;"
+            "lab:effects": "following' = following.append(pageUri); pageUri.followers' = pageUri.followers.append(this.id); output.success = true; output.followed = pageUri;"
         },
         "unfollowUser": {
             "title": "Unfollow User",
@@ -87,7 +87,7 @@
                 "type": "object",
                 "properties": { "success": { "type": "boolean" }, "unfollowed": { "type": "string" } }
             },
-            "vre:effects": "following' = following.remove(pageUri); pageUri.followers' = pageUri.followers.remove(this.id); output.success = true; output.unfollowed = pageUri;"
+            "lab:effects": "following' = following.remove(pageUri); pageUri.followers' = pageUri.followers.remove(this.id); output.success = true; output.unfollowed = pageUri;"
         },
         "likePost": {
             "title": "Like Post",
@@ -104,7 +104,7 @@
                 "type": "object",
                 "properties": { "success": { "type": "boolean" }, "liked": { "type": "string" } }
             },
-            "vre:effects": "likedPosts' = likedPosts.append(postId); pageUri.likesReceived' = pageUri.likesReceived + 1; output.success = true; output.liked = postId;"
+            "lab:effects": "likedPosts' = likedPosts.append(postId); pageUri.likesReceived' = pageUri.likesReceived + 1; output.success = true; output.liked = postId;"
         }
     }
 }

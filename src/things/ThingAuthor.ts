@@ -48,7 +48,7 @@ export interface ActionSpec {
   description?: string;
   input?: SchemaSpec[];
   output?: SchemaSpec;
-  /** VRE effect program, stored in the TD as `vre:effects`. */
+  /** VRE effect program, stored in the TD as `lab:effects`. */
   effects?: string;
 }
 
@@ -162,7 +162,7 @@ function schemaFromSpec(spec: SchemaSpec, isProperty = false): Record<string, un
 /**
  * Turn a form-shaped spec into the two files a Thing is made of.
  *
- * Behavior is emitted as `vre:effects` on the action affordance rather than as
+ * Behavior is emitted as `lab:effects` on the action affordance rather than as
  * JavaScript: the effect program is a constrained
  * grammar that the server compiles and can report errors for, so nothing the
  * browser sends is ever executed as code.
@@ -194,7 +194,7 @@ export function buildDraft(spec: ThingSpec): ThingDraft {
         }
         : undefined,
       output: action.output ? schemaFromSpec(action.output) : undefined,
-      'vre:effects': action.effects?.trim() || undefined
+      'lab:effects': action.effects?.trim() || undefined
     });
   }
 

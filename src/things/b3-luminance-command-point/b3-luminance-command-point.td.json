@@ -58,7 +58,7 @@
       },
       "safe": false,
       "idempotent": false,
-      "vre:effects": "value' = setting;\noutput.success = true;\noutput.value = value';"
+      "lab:effects": "value' = setting;\noutput.success = true;\noutput.value = value';"
     }
   }
 }

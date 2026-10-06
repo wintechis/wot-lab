@@ -2,7 +2,7 @@ import * as WoT from 'wot-typescript-definitions';
 import { parseVre, VREExpr, VreProgram, VreOutput } from './vre-parser.js';
 
 /**
- * Compile the `vre:effects` annotations in a Thing Description into JavaScript
+ * Compile the `lab:effects` annotations in a Thing Description into JavaScript
  * that registers WoT action handlers.
  *
  * Parsing (lexer + expression grammar + AST) follows V-Realm's VRE effect
@@ -37,7 +37,7 @@ interface ActionInputSchema {
 }
 interface ActionSchema {
   input?: ActionInputSchema;
-  'vre:effects'?: string;
+  'lab:effects'?: string;
 }
 
 type HandleKind = 'binding' | 'param' | 'property';
@@ -356,13 +356,13 @@ function scalarParams(input: ActionInputSchema): string[] {
     : ['input'];
 }
 
-/** Compile the `vre:effects` annotations carried by a TD's action affordances. */
+/** Compile the `lab:effects` annotations carried by a TD's action affordances. */
 export function vreEffectsToHandlers(td: WoT.ThingDescription): string {
   const actions = (td.actions ?? {}) as unknown as Record<string, ActionSchema>;
   return Object.entries(actions)
-    .filter(([, action]) => typeof action['vre:effects'] === 'string')
+    .filter(([, action]) => typeof action['lab:effects'] === 'string')
     .map(([action, definition]) => {
-      const effects = definition['vre:effects'];
+      const effects = definition['lab:effects'];
       const input = definition.input;
       const params = input?.type === 'object' && input.properties
         ? Object.keys(input.properties)

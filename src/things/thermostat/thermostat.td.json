@@ -15,14 +15,14 @@
             "description": "Set the target temperature, if within [minTemp, maxTemp]; otherwise no change.",
             "input": { "type": "object", "properties": { "temp": { "type": "number" } }, "required": ["temp"] },
             "output": { "type": "object", "properties": { "success": { "type": "boolean" }, "targetTemp": { "type": "number" } } },
-            "vre:effects": "targetTemp' = (temp <= maxTemp && temp >= minTemp) ? temp : targetTemp; output.success = (temp <= maxTemp && temp >= minTemp); output.targetTemp = targetTemp';"
+            "lab:effects": "targetTemp' = (temp <= maxTemp && temp >= minTemp) ? temp : targetTemp; output.success = (temp <= maxTemp && temp >= minTemp); output.targetTemp = targetTemp';"
         },
         "setMode": {
             "title": "Set Mode",
             "description": "Set the operating mode (e.g. auto, heat, cool).",
             "input": { "type": "object", "properties": { "mode": { "type": "string" } }, "required": ["mode"] },
             "output": { "type": "object", "properties": { "success": { "type": "boolean" }, "mode": { "type": "string" } } },
-            "vre:effects": "mode' = mode; output.success = true; output.mode = mode';"
+            "lab:effects": "mode' = mode; output.success = true; output.mode = mode';"
         }
     }
 }

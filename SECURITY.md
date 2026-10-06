@@ -15,7 +15,7 @@ The README's [Security](README.md#security) section says what each of these mean
 Reports that come down to "a Thing Model can run code" or "an exposed lab is unauthenticated"
 describe the design rather than a flaw in it. Anything that gets *around* these boundaries is a
 vulnerability — for example a way to write through the lab API from another machine or from a web
-page, to escape the models directory, or to get code past the `vre:effects` parser.
+page, to escape the models directory, or to get code past the `lab:effects` parser.
 
 ## Reporting a vulnerability
 

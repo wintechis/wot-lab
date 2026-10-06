@@ -31,7 +31,7 @@ CI runs the same three. There is no unit-test runner; behaviour is checked again
 ## Adding a Thing Model
 
 A directory under `src/things/<name>/` with `<name>.td.json` and `state.json` is all it takes; see
-[Creating Things](README.md#creating-things). Prefer `vre:effects` to `logic.js` where the
+[Creating Things](README.md#creating-things). Prefer `lab:effects` to `logic.js` where the
 behaviour can be expressed declaratively — it keeps a run reproducible from its initial state.
 
 ## Conventions

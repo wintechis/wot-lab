@@ -24,7 +24,7 @@
                 "type": "object",
                 "properties": { "success": { "type": "boolean" }, "monthlyBudgetKWh": { "type": "number" } }
             },
-            "vre:effects": "monthlyBudgetKWh' = kWh; output.success = true; output.monthlyBudgetKWh = monthlyBudgetKWh';"
+            "lab:effects": "monthlyBudgetKWh' = kWh; output.success = true; output.monthlyBudgetKWh = monthlyBudgetKWh';"
         }
     }
 }

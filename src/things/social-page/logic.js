@@ -2,7 +2,7 @@
 // arrays, so they stay correct after a cross-Thing follow/unfollow/like without
 // a second write. createPost builds a post object (an id from a counter plus the
 // content) — object construction VRE cannot do — so it lives here; follow,
-// unfollow and like are generated from the TD's `vre:effects`.
+// unfollow and like are generated from the TD's `lab:effects`.
 
 thing.setPropertyReadHandler('posts', async () => state.posts);
 thing.setPropertyReadHandler('followers', async () => state.followers);
