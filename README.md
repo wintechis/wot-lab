@@ -52,6 +52,8 @@ Open `http://localhost:8081/` in a browser to see the dashboard, or use a WoT cl
 
 ### Dashboard
 
+![WoT-Lab dashboard: starting the Washer raises the Smart Home's power draw](docs/media/dashboard.gif)
+
 The lab serves a React dashboard at `http://localhost:8081/`: it lists the running
 Things, inspects each one's properties, actions, events and Thing Description, and allows you to interact with them.
 **Add Thing** allows you to create a new Thing off of a pre-defined or new Thing Model.
