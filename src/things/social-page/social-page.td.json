@@ -9,7 +9,16 @@
         "posts": {
             "title": "Posts",
             "type": "array",
-            "description": "Posts on this page, each with an id and content.",
+            "description": "Ids of the posts on this page, in posting order (post-1, post-2, ...).",
+            "items": { "type": "string" },
+            "observable": true,
+            "readOnly": true
+        },
+        "postContents": {
+            "title": "Post Contents",
+            "type": "array",
+            "description": "The content of each post, in the same order as posts.",
+            "items": { "type": "string" },
             "observable": true,
             "readOnly": true
         },
@@ -43,14 +52,14 @@
             "observable": true,
             "readOnly": true
         },
-        "postCount": { "title": "Post Count", "type": "number", "observable": true, "readOnly": true },
-        "followerCount": { "title": "Follower Count", "type": "number", "observable": true, "readOnly": true },
-        "followingCount": { "title": "Following Count", "type": "number", "observable": true, "readOnly": true }
+        "postCount": { "title": "Post Count", "type": "number", "description": "Number of posts on this page.", "observable": true, "readOnly": true },
+        "followerCount": { "title": "Follower Count", "type": "number", "description": "Number of pages following this page.", "observable": true, "readOnly": true },
+        "followingCount": { "title": "Following Count", "type": "number", "description": "Number of pages this page follows.", "observable": true, "readOnly": true }
     },
     "actions": {
         "createPost": {
             "title": "Create Post",
-            "description": "Publish a post on this page. Post ids are assigned from a counter.",
+            "description": "Publish a post on this page. Its id is post-N, where N is the new post count.",
             "input": {
                 "type": "object",
                 "properties": { "content": { "type": "string" } },
@@ -59,11 +68,12 @@
             "output": {
                 "type": "object",
                 "properties": { "postId": { "type": "string" }, "postCount": { "type": "number" } }
-            }
+            },
+            "lab:effects": "posts' = posts.append(\"post-\" + (postCount + 1)); postContents' = postContents.append(content); postCount' = postCount + 1; output.postId = \"post-\" + postCount'; output.postCount = postCount';"
         },
         "followUser": {
             "title": "Follow User",
-            "description": "Follow another page: add it to this page's following and add this page to its followers.",
+            "description": "Follow another page: add it to this page's following and add this page to its followers, updating both counts. Following a page already followed changes nothing and reports success false.",
             "input": {
                 "type": "object",
                 "properties": { "pageUri": { "type": "string", "description": "Page id to follow." } },
@@ -73,11 +83,11 @@
                 "type": "object",
                 "properties": { "success": { "type": "boolean" }, "followed": { "type": "string" } }
             },
-            "lab:effects": "following' = following.append(pageUri); pageUri.followers' = pageUri.followers.append(this.id); output.success = true; output.followed = pageUri;"
+            "lab:effects": "following' = !following.contains(pageUri) ? following.append(pageUri) : following; followingCount' = !following.contains(pageUri) ? followingCount + 1 : followingCount; pageUri.followers' = !following.contains(pageUri) ? pageUri.followers.append(this.id) : pageUri.followers; pageUri.followerCount' = !following.contains(pageUri) ? pageUri.followerCount + 1 : pageUri.followerCount; output.success = !following.contains(pageUri); output.followed = pageUri;"
         },
         "unfollowUser": {
             "title": "Unfollow User",
-            "description": "Unfollow another page: remove it from this page's following and remove this page from its followers.",
+            "description": "Unfollow another page: remove it from this page's following and remove this page from its followers, updating both counts. Unfollowing a page not followed changes nothing and reports success false.",
             "input": {
                 "type": "object",
                 "properties": { "pageUri": { "type": "string", "description": "Page id to unfollow." } },
@@ -87,7 +97,7 @@
                 "type": "object",
                 "properties": { "success": { "type": "boolean" }, "unfollowed": { "type": "string" } }
             },
-            "lab:effects": "following' = following.remove(pageUri); pageUri.followers' = pageUri.followers.remove(this.id); output.success = true; output.unfollowed = pageUri;"
+            "lab:effects": "following' = following.contains(pageUri) ? following.remove(pageUri) : following; followingCount' = following.contains(pageUri) ? followingCount - 1 : followingCount; pageUri.followers' = following.contains(pageUri) ? pageUri.followers.remove(this.id) : pageUri.followers; pageUri.followerCount' = following.contains(pageUri) ? pageUri.followerCount - 1 : pageUri.followerCount; output.success = following.contains(pageUri); output.unfollowed = pageUri;"
         },
         "likePost": {
             "title": "Like Post",

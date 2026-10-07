@@ -1,7 +1,11 @@
 {
     "posts": [],
+    "postContents": [],
+    "postCount": 0,
     "followers": [],
+    "followerCount": 0,
     "following": [],
+    "followingCount": 0,
     "likesReceived": 0,
     "likedPosts": []
 }

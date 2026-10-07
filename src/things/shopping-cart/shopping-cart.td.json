@@ -1,6 +1,6 @@
 {
     "title": "Shopping Cart",
-    "description": "A shopping cart with a product catalog. Add and remove items (priced from the catalog), then check out to charge a bank account. Checkout is a cross-Thing effect.",
+    "description": "A shopping cart with a fixed product catalog. Add and remove items (priced from the catalog), then check out to charge a bank account. Checkout is a cross-Thing effect.",
     "@context": [
         "https://www.w3.org/2019/wot/td/v1",
         "https://www.w3.org/2022/wot/td/v1.1"
@@ -9,7 +9,7 @@
         "items": {
             "title": "Items",
             "type": "array",
-            "description": "Item ids currently in the cart.",
+            "description": "Item ids currently in the cart. The cart is a set: each catalog item is in it at most once.",
             "items": { "type": "string" },
             "observable": true,
             "readOnly": true
@@ -40,7 +40,7 @@
     "actions": {
         "addItem": {
             "title": "Add Item",
-            "description": "Add the catalog item with the given id to the cart.",
+            "description": "Add the catalog item with the given id to the cart and add its catalog price to the total. Adding an item already in the cart, or an id not in the catalog, changes nothing.",
             "input": {
                 "type": "object",
                 "properties": { "itemId": { "type": "string" } },
@@ -52,11 +52,12 @@
                     "totalAmount": { "type": "number" },
                     "itemsCount": { "type": "number" }
                 }
-            }
+            },
+            "lab:effects": "items' = (itemId == \"grinder\" ? 120 : itemId == \"beans\" ? 15 : (itemId == \"small-1\" || itemId == \"small-2\" || itemId == \"small-3\" || itemId == \"small-4\" || itemId == \"small-5\" || itemId == \"small-6\" || itemId == \"small-7\" || itemId == \"small-8\" || itemId == \"small-9\" || itemId == \"small-10\" || itemId == \"small-11\" || itemId == \"small-12\" || itemId == \"small-13\" || itemId == \"small-14\" || itemId == \"small-15\" || itemId == \"small-16\" || itemId == \"small-17\" || itemId == \"small-18\" || itemId == \"small-19\" || itemId == \"small-20\" || itemId == \"small-21\" || itemId == \"small-22\" || itemId == \"small-23\" || itemId == \"small-24\" || itemId == \"small-25\" || itemId == \"small-26\" || itemId == \"small-27\" || itemId == \"small-28\" || itemId == \"small-29\" || itemId == \"small-30\") ? 1 : 0) > 0 && !items.contains(itemId) ? items.append(itemId) : items; totalAmount' = items.contains(itemId) ? totalAmount : totalAmount + (itemId == \"grinder\" ? 120 : itemId == \"beans\" ? 15 : (itemId == \"small-1\" || itemId == \"small-2\" || itemId == \"small-3\" || itemId == \"small-4\" || itemId == \"small-5\" || itemId == \"small-6\" || itemId == \"small-7\" || itemId == \"small-8\" || itemId == \"small-9\" || itemId == \"small-10\" || itemId == \"small-11\" || itemId == \"small-12\" || itemId == \"small-13\" || itemId == \"small-14\" || itemId == \"small-15\" || itemId == \"small-16\" || itemId == \"small-17\" || itemId == \"small-18\" || itemId == \"small-19\" || itemId == \"small-20\" || itemId == \"small-21\" || itemId == \"small-22\" || itemId == \"small-23\" || itemId == \"small-24\" || itemId == \"small-25\" || itemId == \"small-26\" || itemId == \"small-27\" || itemId == \"small-28\" || itemId == \"small-29\" || itemId == \"small-30\") ? 1 : 0); output.totalAmount = totalAmount'; output.itemsCount = items'.length;"
         },
         "removeItem": {
             "title": "Remove Item",
-            "description": "Remove one instance of the given item id from the cart.",
+            "description": "Remove the item with the given id from the cart and subtract its catalog price from the total. Removing an item not in the cart changes nothing.",
             "input": {
                 "type": "object",
                 "properties": { "itemId": { "type": "string" } },
@@ -68,7 +69,8 @@
                     "totalAmount": { "type": "number" },
                     "itemsCount": { "type": "number" }
                 }
-            }
+            },
+            "lab:effects": "items' = items.contains(itemId) ? items.remove(itemId) : items; totalAmount' = items.contains(itemId) ? totalAmount - (itemId == \"grinder\" ? 120 : itemId == \"beans\" ? 15 : (itemId == \"small-1\" || itemId == \"small-2\" || itemId == \"small-3\" || itemId == \"small-4\" || itemId == \"small-5\" || itemId == \"small-6\" || itemId == \"small-7\" || itemId == \"small-8\" || itemId == \"small-9\" || itemId == \"small-10\" || itemId == \"small-11\" || itemId == \"small-12\" || itemId == \"small-13\" || itemId == \"small-14\" || itemId == \"small-15\" || itemId == \"small-16\" || itemId == \"small-17\" || itemId == \"small-18\" || itemId == \"small-19\" || itemId == \"small-20\" || itemId == \"small-21\" || itemId == \"small-22\" || itemId == \"small-23\" || itemId == \"small-24\" || itemId == \"small-25\" || itemId == \"small-26\" || itemId == \"small-27\" || itemId == \"small-28\" || itemId == \"small-29\" || itemId == \"small-30\") ? 1 : 0) : totalAmount; output.totalAmount = totalAmount'; output.itemsCount = items'.length;"
         },
         "checkout": {
             "title": "Checkout",

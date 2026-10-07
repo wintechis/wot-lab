@@ -208,7 +208,10 @@ language, in a `lab:effects` annotation, and needs no hand-written handler:
 - **Effects** `property' = expr` compile to a state assignment plus a
   property-change notification, so the change is observable and not merely
   readable. The right-hand side supports arithmetic, boolean and comparison
-  operators, `?:`, and `[]` / `append` / `remove`.
+  operators, `?:`, and the collection operations on arrays of scalars:
+  `[]`, `xs.append(x)`, `xs.remove(x)` (every copy of `x`), `xs.length` and
+  `xs.contains(x)`. Each also applies to primed and cross-Thing references
+  (`items'.length`, `page.followers.contains(this.id)`).
 - **Snapshot semantics**: every effect's right-hand side is evaluated against a
   pre-state snapshot, then all effects apply at once - so an effect can read a
   value another effect in the same action overwrites (V-Realm's flat effects).
@@ -231,8 +234,8 @@ language, in a `lab:effects` annotation, and needs no hand-written handler:
   social follow/like effects (see [Environments](#environments)).
 - **Outputs**: `output.<path> = expr` (nested paths allowed) builds the action's
   return value, evaluated after effects apply. Behaviour VRE cannot express
-  (array lookups, sums, object construction) stays in `logic.js`, which composes
-  with `lab:effects`.
+  (lookups into arrays of objects, sums, object construction) stays in
+  `logic.js`, which composes with `lab:effects`.
 - **No functions**: an effect reads the Thing's state and the action's input and
   nothing else - no time, no calls - so a run is reproducible from its initial
   state alone. Behaviour that needs more belongs in `logic.js`.
@@ -320,7 +323,8 @@ curl -X POST localhost:8081/_lab/state  -d '{"id":"bank-alice","values":{"balanc
 
 Six environments make up the benchmark - **76 tasks across seven difficulty
 levels** (L0-L5 and S) - each built from Thing Models under `src/things/` with
-cross-Thing `lab:effects` (and `logic.js` only where VRE can't reach):
+`lab:effects` alone: no Thing they use has a `logic.js`, so every Action executes
+the effect specification in its TD:
 
 | Environment | Things | Tasks | Description |
 | --- | --- | --- | --- |
