@@ -28,7 +28,7 @@ A Thing needs only its Thing Description and state; behavior can come from `lab:
 
 Each service is a virtual **Web of Things** Thing served over the standard WoT HTTP protocol, so an agent interacts with it exactly as it would a real device - fetching its Thing Description, reading Properties, invoking Actions. An Action's effect is declared in the Thing Description and executed from there, so one file both documents and implements the behaviour, and an environment or task is a JSON artifact rather than a program.
 
-An **environment** is a JSON manifest bundling Things with fixed identifiers and initial state; a **task** is a JSON record of an environment, an instruction, and a goal, scored by the share of its goal predicates the final state satisfies. Six environments and 76 tasks ship; see [Environments](#environments).
+An **environment** is a JSON manifest bundling Things with fixed identifiers and initial state; a **task** is a JSON record of an environment, an instruction, and a goal. An attempt succeeds iff its final state satisfies every goal predicate; its efficiency is ℓ/|ρ|, the length of the task's optimal plan over the number of invocations the attempt made. Six environments and 76 tasks ship; see [Environments](#environments).
 
 ## Quick Start
 
@@ -59,8 +59,9 @@ Things, inspects each one's properties, actions, events and Thing Description, a
 **Add Thing** allows you to create a new Thing off of a pre-defined or new Thing Model.
 **Environment** starts one of the manifests in `src/environments/`, replacing whatever is
 running. **Replay a run** opens a run file (or a task's plan), replays it against the reset
-environment and shows how much of the task's goal holds after every step - see
-[`tools/README.md`](tools/README.md#run-files-runschemajson) for the file format.
+environment and shows which goal predicates hold after every step; the run succeeds only if
+all of them hold in its final state. See
+[`frontend/src/replay.ts`](frontend/src/replay.ts) for the file format.
 
 ### State Management
 
@@ -341,10 +342,10 @@ A seventh manifest, `ibm-building3-small` (17 Things, 4 tasks), is a two-room
 subset of the smart office for iterating without the full building's start-up;
 it is a convenience variant, not one of the six benchmark environments.
 
-The smart office and factory are converted from the tee-wip paper repository by
-`tools/tee2wotlab.py`; [`NOTICE.md`](NOTICE.md) records where their data comes from.
+The smart office and factory are converted from the tee-wip paper repository;
+[`NOTICE.md`](NOTICE.md) records where their data comes from.
 Each environment's benchmark tasks live in
-`src/environments/<name>/tasks.json`; see [`tools/README.md`](tools/README.md).
+`src/environments/<name>/tasks.json`; see [Validating the task suite](#validating-the-task-suite).
 
 All `/_lab` writes are loopback-only unless `WOT_LAB_ALLOW_REMOTE_WRITE=1`.
 
@@ -357,6 +358,23 @@ program must compile - so a Thing that would not work never reaches disk.
 Writes are refused from anywhere but localhost, since this API creates files and
 the WoT server binds every interface. Set `WOT_LAB_ALLOW_REMOTE_WRITE=1` for a
 deliberately shared lab.
+
+### Validating the task suite
+
+`tools/verify_tasks.py` (Python 3, standard library only) replays every task of one
+environment against a running lab, from a reset environment and the task's initial state:
+
+```bash
+bun src/main.ts --env <env> &
+python3 tools/verify_tasks.py <env>
+```
+
+It checks that each goal predicate, initial-state value and plan step resolves against
+the served Thing Descriptions; that reading has no side effects; that the optimal plan
+succeeds step by step and reaches the goal, with no shorter prefix (or, for two- and
+three-step plans outside `ibm-building3`, single step) doing so; that an L4 distractor
+plan misses the goal; and that L0/L5 goals hold initially, with an L5 naive attempt
+changing nothing. It exits non-zero if any task fails.
 
 ## Examples
 

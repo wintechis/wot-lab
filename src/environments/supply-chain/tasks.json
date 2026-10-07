@@ -619,7 +619,7 @@
   {
     "id": "sc-13",
     "environment": "supply-chain",
-    "level": "L1",
+    "level": "L3",
     "initialState": {},
     "request": "Order 400 units for Warehouse B.",
     "goal": [
