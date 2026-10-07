@@ -63,7 +63,7 @@
       },
       "safe": false,
       "idempotent": false,
-      "vre:effects": "const battery = <battery>;\nconst caseWithSensorModule = <casewithsensormodule>;\nconst caseWithBattery = <casewithbattery>;\ncaseWithBattery.xpos' = battery.xpos == xpos && battery.ypos == ypos\n  && caseWithSensorModule.xpos == xpos && caseWithSensorModule.ypos == ypos ? xpos : caseWithBattery.xpos;\ncaseWithBattery.ypos' = battery.xpos == xpos && battery.ypos == ypos\n  && caseWithSensorModule.xpos == xpos && caseWithSensorModule.ypos == ypos ? ypos : caseWithBattery.ypos;\ncaseWithBattery.state' = battery.xpos == xpos && battery.ypos == ypos\n  && caseWithSensorModule.xpos == xpos && caseWithSensorModule.ypos == ypos ? \"initialState\" : caseWithBattery.state;\noutput.success = battery.xpos == xpos && battery.ypos == ypos\n  && caseWithSensorModule.xpos == xpos && caseWithSensorModule.ypos == ypos;"
+      "lab:effects": "const battery = <battery>;\nconst caseWithSensorModule = <casewithsensormodule>;\nconst caseWithBattery = <casewithbattery>;\ncaseWithBattery.xpos' = battery.xpos == xpos && battery.ypos == ypos\n  && caseWithSensorModule.xpos == xpos && caseWithSensorModule.ypos == ypos ? xpos : caseWithBattery.xpos;\ncaseWithBattery.ypos' = battery.xpos == xpos && battery.ypos == ypos\n  && caseWithSensorModule.xpos == xpos && caseWithSensorModule.ypos == ypos ? ypos : caseWithBattery.ypos;\ncaseWithBattery.state' = battery.xpos == xpos && battery.ypos == ypos\n  && caseWithSensorModule.xpos == xpos && caseWithSensorModule.ypos == ypos ? \"initialState\" : caseWithBattery.state;\noutput.success = battery.xpos == xpos && battery.ypos == ypos\n  && caseWithSensorModule.xpos == xpos && caseWithSensorModule.ypos == ypos;"
     },
     "produceDisplayUnit": {
       "title": "produce displayUnit",
@@ -85,7 +85,7 @@
       },
       "safe": false,
       "idempotent": false,
-      "vre:effects": "const glass = <glass>;\nconst lcd = <lcd>;\nconst displayUnit = <displayunit>;\ndisplayUnit.xpos' = glass.xpos == xpos && glass.ypos == ypos\n  && lcd.xpos == xpos && lcd.ypos == ypos ? xpos : displayUnit.xpos;\ndisplayUnit.ypos' = glass.xpos == xpos && glass.ypos == ypos\n  && lcd.xpos == xpos && lcd.ypos == ypos ? ypos : displayUnit.ypos;\ndisplayUnit.state' = glass.xpos == xpos && glass.ypos == ypos\n  && lcd.xpos == xpos && lcd.ypos == ypos ? \"initialState\" : displayUnit.state;\noutput.success = glass.xpos == xpos && glass.ypos == ypos\n  && lcd.xpos == xpos && lcd.ypos == ypos;"
+      "lab:effects": "const glass = <glass>;\nconst lcd = <lcd>;\nconst displayUnit = <displayunit>;\ndisplayUnit.xpos' = glass.xpos == xpos && glass.ypos == ypos\n  && lcd.xpos == xpos && lcd.ypos == ypos ? xpos : displayUnit.xpos;\ndisplayUnit.ypos' = glass.xpos == xpos && glass.ypos == ypos\n  && lcd.xpos == xpos && lcd.ypos == ypos ? ypos : displayUnit.ypos;\ndisplayUnit.state' = glass.xpos == xpos && glass.ypos == ypos\n  && lcd.xpos == xpos && lcd.ypos == ypos ? \"initialState\" : displayUnit.state;\noutput.success = glass.xpos == xpos && glass.ypos == ypos\n  && lcd.xpos == xpos && lcd.ypos == ypos;"
     },
     "produceSmartphone": {
       "title": "produce smartphone",
@@ -107,7 +107,7 @@
       },
       "safe": false,
       "idempotent": false,
-      "vre:effects": "const caseWithBattery = <casewithbattery>;\nconst displayUnit = <displayunit>;\nconst smartphone = <smartphone>;\nsmartphone.xpos' = caseWithBattery.xpos == xpos && caseWithBattery.ypos == ypos\n  && displayUnit.xpos == xpos && displayUnit.ypos == ypos ? xpos : smartphone.xpos;\nsmartphone.ypos' = caseWithBattery.xpos == xpos && caseWithBattery.ypos == ypos\n  && displayUnit.xpos == xpos && displayUnit.ypos == ypos ? ypos : smartphone.ypos;\nsmartphone.state' = caseWithBattery.xpos == xpos && caseWithBattery.ypos == ypos\n  && displayUnit.xpos == xpos && displayUnit.ypos == ypos ? \"initialState\" : smartphone.state;\noutput.success = caseWithBattery.xpos == xpos && caseWithBattery.ypos == ypos\n  && displayUnit.xpos == xpos && displayUnit.ypos == ypos;"
+      "lab:effects": "const caseWithBattery = <casewithbattery>;\nconst displayUnit = <displayunit>;\nconst smartphone = <smartphone>;\nsmartphone.xpos' = caseWithBattery.xpos == xpos && caseWithBattery.ypos == ypos\n  && displayUnit.xpos == xpos && displayUnit.ypos == ypos ? xpos : smartphone.xpos;\nsmartphone.ypos' = caseWithBattery.xpos == xpos && caseWithBattery.ypos == ypos\n  && displayUnit.xpos == xpos && displayUnit.ypos == ypos ? ypos : smartphone.ypos;\nsmartphone.state' = caseWithBattery.xpos == xpos && caseWithBattery.ypos == ypos\n  && displayUnit.xpos == xpos && displayUnit.ypos == ypos ? \"initialState\" : smartphone.state;\noutput.success = caseWithBattery.xpos == xpos && caseWithBattery.ypos == ypos\n  && displayUnit.xpos == xpos && displayUnit.ypos == ypos;"
     }
   }
 }

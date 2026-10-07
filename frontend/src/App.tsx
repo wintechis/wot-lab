@@ -62,7 +62,7 @@ type ThingEntry = { id: string; title: string; href: string; description?: strin
 // Every TD node keeps its `[term: string]: unknown` index signature on purpose.
 // The named members below are the terms this UI gives a dedicated control; the
 // index signature is what lets everything else — a vendor extension like
-// `vre:effects`, or a TD term standardised after this was written — survive as
+// `lab:effects`, or a TD term standardised after this was written — survive as
 // far as the renderer, which falls back to <ExtraTerms> for it. Narrowing these
 // types to a fixed allowlist is what previously made the inspector lossy.
 type TdNode = Record<string, unknown>;
@@ -377,9 +377,9 @@ function AffordanceName({ name, title, description, id }: { name: string; title?
 const renderedTerms = {
   property: new Set(['title', 'description', 'type', 'unit', 'readOnly', 'writeOnly', 'observable', 'forms', '@type', 'properties', 'items', 'required',
     'default', 'const', 'enum', 'format', 'pattern', 'minimum', 'maximum', 'exclusiveMinimum', 'exclusiveMaximum', 'multipleOf', 'minLength', 'maxLength', 'minItems', 'maxItems']),
-  // `vre:effects` is wot-lab's own term and gets its own section, so it is
+  // `lab:effects` is wot-lab's own term and gets its own section, so it is
   // listed here to keep it out of the generic "other terms" fallback.
-  action: new Set(['title', 'description', 'input', 'output', 'forms', '@type', 'safe', 'idempotent', 'synchronous', 'vre:effects']),
+  action: new Set(['title', 'description', 'input', 'output', 'forms', '@type', 'safe', 'idempotent', 'synchronous', 'lab:effects']),
   event: new Set(['title', 'description', 'data', 'subscription', 'cancellation', 'dataResponse', 'forms', '@type'])
 };
 
@@ -463,7 +463,7 @@ function FormsTable({ forms }: { forms?: Form[] }) {
 }
 
 // Renders one value of an unrecognised term. Multi-statement strings (a
-// `vre:effects` body) read as code; structured values fall back to JSON, which
+// `lab:effects` body) read as code; structured values fall back to JSON, which
 // is lossless even when this code has no idea what the term means.
 function TermValue({ value }: { value: unknown }) {
   if (typeof value === 'string') {
@@ -784,13 +784,13 @@ function ActionDetail({ action, invocation }: { action: Action; invocation: Reso
     { label: 'idempotent', on: action.node.idempotent === true, hint: 'Invoking it repeatedly has the same effect as once' },
     ...(action.node.synchronous === undefined ? [] : [{ label: 'synchronous', on: action.node.synchronous === true, hint: 'The response carries the result' }])
   ];
-  const effects = action.node['vre:effects'];
+  const effects = action.node['lab:effects'];
   return <DetailPanel>
     {/* An action's declared behavior leads the panel: for a VRE-driven Thing this
         *is* the action, the whole implementation, with no logic.js behind it. */}
     {typeof effects === 'string' && <DetailSection title="Effects">
       <Text size="small" className="muted">
-        Declared in the Thing Description as <InlineCode>vre:effects</InlineCode>. Each primed assignment
+        Declared in the Thing Description as <InlineCode>lab:effects</InlineCode>. Each primed assignment
         (<InlineCode>{'prop′ = …'}</InlineCode>) writes the property and emits a property change, so the
         effect is observable rather than only readable.
       </Text>

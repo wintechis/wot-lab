@@ -63,7 +63,7 @@
       },
       "safe": false,
       "idempotent": false,
-      "vre:effects": "const batterycell = <batterycell>;\nconst battery = <battery>;\nbattery.xpos' = batterycell.xpos == xpos && batterycell.ypos == ypos ? xpos : battery.xpos;\nbattery.ypos' = batterycell.xpos == xpos && batterycell.ypos == ypos ? ypos : battery.ypos;\nbattery.state' = batterycell.xpos == xpos && batterycell.ypos == ypos ? \"initialState\" : battery.state;\noutput.success = batterycell.xpos == xpos && batterycell.ypos == ypos;"
+      "lab:effects": "const batterycell = <batterycell>;\nconst battery = <battery>;\nbattery.xpos' = batterycell.xpos == xpos && batterycell.ypos == ypos ? xpos : battery.xpos;\nbattery.ypos' = batterycell.xpos == xpos && batterycell.ypos == ypos ? ypos : battery.ypos;\nbattery.state' = batterycell.xpos == xpos && batterycell.ypos == ypos ? \"initialState\" : battery.state;\noutput.success = batterycell.xpos == xpos && batterycell.ypos == ypos;"
     }
   }
 }

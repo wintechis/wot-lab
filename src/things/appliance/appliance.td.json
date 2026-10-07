@@ -16,13 +16,13 @@
             "description": "Start the appliance.",
             "input": { "type": "object", "properties": { "cycle": { "type": "string" } } },
             "output": { "type": "object", "properties": { "success": { "type": "boolean" }, "isRunning": { "type": "boolean" }, "message": { "type": "string" } } },
-            "vre:effects": "const home = <home>; home.currentPowerUsageW' = home.currentPowerUsageW + (isRunning ? 0 : powerWatts); home.currentMonthUsageKWh' = home.currentMonthUsageKWh + (isRunning ? 0 : kwhPerCycle); isRunning' = true; output.success = true; output.isRunning = isRunning'; output.message = \"Started with \" + cycle + \" cycle\";"
+            "lab:effects": "const home = <home>; home.currentPowerUsageW' = home.currentPowerUsageW + (isRunning ? 0 : powerWatts); home.currentMonthUsageKWh' = home.currentMonthUsageKWh + (isRunning ? 0 : kwhPerCycle); isRunning' = true; output.success = true; output.isRunning = isRunning'; output.message = \"Started with \" + cycle + \" cycle\";"
         },
         "stopAppliance": {
             "title": "Stop",
             "description": "Stop the appliance.",
             "output": { "type": "object", "properties": { "success": { "type": "boolean" }, "isRunning": { "type": "boolean" } } },
-            "vre:effects": "const home = <home>; home.currentPowerUsageW' = home.currentPowerUsageW - (isRunning ? powerWatts : 0); isRunning' = false; output.success = true; output.isRunning = isRunning';"
+            "lab:effects": "const home = <home>; home.currentPowerUsageW' = home.currentPowerUsageW - (isRunning ? powerWatts : 0); isRunning' = false; output.success = true; output.isRunning = isRunning';"
         }
     }
 }

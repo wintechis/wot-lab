@@ -63,7 +63,7 @@
       },
       "safe": false,
       "idempotent": false,
-      "vre:effects": "const ingot = <ingot>;\nconst case = <case>;\ncase.xpos' = ingot.xpos == xpos && ingot.ypos == ypos ? xpos : case.xpos;\ncase.ypos' = ingot.xpos == xpos && ingot.ypos == ypos ? ypos : case.ypos;\ncase.state' = ingot.xpos == xpos && ingot.ypos == ypos ? \"initialState\" : case.state;\noutput.success = ingot.xpos == xpos && ingot.ypos == ypos;"
+      "lab:effects": "const ingot = <ingot>;\nconst case = <case>;\ncase.xpos' = ingot.xpos == xpos && ingot.ypos == ypos ? xpos : case.xpos;\ncase.ypos' = ingot.xpos == xpos && ingot.ypos == ypos ? ypos : case.ypos;\ncase.state' = ingot.xpos == xpos && ingot.ypos == ypos ? \"initialState\" : case.state;\noutput.success = ingot.xpos == xpos && ingot.ypos == ypos;"
     }
   }
 }

@@ -63,7 +63,7 @@
       },
       "safe": false,
       "idempotent": false,
-      "vre:effects": "const mainModule = <mainmodule>;\nconst port = <port>;\nconst mainModuleWithPorts = <mainmodulewithports>;\nmainModuleWithPorts.xpos' = mainModule.xpos == xpos && mainModule.ypos == ypos\n  && port.xpos == xpos && port.ypos == ypos ? xpos : mainModuleWithPorts.xpos;\nmainModuleWithPorts.ypos' = mainModule.xpos == xpos && mainModule.ypos == ypos\n  && port.xpos == xpos && port.ypos == ypos ? ypos : mainModuleWithPorts.ypos;\nmainModuleWithPorts.state' = mainModule.xpos == xpos && mainModule.ypos == ypos\n  && port.xpos == xpos && port.ypos == ypos ? \"initialState\" : mainModuleWithPorts.state;\noutput.success = mainModule.xpos == xpos && mainModule.ypos == ypos\n  && port.xpos == xpos && port.ypos == ypos;"
+      "lab:effects": "const mainModule = <mainmodule>;\nconst port = <port>;\nconst mainModuleWithPorts = <mainmodulewithports>;\nmainModuleWithPorts.xpos' = mainModule.xpos == xpos && mainModule.ypos == ypos\n  && port.xpos == xpos && port.ypos == ypos ? xpos : mainModuleWithPorts.xpos;\nmainModuleWithPorts.ypos' = mainModule.xpos == xpos && mainModule.ypos == ypos\n  && port.xpos == xpos && port.ypos == ypos ? ypos : mainModuleWithPorts.ypos;\nmainModuleWithPorts.state' = mainModule.xpos == xpos && mainModule.ypos == ypos\n  && port.xpos == xpos && port.ypos == ypos ? \"initialState\" : mainModuleWithPorts.state;\noutput.success = mainModule.xpos == xpos && mainModule.ypos == ypos\n  && port.xpos == xpos && port.ypos == ypos;"
     }
   }
 }

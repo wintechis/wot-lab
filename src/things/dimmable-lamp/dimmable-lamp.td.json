@@ -24,7 +24,7 @@
             "description": "Set the brightness; only takes effect while the lamp is powered on.",
             "input": { "type": "object", "properties": { "level": { "type": "integer" } }, "required": ["level"] },
             "output": { "type": "object", "properties": { "success": { "type": "boolean" }, "brightness": { "type": "integer" } } },
-            "vre:effects": "brightness' = poweredOn ? level : brightness; output.success = poweredOn; output.brightness = brightness';"
+            "lab:effects": "brightness' = poweredOn ? level : brightness; output.success = poweredOn; output.brightness = brightness';"
         }
     }
 }

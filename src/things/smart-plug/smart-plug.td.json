@@ -26,7 +26,7 @@
             "title": "Toggle",
             "description": "Flip the plug on/off, powering or unpowering the connected device to match.",
             "output": { "type": "object", "properties": { "success": { "type": "boolean" }, "poweredOn": { "type": "boolean" } } },
-            "vre:effects": "poweredOn' = !poweredOn; device.poweredOn' = !poweredOn; output.success = true; output.poweredOn = poweredOn';"
+            "lab:effects": "poweredOn' = !poweredOn; device.poweredOn' = !poweredOn; output.success = true; output.poweredOn = poweredOn';"
         }
     }
 }

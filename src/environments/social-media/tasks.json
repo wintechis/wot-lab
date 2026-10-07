@@ -137,11 +137,12 @@
     "initialState": {
       "charlie": {
         "posts": [
-          {
-            "id": "post-1",
-            "content": "First post!"
-          }
-        ]
+          "post-1"
+        ],
+        "postContents": [
+          "First post!"
+        ],
+        "postCount": 1
       }
     },
     "request": "Bob likes Charlie's post.",
@@ -236,11 +237,12 @@
     "initialState": {
       "charlie": {
         "posts": [
-          {
-            "id": "post-1",
-            "content": "First post!"
-          }
-        ]
+          "post-1"
+        ],
+        "postContents": [
+          "First post!"
+        ],
+        "postCount": 1
       }
     },
     "request": "Delete Charlie's post.",
@@ -290,11 +292,12 @@
     "initialState": {
       "charlie": {
         "posts": [
-          {
-            "id": "post-1",
-            "content": "First post!"
-          }
-        ]
+          "post-1"
+        ],
+        "postContents": [
+          "First post!"
+        ],
+        "postCount": 1
       }
     },
     "request": "Charlie's post should have a like from everyone else.",
@@ -432,13 +435,15 @@
       "bob": {
         "following": [
           "alice"
-        ]
+        ],
+        "followingCount": 1
       },
       "alice": {
         "followers": [
           "charlie",
           "bob"
-        ]
+        ],
+        "followerCount": 2
       }
     },
     "request": "Bob should follow both Alice and Charlie.",

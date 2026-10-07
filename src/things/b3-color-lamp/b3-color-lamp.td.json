@@ -78,7 +78,7 @@
       },
       "safe": false,
       "idempotent": false,
-      "vre:effects": "power' = state;\noutput.success = true;\noutput.power = power';"
+      "lab:effects": "power' = state;\noutput.success = true;\noutput.power = power';"
     },
     "setBrightness": {
       "title": "Set lamp brightness",
@@ -102,7 +102,7 @@
       },
       "safe": false,
       "idempotent": false,
-      "vre:effects": "brightness' = power == \"on\" ? level : brightness;\noutput.success = power == \"on\";\noutput.brightness = brightness';"
+      "lab:effects": "brightness' = power == \"on\" ? level : brightness;\noutput.success = power == \"on\";\noutput.brightness = brightness';"
     },
     "setColor": {
       "title": "Set lamp colour",
@@ -131,7 +131,7 @@
       },
       "safe": false,
       "idempotent": false,
-      "vre:effects": "color' = power == \"on\" ? hue : color;\noutput.success = power == \"on\";\noutput.color = color';"
+      "lab:effects": "color' = power == \"on\" ? hue : color;\noutput.success = power == \"on\";\noutput.color = color';"
     }
   }
 }
