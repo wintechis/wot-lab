@@ -25,14 +25,16 @@ const maxBodyBytes = 256 * 1024;
 const loopbackAddresses = new Set(['127.0.0.1', '::1', '::ffff:127.0.0.1']);
 
 /**
- * Writes are refused from off-box by default.
+ * Writes, and reads of the benchmark tasks, are refused from off-box by default.
  *
  * This API creates files and brings Things online, and the WoT server binds
  * every interface, so without this the lab would offer anyone on the network a
- * way to write into the repository. `WOT_LAB_ALLOW_REMOTE_WRITE=1` opts out for
- * a deliberately shared lab.
+ * way to write into the repository. The tasks hold every goal and optimal plan:
+ * an agent under evaluation gets the request, not the answer, so they stay on
+ * this machine too. `WOT_LAB_ALLOW_REMOTE_WRITE=1` opts out of both for a
+ * deliberately shared lab, where a remote client could inject state anyway.
  */
-function isWriteAllowed(req: IncomingMessage): boolean {
+function isLocalAllowed(req: IncomingMessage): boolean {
   if (process.env.WOT_LAB_ALLOW_REMOTE_WRITE === '1') {
     return true;
   }
@@ -137,10 +139,14 @@ export function createLabApi(registry: ThingRegistry) {
     const [resource, id, member] = segments;
     const method = req.method ?? 'GET';
 
-    if (method !== 'GET' && !isWriteAllowed(req)) {
-      warn(`Refused ${method} /${labPrefix} from ${req.socket.remoteAddress}`);
+    const isTasks = resource === 'environments' && Boolean(id) && member === 'tasks';
+
+    if ((method !== 'GET' || isTasks) && !isLocalAllowed(req)) {
+      warn(`Refused ${method} /${labPrefix}/${segments.join('/')} from ${req.socket.remoteAddress}`);
       sendJson(res, 403, {
-        error: 'Lab changes are only allowed from this machine. Set WOT_LAB_ALLOW_REMOTE_WRITE=1 to override.'
+        error: method === 'GET'
+          ? 'Benchmark tasks are only readable from this machine. Set WOT_LAB_ALLOW_REMOTE_WRITE=1 to override.'
+          : 'Lab changes are only allowed from this machine. Set WOT_LAB_ALLOW_REMOTE_WRITE=1 to override.'
       });
       return true;
     }
@@ -203,7 +209,7 @@ export function createLabApi(registry: ThingRegistry) {
       // Environments: named bundles of Things with fixed ids. GET lists what is
       // on disk; POST brings one online (the benchmark's start command).
       // The benchmark tasks of one environment: what a run is replayed against.
-      if (method === 'GET' && resource === 'environments' && id && member === 'tasks') {
+      if (method === 'GET' && isTasks) {
         sendJson(res, 200, { tasks: await loadEnvironmentTasks(decodeURIComponent(id)) });
         return true;
       }

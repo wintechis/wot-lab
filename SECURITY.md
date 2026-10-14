@@ -8,14 +8,15 @@ a machine you trust, for people you trust:
 - A Thing Model's `logic.js` is `eval`'d in the lab's process with its full privileges. It is
   trusted code, not a sandbox.
 - Things are served without authentication (`nosec`), on every network interface.
-- The lab API under `/_lab` refuses writes from anything but a loopback address unless
-  `WOT_LAB_ALLOW_REMOTE_WRITE=1` is set.
+- The lab API under `/_lab` refuses writes, and reads of the benchmark tasks (their goals and
+  plans), from anything but a loopback address unless `WOT_LAB_ALLOW_REMOTE_WRITE=1` is set.
 
 The README's [Security](README.md#security) section says what each of these means in practice.
 Reports that come down to "a Thing Model can run code" or "an exposed lab is unauthenticated"
 describe the design rather than a flaw in it. Anything that gets *around* these boundaries is a
-vulnerability — for example a way to write through the lab API from another machine or from a web
-page, to escape the models directory, or to get code past the `lab:effects` parser.
+vulnerability — for example a way to write through the lab API, or to read a task's goal or plan,
+from another machine or from a web page, to escape the models directory, or to get code past the
+`lab:effects` parser.
 
 ## Reporting a vulnerability
 

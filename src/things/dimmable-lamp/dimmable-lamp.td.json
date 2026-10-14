@@ -22,7 +22,7 @@
         "setBrightness": {
             "title": "Set Brightness",
             "description": "Set the brightness; only takes effect while the lamp is powered on.",
-            "input": { "type": "object", "properties": { "level": { "type": "integer" } }, "required": ["level"] },
+            "input": { "type": "object", "properties": { "level": { "type": "integer", "minimum": 0, "maximum": 100 } }, "required": ["level"] },
             "output": { "type": "object", "properties": { "success": { "type": "boolean" }, "brightness": { "type": "integer" } } },
             "lab:effects": "brightness' = poweredOn ? level : brightness; output.success = poweredOn; output.brightness = brightness';"
         }

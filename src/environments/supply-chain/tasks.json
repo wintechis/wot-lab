@@ -4,7 +4,7 @@
     "environment": "supply-chain",
     "level": "L0",
     "initialState": {},
-    "request": "Check that Warehouse C is below 50 % utilisation.",
+    "request": "Make sure Warehouse C is below 50 % utilisation.",
     "goal": [
       {
         "thing": "warehouse-c",

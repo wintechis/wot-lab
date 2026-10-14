@@ -286,7 +286,7 @@ routes. `_lab` is a reserved path segment, so it can never shadow a Thing.
 | Create a Thing Model | `/_lab/thing-models` | `POST` | Writes `src/things/<name>/` and creates one Thing from it. |
 | List environments | `/_lab/environments` | `GET` | The scenario manifests on disk. |
 | Start an environment | `/_lab/environments` | `POST` | `{"name": "e-commerce"}`. Refused if any of its ids is in use, unless `"replace": true` takes everything running offline first. |
-| List an environment's tasks | `/_lab/environments/{name}/tasks` | `GET` | The records of its `tasks.json`. |
+| List an environment's tasks | `/_lab/environments/{name}/tasks` | `GET` | The records of its `tasks.json`, goals and plans included. Loopback only, like the writes. |
 | Reset to initial state | `/_lab/reset` | `POST` | All Things, or one with `{"id": ...}`. |
 | Inject property values | `/_lab/state` | `POST` | `{"id": ..., "values": {...}}`; bypasses TD writability. |
 
@@ -347,7 +347,8 @@ The smart office and factory are converted from the tee-wip paper repository;
 Each environment's benchmark tasks live in
 `src/environments/<name>/tasks.json`; see [Validating the task suite](#validating-the-task-suite).
 
-All `/_lab` writes are loopback-only unless `WOT_LAB_ALLOW_REMOTE_WRITE=1`.
+All `/_lab` writes, and reads of an environment's tasks, are loopback-only unless
+`WOT_LAB_ALLOW_REMOTE_WRITE=1`.
 
 A new Thing Model is sent either as a `spec` (the shape the dashboard form
 produces) or as a `draft` (the two files verbatim). Both go through the same
@@ -356,8 +357,13 @@ every property needs an initial state value of that type, and any `lab:effects`
 program must compile - so a Thing that would not work never reaches disk.
 
 Writes are refused from anywhere but localhost, since this API creates files and
-the WoT server binds every interface. Set `WOT_LAB_ALLOW_REMOTE_WRITE=1` for a
-deliberately shared lab.
+the WoT server binds every interface. So is `GET /_lab/environments/{name}/tasks`:
+the tasks hold every goal and optimal plan, and an agent under evaluation, which
+may run on another machine, gets the request and the root URI, not the answer.
+The refusal is a `403` either way. A dashboard opened from another machine can
+therefore no longer replay a run against a task (it could not reset or inject
+state before either). Set `WOT_LAB_ALLOW_REMOTE_WRITE=1` for a deliberately
+shared lab; it lifts both.
 
 ### Validating the task suite
 
@@ -426,7 +432,9 @@ WoT-Lab is a development tool, and it is built to be run on a machine you trust,
   authentication; every Thing is served with the `nosec` security scheme.
 - **The lab API (`/_lab`) accepts writes from this machine only.** It creates files and starts
   Things, so requests that change anything are refused unless they come from a loopback address.
-  `WOT_LAB_ALLOW_REMOTE_WRITE=1` lifts that for a deliberately shared lab; set it only on a
+  The benchmark tasks (`GET /_lab/environments/{name}/tasks`), which hold every goal and plan,
+  are refused the same way, so an agent on another machine cannot read the answers.
+  `WOT_LAB_ALLOW_REMOTE_WRITE=1` lifts both for a deliberately shared lab; set it only on a
   network where everyone who can reach the port may write Thing Models to the models directory,
   start and stop Things, and overwrite their state. The API writes a Thing Description and a
   `state.json`, never a `logic.js`.

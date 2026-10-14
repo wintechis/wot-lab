@@ -257,8 +257,10 @@
       {
         "thing": "charlie",
         "property": "posts",
-        "op": "length",
-        "value": 1
+        "op": "=",
+        "value": [
+          "post-1"
+        ]
       }
     ],
     "optimalPlan": []
