@@ -2,7 +2,7 @@
   {
     "id": "sm-0",
     "environment": "social-media",
-    "level": "L0",
+    "level": "DL0",
     "initialState": {},
     "request": "Make sure Alice follows Bob.",
     "goal": [
@@ -30,7 +30,7 @@
   {
     "id": "sm-1",
     "environment": "social-media",
-    "level": "L1",
+    "level": "DL1",
     "initialState": {},
     "request": "Post \"hello\" on Bob's page.",
     "goal": [
@@ -54,7 +54,7 @@
   {
     "id": "sm-2",
     "environment": "social-media",
-    "level": "L3",
+    "level": "DL3",
     "initialState": {},
     "request": "Bob wants to follow Alice.",
     "goal": [
@@ -90,7 +90,7 @@
   {
     "id": "sm-3",
     "environment": "social-media",
-    "level": "L3",
+    "level": "DL3",
     "initialState": {},
     "request": "Bob should follow both Alice and Charlie.",
     "goal": [
@@ -133,7 +133,7 @@
   {
     "id": "sm-4",
     "environment": "social-media",
-    "level": "L3",
+    "level": "DL3",
     "initialState": {
       "charlie": {
         "posts": [
@@ -180,7 +180,7 @@
   {
     "id": "sm-5",
     "environment": "social-media",
-    "level": "L4",
+    "level": "DL4",
     "initialState": {},
     "request": "Bob's page should show as many people followed as followers, and he must not lose any followers.",
     "goal": [
@@ -233,7 +233,7 @@
   {
     "id": "sm-6",
     "environment": "social-media",
-    "level": "L5",
+    "level": "DL5",
     "initialState": {
       "charlie": {
         "posts": [
@@ -268,7 +268,7 @@
   {
     "id": "sm-7",
     "environment": "social-media",
-    "level": "L0",
+    "level": "DL0",
     "initialState": {},
     "request": "Bob stops following Charlie.",
     "goal": [
@@ -290,7 +290,7 @@
   {
     "id": "sm-8",
     "environment": "social-media",
-    "level": "L3",
+    "level": "DL3",
     "initialState": {
       "charlie": {
         "posts": [
@@ -351,7 +351,7 @@
   {
     "id": "sm-9",
     "environment": "social-media",
-    "level": "L3",
+    "level": "DL3",
     "initialState": {},
     "request": "Make it mutual: everyone should follow everyone else. Then Alice posts \"welcome\".",
     "goal": [
@@ -432,7 +432,7 @@
   {
     "id": "sm-10",
     "environment": "social-media",
-    "level": "L3",
+    "level": "DL3",
     "initialState": {
       "bob": {
         "following": [
@@ -482,7 +482,7 @@
   {
     "id": "sm-11",
     "environment": "social-media",
-    "level": "L1",
+    "level": "DL1",
     "initialState": {},
     "request": "Post \"good morning\" on Alice's page.",
     "goal": [
@@ -506,7 +506,7 @@
   {
     "id": "sm-12",
     "environment": "social-media",
-    "level": "L2",
+    "level": "DL2",
     "initialState": {},
     "request": "Bob posts \"one\" and then \"two\".",
     "goal": [
@@ -537,7 +537,7 @@
   {
     "id": "sm-13",
     "environment": "social-media",
-    "level": "L2",
+    "level": "DL2",
     "initialState": {},
     "request": "Alice and Charlie each post a greeting.",
     "goal": [

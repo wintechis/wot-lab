@@ -2,7 +2,7 @@
   {
     "id": "sh-0",
     "environment": "smart-home",
-    "level": "L0",
+    "level": "DL0",
     "initialState": {},
     "request": "Make sure the dryer is not running.",
     "goal": [
@@ -30,7 +30,7 @@
   {
     "id": "sh-1",
     "environment": "smart-home",
-    "level": "L1",
+    "level": "DL1",
     "initialState": {},
     "request": "Set the thermostat to 68 degrees.",
     "goal": [
@@ -54,7 +54,7 @@
   {
     "id": "sh-2",
     "environment": "smart-home",
-    "level": "L2",
+    "level": "DL2",
     "initialState": {},
     "request": "Set the thermostat to 68 degrees in heat mode.",
     "goal": [
@@ -97,7 +97,7 @@
   {
     "id": "sh-3",
     "environment": "smart-home",
-    "level": "L3",
+    "level": "DL3",
     "initialState": {},
     "request": "Raise the monthly energy budget to 600 kWh and start charging the car.",
     "goal": [
@@ -140,7 +140,7 @@
   {
     "id": "sh-4",
     "environment": "smart-home",
-    "level": "L3",
+    "level": "DL3",
     "initialState": {},
     "request": "Run the washer, but keep total power draw at or below 4 kW.",
     "goal": [
@@ -182,7 +182,7 @@
   {
     "id": "sh-5",
     "environment": "smart-home",
-    "level": "L4",
+    "level": "DL4",
     "initialState": {
       "washer": {
         "isRunning": true
@@ -233,7 +233,7 @@
   {
     "id": "sh-6",
     "environment": "smart-home",
-    "level": "L5",
+    "level": "DL5",
     "initialState": {},
     "request": "Set the thermostat to 95 degrees.",
     "note": "Unreachable: thermostat.maxTemp is 85 and setTemperature only writes targetTemp within [minTemp, maxTemp]; setTemperature(95) answers success false and changes nothing.",
@@ -259,7 +259,7 @@
   {
     "id": "sh-7",
     "environment": "smart-home",
-    "level": "L5",
+    "level": "DL5",
     "initialState": {},
     "request": "Run the washer, the dryer and the car charger at the same time while keeping power draw under 5 kW.",
     "note": "Unreachable: powerWatts is 2000 (washer), 3000 (dryer) and 7000 (car charger) on top of the home's 800 W base draw — 12800 W with all three on — and no Action changes a powerWatts Property. Every attempt changes state, so no naiveAttempt.",
@@ -294,7 +294,7 @@
   {
     "id": "sh-8",
     "environment": "smart-home",
-    "level": "L3",
+    "level": "DL3",
     "initialState": {},
     "request": "Dim my reading lamp to 30 percent.",
     "goal": [
@@ -329,7 +329,7 @@
   {
     "id": "sh-9",
     "environment": "smart-home",
-    "level": "L0",
+    "level": "DL0",
     "initialState": {},
     "request": "Make sure the reading lamp is off.",
     "goal": [
@@ -357,7 +357,7 @@
   {
     "id": "sh-10",
     "environment": "smart-home",
-    "level": "L3",
+    "level": "DL3",
     "initialState": {
       "washer": {
         "isRunning": true
@@ -448,7 +448,7 @@
   {
     "id": "sh-11",
     "environment": "smart-home",
-    "level": "L4",
+    "level": "DL4",
     "initialState": {
       "washer": {
         "isRunning": true
@@ -561,7 +561,7 @@
   {
     "id": "sh-12",
     "environment": "smart-home",
-    "level": "L1",
+    "level": "DL1",
     "initialState": {
       "plug": {
         "poweredOn": true
@@ -598,7 +598,7 @@
   {
     "id": "sh-13",
     "environment": "smart-home",
-    "level": "L1",
+    "level": "DL1",
     "initialState": {},
     "request": "Raise the monthly energy budget to 600 kWh.",
     "goal": [
@@ -622,7 +622,7 @@
   {
     "id": "sh-14",
     "environment": "smart-home",
-    "level": "L2",
+    "level": "DL2",
     "initialState": {},
     "request": "Set the energy budget to 450 kWh and the thermostat to 70 degrees.",
     "goal": [

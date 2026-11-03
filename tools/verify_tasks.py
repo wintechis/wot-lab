@@ -13,8 +13,8 @@ A task file is a set of claims about an environment. Per task this asserts:
      has a `success` field, with success true — and the final state satisfies
      the goal;
   d. no proper prefix of `optimalPlan` already satisfies the goal;
-  e. L4: `distractorPlan` ends in a state that violates at least one predicate;
-  f. L0/L5: the initial state satisfies the goal; L5 with a `naiveAttempt`: the
+  e. DL4: `distractorPlan` ends in a state that violates at least one predicate;
+  f. DL0/DL5: the initial state satisfies the goal; DL5 with a `naiveAttempt`: the
      attempt changes no Property value.
 
 For a plan of two or three steps it also tries each step on its own from the
@@ -255,16 +255,16 @@ def verify(lab: Lab, task: dict, scope: list[str]) -> list[str]:
     initially_failing = failing(lab, task)
 
     if not plan:
-        # (f) L0 / L5: the goal is the state as it stands
+        # (f) DL0 / DL5: the goal is the state as it stands
         if initially_failing:
             problems.append("empty plan but the goal does not hold initially: " + "; ".join(initially_failing))
-        if task.get("level") == "L5" and task.get("naiveAttempt"):
+        if task.get("level") == "DL5" and task.get("naiveAttempt"):
             before = lab.snapshot(scope)
             run_plan(lab, task, task["naiveAttempt"], strict=False)
             if lab.snapshot(scope) != before:
                 problems.append("naiveAttempt changed a Property value")
-        if task.get("level") == "L5" and "note" not in task:
-            problems.append("L5 without a note saying what makes the request unreachable")
+        if task.get("level") == "DL5" and "note" not in task:
+            problems.append("DL5 without a note saying what makes the request unreachable")
         return problems
 
     if not initially_failing:
@@ -290,10 +290,10 @@ def verify(lab: Lab, task: dict, scope: list[str]) -> list[str]:
                 break
 
     # (e) the tempting wrong run really is wrong
-    if task.get("level") == "L4":
+    if task.get("level") == "DL4":
         distractor = task.get("distractorPlan")
         if not distractor:
-            problems.append("L4 without a distractorPlan")
+            problems.append("DL4 without a distractorPlan")
         else:
             lab.reset(task)
             run_plan(lab, task, distractor, strict=False)

@@ -332,7 +332,7 @@ curl -X POST localhost:8081/_lab/state  -d '{"id":"bank-alice","values":{"balanc
 ```
 
 Six environments make up the benchmark - **76 tasks across seven difficulty
-levels** (L0-L5 and S) - each built from Thing Models under `src/things/` with
+levels** (DL0-DL5 and S) - each built from Thing Models under `src/things/` with
 `lab:effects` alone: no Thing they use has a `logic.js`, so every Action executes
 the effect specification in its TD:
 
@@ -385,8 +385,8 @@ python3 tools/verify_tasks.py <env>
 It checks that each goal predicate, initial-state value and plan step resolves against
 the served Thing Descriptions; that reading has no side effects; that the optimal plan
 succeeds step by step and reaches the goal, with no shorter prefix (or, for two- and
-three-step plans outside `ibm-building3`, single step) doing so; that an L4 distractor
-plan misses the goal; and that L0/L5 goals hold initially, with an L5 naive attempt
+three-step plans outside `ibm-building3`, single step) doing so; that a DL4 distractor
+plan misses the goal; and that DL0/DL5 goals hold initially, with a DL5 naive attempt
 changing nothing. It exits non-zero if any task fails.
 
 ## Examples
