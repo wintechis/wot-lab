@@ -1,0 +1,122 @@
+{
+  "@context": ["https://www.w3.org/2019/wot/td/v1", "https://www.w3.org/2022/wot/td/v1.1"],
+  "@type": ["Thing", "tm:ThingModel"],
+  "title": "Door Lock",
+  "description": "A smart door lock reporting lock state and battery, with lock/unlock actions and security events.",
+  "properties": {
+    "locked": {
+      "type": "boolean",
+      "description": "Whether the door is currently locked.",
+      "observable": true,
+      "readOnly": true
+    },
+    "lockState": {
+      "type": "string",
+      "description": "Detailed lock state, including transitional (locking/unlocking) and jammed states.",
+      "enum": ["locked", "unlocked", "jammed", "locking", "unlocking"],
+      "observable": true,
+      "readOnly": true
+    },
+    "batteryLevel": {
+      "type": "integer",
+      "description": "Remaining battery charge, 0–100 percent.",
+      "minimum": 0,
+      "maximum": 100,
+      "unit": "percent",
+      "observable": true,
+      "readOnly": true
+    },
+    "lastAction": {
+      "type": "object",
+      "description": "The most recent lock/unlock action, with its method and timestamp.",
+      "properties": {
+        "action": {
+          "type": "string",
+          "enum": ["lock", "unlock", "auto-lock"]
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "method": {
+          "type": "string",
+          "enum": ["app", "manual", "auto", "remote"]
+        }
+      },
+      "observable": true,
+      "readOnly": true
+    }
+  },
+  "actions": {
+    "lock": {
+      "description": "Lock the door; optionally record how it was triggered.",
+      "input": {
+        "type": "object",
+        "properties": {
+          "method": {
+            "type": "string",
+            "enum": ["app", "manual", "auto", "remote"],
+            "default": "app"
+          }
+        },
+        "required": []
+      }
+    },
+    "unlock": {
+      "description": "Unlock the door; optionally supply the trigger method and a security PIN.",
+      "input": {
+        "type": "object",
+        "properties": {
+          "method": {
+            "type": "string",
+            "enum": ["app", "manual", "auto", "remote"],
+            "default": "app"
+          },
+          "pin": {
+            "type": "string",
+            "description": "Security PIN for unlocking (if required)"
+          }
+        },
+        "required": []
+      }
+    }
+  },
+  "events": {
+    "lockStateChanged": {
+      "description": "Fires when the lock state changes, carrying the previous and new state.",
+      "data": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "type": "string"
+          },
+          "to": {
+            "type": "string"
+          },
+          "method": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    },
+    "unauthorizedAccess": {
+      "description": "Fires when an unlock attempt is rejected as unauthorized.",
+      "data": {
+        "type": "object",
+        "properties": {
+          "method": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    }
+  }
+}

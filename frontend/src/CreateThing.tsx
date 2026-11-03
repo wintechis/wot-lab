@@ -345,8 +345,8 @@ function NewModelTab({ busy, onCreate }: { busy: boolean; onCreate: (payload: { 
             Editing the files directly. The form above no longer drives them —
             <Link as="button" onClick={() => setJson(null)}> go back to the form</Link> to discard these edits.
           </Flash>
-          <Field label={`${name || 'thing'}.td.json`}>
-            <Textarea aria-label="Thing Description JSON" rows={14} className="spec-json mono" value={json.td}
+          <Field label={`${name || 'thing'}.tm.json`}>
+            <Textarea aria-label="Thing Model JSON" rows={14} className="spec-json mono" value={json.td}
               onChange={event => setJson({ ...json, td: event.target.value })} />
           </Field>
           <Field label="state.json">
@@ -390,7 +390,7 @@ function NewModelTab({ busy, onCreate }: { busy: boolean; onCreate: (payload: { 
           state: JSON.stringify(draft.state, null, 4)
         })}>Edit as JSON</Button>
       </Stack>
-      <CodeExample filename={`src/things/${draft.name || 'thing'}/${draft.name || 'thing'}.td.json`} code={JSON.stringify(draft.td, null, 4)} />
+      <CodeExample filename={`src/things/${draft.name || 'thing'}/${draft.name || 'thing'}.tm.json`} code={JSON.stringify(draft.td, null, 4)} />
       <CodeExample filename={`src/things/${draft.name || 'thing'}/state.json`} code={JSON.stringify(draft.state, null, 4)} />
     </Stack>}
 

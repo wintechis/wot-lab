@@ -3,6 +3,7 @@ import { mkdir, mkdtemp, rename, rm } from 'fs/promises';
 import { dirname, join } from 'path';
 import { createLoggers } from '../utils/debug.js';
 import { authoringDirectory, readThingModel } from './ThingHandler.js';
+import { asThingModel, thingModelFileName, thingModelToThingDescription } from './thingModel.js';
 import { vreEffectsToHandlers } from './vre.js';
 
 const { debug } = createLoggers('things');
@@ -212,6 +213,7 @@ export function buildDraft(spec: ThingSpec): ThingDraft {
       'https://www.w3.org/2019/wot/td/v1',
       'https://www.w3.org/2022/wot/td/v1.1'
     ],
+    '@type': 'tm:ThingModel',
     title: spec.title,
     description: spec.description
   });
@@ -388,7 +390,9 @@ export async function validateDraft(draft: ThingDraft): Promise<string[]> {
   // are specific ("effect target 'x' is not a Thing property"), so they are
   // surfaced verbatim — and nothing is written until they compile.
   try {
-    vreEffectsToHandlers(td as WoT.ThingDescription);
+    // Instantiated exactly as the loader will, so a model using a TM feature
+    // the lab does not resolve (`tm:ref`, placeholders) is refused here.
+    vreEffectsToHandlers(thingModelToThingDescription(asThingModel(td), name));
   } catch (cause) {
     errors.push(cause instanceof Error ? cause.message : String(cause));
   }
@@ -412,8 +416,8 @@ export async function writeDraft(draft: ThingDraft): Promise<string> {
 
   try {
     await Bun.write(
-      join(staging, `${draft.name}.td.json`),
-      `${JSON.stringify(draft.td, null, 4)}\n`
+      join(staging, thingModelFileName(draft.name)),
+      `${JSON.stringify(asThingModel(draft.td), null, 4)}\n`
     );
     await Bun.write(
       join(staging, 'state.json'),

@@ -28,10 +28,10 @@ jobs:
     - name: Type-check
       run: bun run build
 
-    - name: Validate JSON files (Thing Descriptions, state)
+    - name: Validate JSON files (Thing Models, state)
       run: |
         echo "Validating JSON files..."
-        FILES="$(find src/things -name '*.td.json' -o -name 'state.json') tsconfig.json package.json"
+        FILES="$(find src/things -name '*.tm.json' -o -name 'state.json') tsconfig.json package.json"
         for f in $FILES; do
           FILE="$f" bun -e "await Bun.file(process.env.FILE).json(); console.log('✓ Valid JSON:', process.env.FILE)" || {
             echo "✗ Invalid JSON: $f"; exit 1;
