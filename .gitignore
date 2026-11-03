@@ -10,3 +10,6 @@ frontend/dist/
 
 # Editor settings are personal
 .vscode/
+
+# Python bytecode
+__pycache__/

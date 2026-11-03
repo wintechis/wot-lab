@@ -21,6 +21,8 @@ A Thing needs only its Thing Model and state; behavior can come from `lab:effect
 - [Configuration](#configuration)
 - [Creating Things](#creating-things)
 - [API Reference](#api-reference)
+- [Environments](#environments)
+  - [Running an agent](#running-an-agent)
 - [Security](#security)
 - [Examples](#examples)
 
@@ -388,6 +390,52 @@ succeeds step by step and reaches the goal, with no shorter prefix (or, for two-
 three-step plans outside `ibm-building3`, single step) doing so; that a DL4 distractor
 plan misses the goal; and that DL0/DL5 goals hold initially, with a DL5 naive attempt
 changing nothing. It exits non-zero if any task fails.
+
+### Running an agent
+
+`tools/run_agent.py` runs an agent against one environment's tasks and scores every
+attempt. Per task it resets the lab to the task's initial state and gives the agent the
+natural-language request and the running Things, never the goal. The attempt is the
+sequence of Action invocations; fetching TDs and reading Properties are free. It succeeds
+iff the final state satisfies every goal predicate, and its efficiency is ℓ/|ρ| (DL0 and
+DL5 tasks are won by invoking nothing).
+
+```bash
+bun src/main.ts --env smart-home &
+python3 tools/run_agent.py smart-home --agent oracle     # replays the optimal plans: 100% success, efficiency 1
+python3 tools/run_agent.py smart-home --agent noop       # invokes nothing: the floor
+
+pip install -r tools/requirements.txt                    # the Anthropic SDK, for the claude agent only
+export ANTHROPIC_API_KEY=...                             # or `ant auth login`
+python3 tools/run_agent.py smart-home --agent claude --attempts 3 --tasks sh-1,sh-5
+```
+
+The `claude` agent is a tool-use loop with generic WoT tools only: list the Things, fetch
+a TD, read a Property, invoke an Action with JSON input, and `finish` (with an optional
+note, e.g. that the request is unreachable). `--model`, `--effort` and `--max-steps`
+(model turns per attempt) tune it. Each attempt becomes one JSON record in `results/`
+(format in [`results/README.md`](results/README.md)), and the run ends with a table per
+level: success rate, mean efficiency, mean fraction of goal predicates satisfied, mean
+invocations and, with `--attempts` of 2 or more, pass^k.
+
+To evaluate another agent, write a class with one method and register it in `AGENTS`.
+The agent reaches the environment only through `things`, which logs every invocation:
+
+```python
+class MyAgent:
+    name, model = "mine", "my-model-v1"
+
+    def attempt(self, task: Task, things: Things) -> Report:
+        # task.id, task.request; things.list(), things.td(id), things.read(id, prop)
+        for thing in things.list("lamp"):
+            things.invoke(thing["id"], "switchOn")   # input=... for an Action that takes one
+        return Report(note="switched the lamps on")
+
+AGENTS["mine"] = lambda args, tasks: MyAgent()
+```
+
+`tools/test_run_agent.py` exercises the harness offline (no lab, no API key), with a
+scripted stand-in for the Messages API.
 
 ## Examples
 
