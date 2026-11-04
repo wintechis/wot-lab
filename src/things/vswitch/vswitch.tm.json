@@ -1,0 +1,28 @@
+{
+    "@context": [
+        "https://www.w3.org/2019/wot/td/v1",
+        "https://www.w3.org/2022/wot/td/v1.1"
+    ],
+    "@type": "tm:ThingModel",
+    "title": "Virtual Switch",
+    "description": "A minimal demo Thing defined with no logic.js \u2014 its behavior comes entirely from the Thing Description's lab:effects annotations and state.json.",
+    "properties": {
+        "level": {
+            "title": "Level",
+            "type": "number",
+            "description": "The switch's current level; observable, so it streams updates live.",
+            "observable": true,
+            "readOnly": true
+        }
+    },
+    "actions": {
+        "setLevel": {
+            "title": "Set Level",
+            "description": "Set the level to the provided value.",
+            "input": {
+                "type": "number"
+            },
+            "lab:effects": "level' = input;"
+        }
+    }
+}

@@ -1,0 +1,3 @@
+# Only the claude agent of tools/run_agent.py needs a package; everything else
+# in tools/ is standard library.
+anthropic>=2.4

@@ -6,12 +6,12 @@ WoT-Lab is a benchmark for service-consuming agents, and the framework that runs
 
 A Thing is a folder of convention-named files:
 
-- **Thing Description** (`.td.json`) - Properties, Actions and Events in W3C WoT format, each Action's effect declared inline. **Required.**
+- **Thing Model** (`.tm.json`) - a W3C WoT [Thing Model](https://www.w3.org/TR/wot-thing-description11/#thing-model) (`"@type": "tm:ThingModel"`): Properties, Actions and Events, each Action's effect declared inline. Instance-specific parts (`id`, `forms`, `security`, `base`) are left out; WoT-Lab fills them in when it serves the instance's Thing Description. **Required.**
 - **State** (`state.json`) - initial Property values. **Required.**
 - **Effects** (`lab:effects` on an Action) - the declarative effect specification, written in VRE. **Optional.**
 - **Logic** (`logic.js`) - imperative behavior, for the little that a declarative effect cannot express. **Optional.**
 
-A Thing needs only its Thing Description and state; behavior can come from `lab:effects` specifications, `logic.js`, or both. With neither, Property handlers are generated from the Thing Description - reads for every Property, writes for the ones it does not mark `readOnly` - so the Thing is usable without any code. See [Creating Things](#creating-things) for detailed examples.
+A Thing needs only its Thing Model and state; behavior can come from `lab:effects` specifications, `logic.js`, or both. With neither, Property handlers are generated from the Thing Model - reads for every Property, writes for the ones it does not mark `readOnly` - so the Thing is usable without any code. See [Creating Things](#creating-things) for detailed examples.
 
 ## Table of Contents
 
@@ -21,6 +21,8 @@ A Thing needs only its Thing Description and state; behavior can come from `lab:
 - [Configuration](#configuration)
 - [Creating Things](#creating-things)
 - [API Reference](#api-reference)
+- [Environments](#environments)
+  - [Running an agent](#running-an-agent)
 - [Security](#security)
 - [Examples](#examples)
 
@@ -102,11 +104,11 @@ writes exactly the files described below, so you can add them via the dashboard 
 
 A Thing Model directory contains:
 
-1. **Thing Description** (TD) - JSON file describing capabilities. With `lab:effects`, describing the Thing's behavior. **Required.**
+1. **Thing Model** (TM) - a W3C WoT Thing Model describing capabilities. With `lab:effects`, describing the Thing's behavior. **Required.**
 2. **State** - JSON object defining initial properties. **Required.**
 3. **Logic** - JavaScript code defining behavior. **Optional.**
 
-Provide behavior with `logic.js`, `lab:effects` annotations, or both. With neither, WoT-Lab generates property handlers from the TD: a read handler for every property, and a write handler for each one not marked `readOnly`, so a writable property can actually be set. The Thing's state is readable, writable and observable without a line of code.
+Provide behavior with `logic.js`, `lab:effects` annotations, or both. With neither, WoT-Lab generates property handlers from the TM: a read handler for every property, and a write handler for each one not marked `readOnly`, so a writable property can actually be set. The Thing's state is readable, writable and observable without a line of code.
 
 ### Folder Structure
 
@@ -114,21 +116,28 @@ To add a new Thing called `mydevice`:
 
 ```
 src/things/mydevice/
-├── mydevice.td.json    # Thing Description   (required)
+├── mydevice.tm.json    # Thing Model         (required)
 ├── state.json          # Initial state       (required)
 └── logic.js            # Imperative behavior  (optional)
 ```
 
 ### File Templates
 
-#### 1. Thing Description (`mydevice.td.json`)
+#### 1. Thing Model (`mydevice.tm.json`)
 
-WoT Thing Description in JSON format following W3C standards:
+A W3C WoT Thing Model (TD 1.1): typed `tm:ThingModel`, with the TD 1.1 context that
+defines the `tm:` prefix, and without `id`, `forms`, `security` or `base`. When an
+instance is brought online, WoT-Lab instantiates it as a Thing Description: it removes
+`tm:ThingModel` from `@type` and adds the instance's `id`, title, links and forms.
+Model composition (`tm:ref`, `tm:extends`) and `{{placeholders}}` are not supported.
 
 ```json
 {
-  "@context": "https://www.w3.org/2019/wot/td/v1",
-  "@type": "Thing",
+  "@context": [
+    "https://www.w3.org/2019/wot/td/v1",
+    "https://www.w3.org/2022/wot/td/v1.1"
+  ],
+  "@type": "tm:ThingModel",
   "title": "My Device",
   "description": "A sample IoT device",
   "properties": {
@@ -325,7 +334,7 @@ curl -X POST localhost:8081/_lab/state  -d '{"id":"bank-alice","values":{"balanc
 ```
 
 Six environments make up the benchmark - **76 tasks across seven difficulty
-levels** (L0-L5 and S) - each built from Thing Models under `src/things/` with
+levels** (DL0-DL5 and S) - each built from Thing Models under `src/things/` with
 `lab:effects` alone: no Thing they use has a `logic.js`, so every Action executes
 the effect specification in its TD:
 
@@ -378,9 +387,55 @@ python3 tools/verify_tasks.py <env>
 It checks that each goal predicate, initial-state value and plan step resolves against
 the served Thing Descriptions; that reading has no side effects; that the optimal plan
 succeeds step by step and reaches the goal, with no shorter prefix (or, for two- and
-three-step plans outside `ibm-building3`, single step) doing so; that an L4 distractor
-plan misses the goal; and that L0/L5 goals hold initially, with an L5 naive attempt
+three-step plans outside `ibm-building3`, single step) doing so; that a DL4 distractor
+plan misses the goal; and that DL0/DL5 goals hold initially, with a DL5 naive attempt
 changing nothing. It exits non-zero if any task fails.
+
+### Running an agent
+
+`tools/run_agent.py` runs an agent against one environment's tasks and scores every
+attempt. Per task it resets the lab to the task's initial state and gives the agent the
+natural-language request and the running Things, never the goal. The attempt is the
+sequence of Action invocations; fetching TDs and reading Properties are free. It succeeds
+iff the final state satisfies every goal predicate, and its efficiency is ℓ/|ρ| (DL0 and
+DL5 tasks are won by invoking nothing).
+
+```bash
+bun src/main.ts --env smart-home &
+python3 tools/run_agent.py smart-home --agent oracle     # replays the optimal plans: 100% success, efficiency 1
+python3 tools/run_agent.py smart-home --agent noop       # invokes nothing: the floor
+
+pip install -r tools/requirements.txt                    # the Anthropic SDK, for the claude agent only
+export ANTHROPIC_API_KEY=...                             # or `ant auth login`
+python3 tools/run_agent.py smart-home --agent claude --attempts 3 --tasks sh-1,sh-5
+```
+
+The `claude` agent is a tool-use loop with generic WoT tools only: list the Things, fetch
+a TD, read a Property, invoke an Action with JSON input, and `finish` (with an optional
+note, e.g. that the request is unreachable). `--model`, `--effort` and `--max-steps`
+(model turns per attempt) tune it. Each attempt becomes one JSON record in `results/`
+(format in [`results/README.md`](results/README.md)), and the run ends with a table per
+level: success rate, mean efficiency, mean fraction of goal predicates satisfied, mean
+invocations and, with `--attempts` of 2 or more, pass^k.
+
+To evaluate another agent, write a class with one method and register it in `AGENTS`.
+The agent reaches the environment only through `things`, which logs every invocation:
+
+```python
+class MyAgent:
+    name, model = "mine", "my-model-v1"
+
+    def attempt(self, task: Task, things: Things) -> Report:
+        # task.id, task.request; things.list(), things.td(id), things.read(id, prop)
+        for thing in things.list("lamp"):
+            things.invoke(thing["id"], "switchOn")   # input=... for an Action that takes one
+        return Report(note="switched the lamps on")
+
+AGENTS["mine"] = lambda args, tasks: MyAgent()
+```
+
+`tools/test_run_agent.py` exercises the harness offline (no lab, no API key), with a
+scripted stand-in for the Messages API.
 
 ## Examples
 
@@ -436,7 +491,7 @@ WoT-Lab is a development tool, and it is built to be run on a machine you trust,
   are refused the same way, so an agent on another machine cannot read the answers.
   `WOT_LAB_ALLOW_REMOTE_WRITE=1` lifts both for a deliberately shared lab; set it only on a
   network where everyone who can reach the port may write Thing Models to the models directory,
-  start and stop Things, and overwrite their state. The API writes a Thing Description and a
+  start and stop Things, and overwrite their state. The API writes a Thing Model and a
   `state.json`, never a `logic.js`.
 
 To report a vulnerability, see [`SECURITY.md`](SECURITY.md).

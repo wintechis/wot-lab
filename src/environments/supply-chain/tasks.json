@@ -2,7 +2,7 @@
   {
     "id": "sc-0",
     "environment": "supply-chain",
-    "level": "L0",
+    "level": "DL0",
     "initialState": {},
     "request": "Make sure Warehouse C is below 50 % utilisation.",
     "goal": [
@@ -30,7 +30,7 @@
   {
     "id": "sc-1",
     "environment": "supply-chain",
-    "level": "L1",
+    "level": "DL1",
     "initialState": {},
     "request": "Bring Warehouse C's stock to 1,500 units.",
     "goal": [
@@ -54,7 +54,7 @@
   {
     "id": "sc-2",
     "environment": "supply-chain",
-    "level": "L3",
+    "level": "DL3",
     "initialState": {},
     "request": "Move 500 units from Warehouse A to Warehouse B.",
     "goal": [
@@ -91,7 +91,7 @@
   {
     "id": "sc-3",
     "environment": "supply-chain",
-    "level": "L4",
+    "level": "DL4",
     "initialState": {},
     "request": "Warehouse C needs 2,000 units, but no money may be spent this month.",
     "goal": [
@@ -137,7 +137,7 @@
   {
     "id": "sc-4",
     "environment": "supply-chain",
-    "level": "L4",
+    "level": "DL4",
     "initialState": {},
     "request": "Raise total stock to 5,500 units with no warehouse above 60 % utilisation.",
     "goal": [
@@ -201,7 +201,7 @@
   {
     "id": "sc-5",
     "environment": "supply-chain",
-    "level": "L5",
+    "level": "DL5",
     "initialState": {},
     "request": "Bring Warehouse C to 4,000 units.",
     "note": "Unreachable: warehouse-c.capacity is 3000; orderStock and transferStock both leave stock unchanged when it would exceed capacity (success false).",
@@ -239,7 +239,7 @@
   {
     "id": "sc-6",
     "environment": "supply-chain",
-    "level": "L4",
+    "level": "DL4",
     "initialState": {},
     "request": "Get 800 more units into Warehouse C, but the remaining budget must stay above $60,000.",
     "goal": [
@@ -279,7 +279,7 @@
   {
     "id": "sc-7",
     "environment": "supply-chain",
-    "level": "L3",
+    "level": "DL3",
     "initialState": {},
     "request": "Order 300 units for each warehouse, then move 200 units from Warehouse B to Warehouse A.",
     "goal": [
@@ -349,7 +349,7 @@
   {
     "id": "sc-8",
     "environment": "supply-chain",
-    "level": "L5",
+    "level": "DL5",
     "initialState": {},
     "request": "Bring every warehouse to exactly 50 % utilisation without spending anything.",
     "note": "Unreachable: the targets (1500, 2000, 1500) sum to 5000 against warehouse-system.totalCurrentStock 4500; transferStock conserves the total and orderStock is the only Action that raises it, and it writes company-budget.monthlySpent every time. Every attempt changes state, so no naiveAttempt.",
@@ -384,7 +384,7 @@
   {
     "id": "sc-9",
     "environment": "supply-chain",
-    "level": "L4",
+    "level": "DL4",
     "initialState": {},
     "request": "Get Warehouse C to 2,700 units and Warehouse B to 2,600, spending at most $40,000.",
     "goal": [
@@ -450,7 +450,7 @@
   {
     "id": "sc-10",
     "environment": "supply-chain",
-    "level": "L4",
+    "level": "DL4",
     "initialState": {},
     "request": "Warehouse A should hold 1,000 units, Warehouse B 2,300 and Warehouse C 1,600, spending at most $20,000.",
     "goal": [
@@ -522,7 +522,7 @@
   {
     "id": "sc-11",
     "environment": "supply-chain",
-    "level": "L0",
+    "level": "DL0",
     "initialState": {
       "warehouse-c": {
         "currentStock": 2000,
@@ -558,7 +558,7 @@
   {
     "id": "sc-12",
     "environment": "supply-chain",
-    "level": "L4",
+    "level": "DL4",
     "initialState": {
       "warehouse-a": {
         "currentStock": 300,
@@ -619,7 +619,7 @@
   {
     "id": "sc-13",
     "environment": "supply-chain",
-    "level": "L3",
+    "level": "DL3",
     "initialState": {},
     "request": "Order 400 units for Warehouse B.",
     "goal": [
@@ -649,7 +649,7 @@
   {
     "id": "sc-14",
     "environment": "supply-chain",
-    "level": "L2",
+    "level": "DL2",
     "initialState": {},
     "request": "Order 200 units each for Warehouse A and Warehouse C.",
     "goal": [
@@ -692,7 +692,7 @@
   {
     "id": "sc-15",
     "environment": "supply-chain",
-    "level": "L2",
+    "level": "DL2",
     "initialState": {},
     "request": "Order 100 more units each for Warehouse A and Warehouse B.",
     "goal": [

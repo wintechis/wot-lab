@@ -2,7 +2,7 @@
   {
     "id": "ec-0",
     "environment": "e-commerce",
-    "level": "L0",
+    "level": "DL0",
     "initialState": {},
     "request": "Make sure Alice's cart is empty.",
     "goal": [
@@ -30,7 +30,7 @@
   {
     "id": "ec-1",
     "environment": "e-commerce",
-    "level": "L1",
+    "level": "DL1",
     "initialState": {},
     "request": "Put Small Item 1 in Alice's cart.",
     "goal": [
@@ -66,7 +66,7 @@
   {
     "id": "ec-2",
     "environment": "e-commerce",
-    "level": "L2",
+    "level": "DL2",
     "initialState": {},
     "request": "Alice wants three small items in her cart.",
     "goal": [
@@ -116,7 +116,7 @@
   {
     "id": "ec-3",
     "environment": "e-commerce",
-    "level": "L3",
+    "level": "DL3",
     "initialState": {},
     "request": "Alice wants to upgrade her coffee setup: order the espresso grinder and a bag of coffee beans for her, paid from her bank account.",
     "goal": [
@@ -178,7 +178,7 @@
   {
     "id": "ec-4",
     "environment": "e-commerce",
-    "level": "L3",
+    "level": "DL3",
     "initialState": {},
     "request": "Send Bob $100 from Alice's account.",
     "goal": [
@@ -215,7 +215,7 @@
   {
     "id": "ec-5",
     "environment": "e-commerce",
-    "level": "L1",
+    "level": "DL1",
     "initialState": {},
     "request": "Take $5 out of Alice's account.",
     "goal": [
@@ -245,7 +245,7 @@
   {
     "id": "ec-6",
     "environment": "e-commerce",
-    "level": "L5",
+    "level": "DL5",
     "initialState": {},
     "request": "Put the espresso grinder on sale for $100.",
     "note": "Unreachable: cart.availableProducts is readOnly and no Action of any Thing writes it (the cart's Actions are addItem, removeItem, checkout). No Action to attempt, so no naiveAttempt.",
@@ -441,7 +441,7 @@
   {
     "id": "ec-7",
     "environment": "e-commerce",
-    "level": "L3",
+    "level": "DL3",
     "initialState": {},
     "request": "Send Charlie $200 from Bob's account; Bob has agreed to go into overdraft for it.",
     "note": "Feasible in this environment: the bank-account TD declares no minimum balance and transfer is unguarded, so Bob's balance goes to -100.",
@@ -479,7 +479,7 @@
   {
     "id": "ec-8",
     "environment": "e-commerce",
-    "level": "L4",
+    "level": "DL4",
     "initialState": {},
     "request": "Bob wants the espresso grinder and the coffee beans, paid from his own account, but his account must not go below zero; Alice covers the difference.",
     "goal": [
@@ -572,7 +572,7 @@
   {
     "id": "ec-9",
     "environment": "e-commerce",
-    "level": "L3",
+    "level": "DL3",
     "initialState": {},
     "request": "Charlie wants to gift Alice the espresso grinder and the coffee beans, and he pays for it: Alice's own balance must not change.",
     "goal": [
@@ -634,7 +634,7 @@
   {
     "id": "ec-10",
     "environment": "e-commerce",
-    "level": "L3",
+    "level": "DL3",
     "initialState": {},
     "request": "Alice buys Small Items 1 through 5, and then sends Bob $50.",
     "goal": [
@@ -725,7 +725,7 @@
   {
     "id": "ec-11",
     "environment": "e-commerce",
-    "level": "L3",
+    "level": "DL3",
     "initialState": {
       "cart": {
         "items": [
@@ -769,7 +769,7 @@
   {
     "id": "ec-12",
     "environment": "e-commerce",
-    "level": "L2",
+    "level": "DL2",
     "initialState": {},
     "request": "Deposit $50 into Alice's account and $25 into Bob's.",
     "goal": [
@@ -812,7 +812,7 @@
   {
     "id": "ec-13",
     "environment": "e-commerce",
-    "level": "L5",
+    "level": "DL5",
     "initialState": {},
     "request": "Change Bob's account number to bob-2.",
     "note": "Unreachable: bank-account.accountNumber is readOnly and no Action writes it (deposit, withdraw and transfer touch balance only). No Action to attempt, so no naiveAttempt.",

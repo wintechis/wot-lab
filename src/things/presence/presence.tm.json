@@ -1,0 +1,63 @@
+{
+  "@context": ["https://www.w3.org/2019/wot/td/v1", "https://www.w3.org/2022/wot/td/v1.1"],
+  "@type": ["Thing", "tm:ThingModel"],
+  "title": "Presence Sensor",
+  "description": "A presence sensor reporting whether a space is occupied, with a running count of detections.",
+  "properties": {
+    "isPresent": {
+      "type": "boolean",
+      "description": "Whether presence is currently detected in the monitored space.",
+      "observable": true,
+      "readOnly": true
+    },
+    "lastDetection": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp of the most recent presence change.",
+      "observable": true,
+      "readOnly": true
+    },
+    "detectionCount": {
+      "type": "integer",
+      "description": "Total presence detections since startup.",
+      "minimum": 0,
+      "observable": true,
+      "readOnly": true
+    }
+  },
+  "events": {
+    "presence": {
+      "title": "Presence Detected",
+      "description": "Fires when presence is detected, carrying the running detection count.",
+      "data": {
+        "type": "object",
+        "properties": {
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "count": {
+            "type": "integer"
+          }
+        }
+      }
+    },
+    "absence": {
+      "title": "Absence Detected", 
+      "description": "Fires when the space becomes empty, carrying how long presence lasted.",
+      "data": {
+        "type": "object",
+        "properties": {
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "duration": {
+            "type": "number",
+            "description": "Duration of presence in seconds"
+          }
+        }
+      }
+    }
+  }
+}

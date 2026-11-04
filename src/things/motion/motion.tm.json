@@ -1,0 +1,63 @@
+{
+  "@context": ["https://www.w3.org/2019/wot/td/v1", "https://www.w3.org/2022/wot/td/v1.1"],
+  "@type": ["Thing", "tm:ThingModel"],
+  "title": "Motion Sensor",
+  "description": "A motion sensor reporting detection status and activity level, emitting events as motion starts and stops.",
+  "properties": {
+    "motionDetected": {
+      "type": "boolean",
+      "description": "Whether motion is currently being detected.",
+      "observable": true,
+      "readOnly": true
+    },
+    "lastMotion": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp of the most recently detected motion.",
+      "observable": true,
+      "readOnly": true
+    },
+    "activityLevel": {
+      "type": "number",
+      "description": "Detected activity intensity, 0–100 percent.",
+      "minimum": 0,
+      "maximum": 100,
+      "unit": "percent",
+      "observable": true,
+      "readOnly": true
+    }
+  },
+  "events": {
+    "motion": {
+      "description": "Fires when motion begins, carrying the activity level and timestamp.",
+      "data": {
+        "type": "object",
+        "properties": {
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "activityLevel": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "noMotion": {
+      "description": "Fires when motion ends, carrying how long the motion period lasted.",
+      "data": {
+        "type": "object",
+        "properties": {
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "durationMs": {
+            "type": "number",
+            "description": "Duration of the motion period in milliseconds"
+          }
+        }
+      }
+    }
+  }
+}

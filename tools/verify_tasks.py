@@ -13,8 +13,8 @@ A task file is a set of claims about an environment. Per task this asserts:
      has a `success` field, with success true — and the final state satisfies
      the goal;
   d. no proper prefix of `optimalPlan` already satisfies the goal;
-  e. L4: `distractorPlan` ends in a state that violates at least one predicate;
-  f. L0/L5: the initial state satisfies the goal; L5 with a `naiveAttempt`: the
+  e. DL4: `distractorPlan` ends in a state that violates at least one predicate;
+  f. DL0/DL5: the initial state satisfies the goal; DL5 with a `naiveAttempt`: the
      attempt changes no Property value.
 
 For a plan of two or three steps it also tries each step on its own from the
@@ -38,13 +38,9 @@ longer has, or a value of the wrong shape, and still pass.
 from __future__ import annotations
 
 import argparse
-import json
-import os
-import time
 import urllib.error
-import urllib.request
 
-REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+from lab import Lab, failing, load_tasks, request, wait_for_environment
 
 # Environments too large to snapshot whole; the side-effect check reads the
 # Things the task names instead of all of them.
@@ -54,93 +50,8 @@ NUMERIC = {"number", "integer"}
 ORDER_OPS = {"<", "<=", ">", ">="}
 ARRAY_OPS = {"length", "contains"}
 
-# How long to wait for `--env` to finish bringing its Things online.
-STARTUP_SECONDS = 120
 
-
-# -- HTTP -------------------------------------------------------------------
-
-
-def request(url: str, body=..., method: str = "POST"):
-    data = None if body is ... else json.dumps(body).encode()
-    headers = {} if data is None else {"Content-Type": "application/json"}
-    req = urllib.request.Request(url, data=data, headers=headers, method=method)
-    with urllib.request.urlopen(req, timeout=30) as response:
-        raw = response.read()
-    return json.loads(raw) if raw else None
-
-
-def get(url: str):
-    return request(url, method="GET")
-
-
-class Lab:
-    def __init__(self, base: str):
-        self.base = base
-        self.tds: dict[str, dict] = {}
-
-    def td(self, thing: str) -> dict:
-        if thing not in self.tds:
-            self.tds[thing] = get(f"{self.base}/{thing}")
-        return self.tds[thing]
-
-    def things(self) -> list[str]:
-        return [t["id"] for t in get(f"{self.base}/_lab/things")["things"]]
-
-    def properties(self, thing: str) -> dict:
-        return get(f"{self.base}/{thing}/properties")
-
-    def read(self, thing: str, prop: str):
-        return get(f"{self.base}/{thing}/properties/{prop}")
-
-    def invoke(self, step: dict):
-        payload = step.get("input")
-        return request(
-            f"{self.base}/{step['thing']}/actions/{step['action']}",
-            ... if payload == {} else payload,
-        )
-
-    def reset(self, task: dict) -> None:
-        request(f"{self.base}/_lab/reset", {})
-        for thing, values in (task.get("initialState") or {}).items():
-            request(f"{self.base}/_lab/state", {"id": thing, "values": values})
-
-    def snapshot(self, things: list[str]) -> dict:
-        return {thing: self.properties(thing) for thing in things}
-
-
-# -- predicates ---------------------------------------------------------------
-
-
-def satisfied(actual, goal) -> bool:
-    op, expected = goal["op"], goal["value"]
-    if op == "=":
-        return actual == expected
-    if op == "!=":
-        return actual != expected
-    if op == "<":
-        return actual < expected
-    if op == "<=":
-        return actual <= expected
-    if op == ">":
-        return actual > expected
-    if op == ">=":
-        return actual >= expected
-    if op == "length":
-        return len(actual) == expected
-    if op == "contains":
-        return expected in actual
-    raise SystemExit(f"unknown goal operator '{op}'")
-
-
-def failing(lab: Lab, task: dict) -> list[str]:
-    """The predicates that do not hold now, described."""
-    out = []
-    for goal in task["goal"]:
-        actual = lab.read(goal["thing"], goal["property"])
-        if not satisfied(actual, goal):
-            out.append(f"{goal['thing']}.{goal['property']}={actual!r} not {goal['op']} {goal['value']!r}")
-    return out
+# -- schema checks ------------------------------------------------------------
 
 
 def fits(value, schema: dict) -> bool:
@@ -221,7 +132,7 @@ def run_plan(lab: Lab, task: dict, plan: list[dict], strict: bool) -> str | None
     """Run `plan`; with `strict`, fail on an error, success false, or an early goal."""
     for index, step in enumerate(plan):
         try:
-            output = lab.invoke(step)
+            output = lab.invoke(step["thing"], step["action"], step.get("input"))
         except urllib.error.HTTPError as error:
             if strict:
                 return f"step {index} {step['thing']}.{step['action']} -> HTTP {error.code}"
@@ -255,16 +166,16 @@ def verify(lab: Lab, task: dict, scope: list[str]) -> list[str]:
     initially_failing = failing(lab, task)
 
     if not plan:
-        # (f) L0 / L5: the goal is the state as it stands
+        # (f) DL0 / DL5: the goal is the state as it stands
         if initially_failing:
             problems.append("empty plan but the goal does not hold initially: " + "; ".join(initially_failing))
-        if task.get("level") == "L5" and task.get("naiveAttempt"):
+        if task.get("level") == "DL5" and task.get("naiveAttempt"):
             before = lab.snapshot(scope)
             run_plan(lab, task, task["naiveAttempt"], strict=False)
             if lab.snapshot(scope) != before:
                 problems.append("naiveAttempt changed a Property value")
-        if task.get("level") == "L5" and "note" not in task:
-            problems.append("L5 without a note saying what makes the request unreachable")
+        if task.get("level") == "DL5" and "note" not in task:
+            problems.append("DL5 without a note saying what makes the request unreachable")
         return problems
 
     if not initially_failing:
@@ -290,10 +201,10 @@ def verify(lab: Lab, task: dict, scope: list[str]) -> list[str]:
                 break
 
     # (e) the tempting wrong run really is wrong
-    if task.get("level") == "L4":
+    if task.get("level") == "DL4":
         distractor = task.get("distractorPlan")
         if not distractor:
-            problems.append("L4 without a distractorPlan")
+            problems.append("DL4 without a distractorPlan")
         else:
             lab.reset(task)
             run_plan(lab, task, distractor, strict=False)
@@ -305,22 +216,8 @@ def verify(lab: Lab, task: dict, scope: list[str]) -> list[str]:
 
 def run(base: str, env: str) -> int:
     lab = Lab(base)
-    # The server answers before `--env` has finished; until then `current` is unset.
-    deadline = time.monotonic() + STARTUP_SECONDS
-    while True:
-        try:
-            current = get(f"{base}/_lab/environments").get("current")
-        except (urllib.error.URLError, ConnectionError):
-            current = None
-        if current is not None or time.monotonic() > deadline:
-            break
-        time.sleep(0.5)
-    if current != env:
-        raise SystemExit(f"the lab at {base} is running '{current or 'no environment'}', not '{env}'")
-
-    path = os.path.join(REPO, "src", "environments", env, "tasks.json")
-    with open(path, encoding="utf-8") as handle:
-        tasks = json.load(handle)
+    wait_for_environment(base, env)
+    tasks = load_tasks(env)
     everything = lab.things()
 
     bad = 0

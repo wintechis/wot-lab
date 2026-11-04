@@ -2,7 +2,7 @@
   {
     "id": "s1",
     "environment": "mosaik",
-    "level": "L2",
+    "level": "DL2",
     "initialState": {},
     "request": "Move transporter t1 to position (1, 1).",
     "goal": [
@@ -35,7 +35,7 @@
   {
     "id": "s2",
     "environment": "mosaik",
-    "level": "L5",
+    "level": "DL5",
     "initialState": {},
     "request": "Move transporters t1 and t2 to position (1, 1).",
     "note": "Infeasible: mosaik.trig describes one transporter, so there is no 't2' to move. The goal is t1 left where it started.",
@@ -58,7 +58,7 @@
   {
     "id": "s3",
     "environment": "mosaik",
-    "level": "L3",
+    "level": "DL3",
     "initialState": {},
     "request": "Bring the ingot to the solder2 station and put it down there.",
     "goal": [
@@ -462,7 +462,7 @@
   {
     "id": "s4",
     "environment": "mosaik",
-    "level": "L3",
+    "level": "DL3",
     "initialState": {},
     "request": "Bring the cpu to the solder1 station and the glass to the casting station, and put each down there.",
     "goal": [
@@ -908,7 +908,7 @@
   {
     "id": "s5",
     "environment": "mosaik",
-    "level": "L3",
+    "level": "DL3",
     "initialState": {},
     "request": "Produce the main module at the solder1 station.",
     "goal": [
@@ -1490,7 +1490,7 @@
   {
     "id": "s6",
     "environment": "mosaik",
-    "level": "L3",
+    "level": "DL3",
     "initialState": {},
     "request": "Produce the smartphone.",
     "goal": [

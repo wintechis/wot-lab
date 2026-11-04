@@ -7,6 +7,7 @@ import { readdir } from 'fs/promises';
 import { createLoggers } from '../utils/debug.js';
 import { vreEffectsToHandlers } from './vre.js';
 import { resolveRef, resolveThing } from './crossThing.js';
+import { thingModelFileName, thingModelToThingDescription } from './thingModel.js';
 
 const { debug, warn } = createLoggers('things');
 
@@ -50,7 +51,7 @@ export function modelRoots(): string[] {
 /** The directory a Thing Model lives in, or null when no root holds it. */
 export async function resolveModelDirectory(name: string): Promise<string | null> {
   for (const root of modelRoots()) {
-    if (await Bun.file(join(root, name, `${name}.td.json`)).exists()) {
+    if (await Bun.file(join(root, name, thingModelFileName(name))).exists()) {
       return join(root, name);
     }
   }
@@ -207,10 +208,13 @@ export async function loadThing(
       throw new Error(`Unknown Thing Model '${modelName}'`);
     }
 
-    // Read the Thing Description natively via Bun.file
-    const td: WoT.ThingDescription = await Bun.file(
-      join(basePath, `${modelName}.td.json`)
-    ).json();
+    // The file on disk is a Thing Model; what an instance serves is a Thing
+    // Description. Instantiation drops the `tm:ThingModel` type (and any other
+    // TM-only term) here, before anything else sees the document.
+    const td = thingModelToThingDescription(
+      await Bun.file(join(basePath, thingModelFileName(modelName))).json(),
+      modelName
+    );
 
     // Load TD, state, and behavior (logic.js and/or `lab:effects`)
     const [loadedState, logicFunction] = await Promise.all([
@@ -254,8 +258,8 @@ export async function loadThing(
 }
 
 /**
- * A Thing Model on disk: the Thing Description and state a Thing is made from,
- * before any instance of it exists.
+ * A Thing Model on disk: the W3C WoT Thing Model (`<name>.tm.json`) and state a
+ * Thing is made from, before any instance of it exists.
  */
 export interface ThingModelInfo {
   name: string;
@@ -269,7 +273,7 @@ export interface ThingModelInfo {
 /**
  * Read one Thing Model's descriptor, or null when the directory is not one.
  *
- * A directory is a Thing Model exactly when it holds `<name>.td.json`; anything
+ * A directory is a Thing Model exactly when it holds `<name>.tm.json`; anything
  * else in `src/things/` (the loader modules, for instance) is simply not a
  * model, so it is skipped rather than warned about.
  */
@@ -278,10 +282,10 @@ export async function readThingModel(name: string): Promise<ThingModelInfo | nul
   if (!basePath) {
     return null;
   }
-  const tdFile = Bun.file(join(basePath, `${name}.td.json`));
+  const tmFile = Bun.file(join(basePath, thingModelFileName(name)));
 
   try {
-    const td = (await tdFile.json()) as WoT.ThingDescription;
+    const td = (await tmFile.json()) as WoT.ThingDescription;
     return {
       name,
       title: td.title || name,
@@ -290,7 +294,7 @@ export async function readThingModel(name: string): Promise<ThingModelInfo | nul
       writable: basePath === join(authoringDirectory(), name)
     };
   } catch (cause) {
-    warn(`Skipping Thing Model '${name}': unreadable Thing Description`, cause);
+    warn(`Skipping Thing Model '${name}': unreadable Thing Model file`, cause);
     return null;
   }
 }
@@ -298,7 +302,7 @@ export async function readThingModel(name: string): Promise<ThingModelInfo | nul
 /**
  * The catalog: Thing Models present on disk.
  *
- * This reads Thing Descriptions and nothing else — no state, no logic, no
+ * This reads Thing Model files and nothing else — no state, no logic, no
  * `eval`, no exposure. Having a model and running a Thing from it are separate
  * acts, which is why adding a directory can no longer change what is live.
  */
