@@ -1,6 +1,10 @@
 {
   "name": "wot-lab",
+<<<<<<< HEAD
   "version": "0.3.0",
+=======
+  "version": "0.4.0",
+>>>>>>> 0133518 (release 0.4.0)
   "private": true,
   "description": "A Web of Things (WoT) development framework for rapid IoT device prototyping and testing",
   "main": "src/main.ts",
