@@ -47,8 +47,8 @@ function generateEffectCommand(effect) {
 }
 
 // Action handlers
-thing.setActionHandler("setColor", async (input) => {
-  const { R, G, B } = await input.value();
+thing.setActionHandler("setColor", (input) => {
+  const { R, G, B } = input;
   
   if (!validateRGB(R, G, B)) {
     throw new Error(`Invalid RGB values: R=${R}, G=${G}, B=${B}. Values must be integers 0-255.`);
@@ -84,8 +84,8 @@ thing.setActionHandler("setColor", async (input) => {
   };
 });
 
-thing.setActionHandler("setPower", async (input) => {
-  const { state: powerState } = await input.value();
+thing.setActionHandler("setPower", (input) => {
+  const { state: powerState } = input;
   
   if (typeof powerState !== 'boolean') {
     throw new Error(`Invalid power state: ${powerState}. Must be boolean.`);
@@ -121,8 +121,8 @@ thing.setActionHandler("setPower", async (input) => {
   };
 });
 
-thing.setActionHandler("setEffect", async (input) => {
-  const { effect } = await input.value();
+thing.setActionHandler("setEffect", (input) => {
+  const { effect } = input;
   
   if (!validateEffect(effect)) {
     throw new Error(`Invalid effect: ${effect}. Must be integer 128-156.`);
@@ -158,8 +158,8 @@ thing.setActionHandler("setEffect", async (input) => {
   };
 });
 
-thing.setActionHandler("setBrightness", async (input) => {
-  const { brightness } = await input.value();
+thing.setActionHandler("setBrightness", (input) => {
+  const { brightness } = input;
   
   if (!validateBrightness(brightness)) {
     throw new Error(`Invalid brightness: ${brightness}. Must be integer 0-100.`);

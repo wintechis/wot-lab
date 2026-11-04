@@ -297,7 +297,7 @@ function genRule(
   program.effects.forEach((effect) => assertNoPost(effect.rhs, action));
   const handles = collectHandles(program, ctx);
 
-  let body = '  const __input = await inputData.value();\n';
+  let body = '';
   const input = actions[action].input;
   const isObjectInput = Boolean(input?.type === 'object' && input.properties);
   for (const param of params) {
@@ -353,7 +353,7 @@ function genRule(
     body += '  return __out;\n';
   }
 
-  return `thing.setActionHandler(${j(action)}, async (inputData) => {\n${body}});\n`;
+  return `thing.setActionHandler(${j(action)}, (__input) => {\n${body}});\n`;
 }
 
 /**

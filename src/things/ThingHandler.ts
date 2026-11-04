@@ -109,6 +109,43 @@ async function loadStateFile(
   return replaceTimestamps(stateObject) as Record<string, unknown>;
 }
 
+/**
+ * The `thing` a logic file sees: an ExposedThing whose action and property-write
+ * handlers receive the plain input value instead of node-wot's
+ * `InteractionOutput`, so Thing code reads `(v) => ...` rather than
+ * `async (v) => ... await v.value()`. An action the TD declares without an
+ * `input` gets `undefined` - node-wot cannot decode a value without a schema.
+ * Handlers may be synchronous; node-wot awaits whatever they return.
+ */
+function withPlainHandlerValues(thing: WoT.ExposedThing): WoT.ExposedThing {
+  const wrapped: WoT.ExposedThing = new Proxy(thing, {
+    get(target, key) {
+      if (key === 'setActionHandler') {
+        return (name: string, handler: (value: unknown, options?: unknown) => unknown) => {
+          target.setActionHandler(name, async (input, options) => {
+            const hasInput = target.getThingDescription().actions?.[name]?.input !== undefined;
+            return (await handler(hasInput ? await input.value() : undefined, options)) as WoT.InteractionInput;
+          });
+          return wrapped;
+        };
+      }
+      if (key === 'setPropertyWriteHandler') {
+        return (name: string, handler: (value: unknown, options?: unknown) => unknown) => {
+          target.setPropertyWriteHandler(name, async (input, options) => {
+            await handler(await input.value(), options);
+          });
+          return wrapped;
+        };
+      }
+      // node-wot keeps its handler tables in private fields, so every other
+      // method has to run with the real ExposedThing as `this`.
+      const member = Reflect.get(target, key, target);
+      return typeof member === 'function' ? member.bind(target) : member;
+    }
+  });
+  return wrapped;
+}
+
 // Helper function to evaluate a logic file (function body)
 async function evaluateLogicFile(
   td: WoT.ThingDescription,
@@ -134,7 +171,7 @@ async function evaluateLogicFile(
     content = properties
       .map(([name, schema]) => {
         const key = JSON.stringify(name);
-        const read = `thing.setPropertyReadHandler(${key}, async () => state[${key}]);\n`;
+        const read = `thing.setPropertyReadHandler(${key}, () => state[${key}]);\n`;
         if (schema?.readOnly) {
           return read;
         }
@@ -145,7 +182,7 @@ async function evaluateLogicFile(
         // effect emits: so observers see it, not just the next reader.
         return (
           read +
-          `thing.setPropertyWriteHandler(${key}, async (value) => { state[${key}] = await value.value(); thing.emitPropertyChange(${key}); });\n`
+          `thing.setPropertyWriteHandler(${key}, (value) => { state[${key}] = value; thing.emitPropertyChange(${key}); });\n`
         );
       })
       .join('');
@@ -170,7 +207,7 @@ async function evaluateLogicFile(
 
   return (thing: WoT.ExposedThing, state: Record<string, unknown>) =>
     logicFunction(
-      thing,
+      withPlainHandlerValues(thing),
       state,
       http,
       url.URL,
