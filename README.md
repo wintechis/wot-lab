@@ -2,6 +2,8 @@
 
 > Reusable Web of Things environments and goal-directed tasks for evaluating service-consuming agents.
 
+The paper describing WoT-Lab, *WoT-Lab: Executable Service Descriptions for Benchmarking Language Model Agents*, has been accepted at [BenchSOC@ICSOC 2026](#citation). A [preprint (PDF)](https://derwehr.github.io/files/wehr2026wotlab.pdf) is available.
+
 WoT-Lab is a benchmark for service-consuming agents, and the framework that runs it. Every service is a W3C **Web of Things** *Thing* served over the standard WoT HTTP protocol; each **Action** in its **Thing Description** carries an executable *effect specification*, so the description an agent fetches is also what runs. Things, environments, and tasks are authored **as data, not code**.
 
 A Thing is a folder of convention-named files:
@@ -23,8 +25,10 @@ A Thing needs only its Thing Model and state; behavior can come from `lab:effect
 - [API Reference](#api-reference)
 - [Environments](#environments)
   - [Running an agent](#running-an-agent)
-- [Security](#security)
 - [Examples](#examples)
+- [Security](#security)
+- [Deployment](#deployment)
+- [Citation](#citation)
 
 ## Overview
 
@@ -534,4 +538,19 @@ Type=simple
 
 [Install]
 WantedBy=multi-user.target
+```
+
+## Citation
+
+If you use WoT-Lab, please cite our BenchSOC 2026 paper ([preprint](https://derwehr.github.io/files/wehr2026wotlab.pdf)):
+
+```bibtex
+@inproceedings{wehr2026wotlab,
+  title     = {{WoT-Lab}: Executable Service Descriptions for Benchmarking Language Model Agents},
+  author    = {Wehr, Thomas and Schmid, Sebastian and Harth, Andreas},
+  booktitle = {Proceedings of the 1st International Workshop on Benchmarking in Service-Oriented Computing (BenchSOC@ICSOC 2026)},
+  address   = {{\L}{\'o}d{\'z}, Poland},
+  year      = {2026},
+  note      = {To appear. Preprint: \url{https://derwehr.github.io/files/wehr2026wotlab.pdf}}
+}
 ```
